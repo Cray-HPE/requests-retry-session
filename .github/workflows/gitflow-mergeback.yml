@@ -25,7 +25,7 @@ name: Gitflow Merge Back
 on:
   pull_request:
     types: [ closed ]
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   merge-to-develop:
@@ -38,7 +38,7 @@ jobs:
         uses: Cray-HPE/.github/actions/csm-gitflow-mergeback@v1-csm-gitflow-mergeback
         id: create-pr
         with:
-          source-branch: master
+          source-branch: main
           base-branch: develop
           automerge: true
           app-key: ${{ secrets.CSM_GITFLOW_MERGEBACK_BOT_APP_KEY }}
