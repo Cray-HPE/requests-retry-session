@@ -29,6 +29,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     This prevents interruption to reads that happen as a function of time or istio resets that
     causes our applications to sit and wait forever on a half open socket.
     """
+
     def __init__(self, *args, **kwargs):
         if "timeout" in kwargs:
             self.timeout = kwargs["timeout"]

@@ -21,4 +21,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-from .requests_retry_session import requests_retry_session
+
+from .requests_retry_session import requests_retry_session as local_requests_retry_session
+
+requests_retry_session = local_requests_retry_session
