@@ -23,7 +23,7 @@
 #
 
 [project]
-name = 'requests_retry_session'
+name = 'requests-retry-session'
 authors = [
     { name = 'Hewlett Packard Enterprise Development LP' },
 ]
