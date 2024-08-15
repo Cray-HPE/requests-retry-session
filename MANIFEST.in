@@ -1,3 +1,0 @@
-include README.adoc
-include LICENSE
-prune @@MYPROJECT@@/tests
