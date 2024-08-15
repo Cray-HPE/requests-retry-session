@@ -38,8 +38,7 @@ classifiers = [
     'Programming Language :: Python :: 3.12',
 ]
 description = 'Create requests session with timeouts and retries for CSM usage.'
-dependencies = [ 'requests',
-                 'urllib3' ]
+dependencies = [ 'requests' ]
 maintainers = [
     { name = 'Mitch Harding', email = 'mitchell.harding@hpe.com'}
 ]
