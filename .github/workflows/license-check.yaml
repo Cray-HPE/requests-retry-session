@@ -21,34 +21,28 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-version: 2
-updates:
-  # Maintain dependencies for GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    assignees:
-      - "Cray-HPE/CMS-core-product-support"
-    labels:
-      - "github-actions-deps"
-      - "dependabot"
-    open-pull-requests-limit: 16
+name: Check Licenses
 
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    assignees:
-      - "Cray-HPE/CMS-core-product-support"
-    labels:
-      - "python-deps"
-      - "dependabot"
-    open-pull-requests-limit: 16
-    allow:
-      # Allow updates to both direct and indirect dependencies
-      - dependency-type: "all"
-    ignore:
-      # Only look for patch version updates
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major", "version-update:semver-minor" ]
+on:
+  pull_request:
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+
+    container:
+      image: artifactory.algol60.net/csm-docker/stable/license-checker:latest
+      credentials:
+          username: ${{ secrets.ARTIFACTORY_ALGOL60_READONLY_USERNAME }}
+          password: ${{ secrets.ARTIFACTORY_ALGOL60_READONLY_TOKEN }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v42
+
+    - name: License Check
+      if: ${{ steps.changed-files.outputs.all_changed_files }}
+      run: /usr/local/bin/python3 /license_check/license_check.py ${{ steps.changed-files.outputs.all_changed_files }}

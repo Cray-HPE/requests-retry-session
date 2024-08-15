@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2023 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -21,34 +21,21 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-version: 2
-updates:
-  # Maintain dependencies for GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    assignees:
-      - "Cray-HPE/CMS-core-product-support"
-    labels:
-      - "github-actions-deps"
-      - "dependabot"
-    open-pull-requests-limit: 16
+# Check a PR for a modified changelog file, assuming CHANGELOG.md is the file.
+# Ignore PRs with the gitflow-maintenance and/or dependabot label(s).
+name: Changelog Checker
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    assignees:
-      - "Cray-HPE/CMS-core-product-support"
-    labels:
-      - "python-deps"
-      - "dependabot"
-    open-pull-requests-limit: 16
-    allow:
-      # Allow updates to both direct and indirect dependencies
-      - dependency-type: "all"
-    ignore:
-      # Only look for patch version updates
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major", "version-update:semver-minor" ]
+# Workflow Jobs
+jobs:
+  check-changelog:
+    runs-on: ubuntu-latest
+    if: "!(
+      contains(github.event.pull_request.labels.*.name, 'gitflow-maintenance') ||
+      contains(github.event.pull_request.labels.*.name, 'dependabot')
+    )"
+    steps:
+      - name: Ensure changelog has changes
+        uses: Cray-HPE/.github/actions/csm-changelog-checker@v1-csm-changelog-checker

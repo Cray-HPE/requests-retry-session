@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2023 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -21,34 +21,31 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-version: 2
-updates:
-  # Maintain dependencies for GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    assignees:
-      - "Cray-HPE/CMS-core-product-support"
-    labels:
-      - "github-actions-deps"
-      - "dependabot"
-    open-pull-requests-limit: 16
+name: Gitflow Merge Back
+on:
+  pull_request:
+    types: [ closed ]
+    branches: [ master ]
 
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    assignees:
-      - "Cray-HPE/CMS-core-product-support"
-    labels:
-      - "python-deps"
-      - "dependabot"
-    open-pull-requests-limit: 16
-    allow:
-      # Allow updates to both direct and indirect dependencies
-      - dependency-type: "all"
-    ignore:
-      # Only look for patch version updates
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major", "version-update:semver-minor" ]
+jobs:
+  merge-to-develop:
+    # this job will only run if the PR has been merged, not just closed
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Create the gitflow mergeback PR
+        uses: Cray-HPE/.github/actions/csm-gitflow-mergeback@v1-csm-gitflow-mergeback
+        id: create-pr
+        with:
+          source-branch: master
+          base-branch: develop
+          automerge: true
+          app-key: ${{ secrets.CSM_GITFLOW_MERGEBACK_BOT_APP_KEY }}
+          app-id: ${{ secrets.CSM_GITFLOW_MERGEBACK_BOT_APP_ID }}
+
+      - name: Generated Pull Request Info
+        shell: bash
+        run: |
+          echo "Pull Request Number - ${{ steps.create-pr.outputs.pr-number }}"
+          echo "Pull Request URL - ${{ steps.create-pr.outputs.pr-url }}"
