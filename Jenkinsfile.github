@@ -40,7 +40,6 @@ pipeline {
     }
     environment {
         NAME = "requests-retry-session"
-        PYMOD_NAME = "requests_retry_session"
         DESCRIPTION = "Library for creating a requests session with timeouts and retries"
         IS_STABLE = getBuildIsStable()
     }
@@ -85,7 +84,7 @@ pipeline {
 
         stage('Publish') {
             steps {
-                publishCsmPythonModules(module: env.PYMOD_NAME, isStable: env.IS_STABLE)
+                publishCsmPythonModules(module: env.NAME, isStable: env.IS_STABLE)
             }
         }
     }
