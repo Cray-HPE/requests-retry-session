@@ -36,8 +36,9 @@ lint:
 		./cms_meta_tools/scripts/runLint.sh
 
 pymod_prepare:
-		pip3 install --upgrade pip setuptools wheel
+		pip3 install --upgrade pip build setuptools wheel
 
 pymod_build:
+		python3 --version
 		python3 -m build --sdist
 		python3 -m build --wheel
