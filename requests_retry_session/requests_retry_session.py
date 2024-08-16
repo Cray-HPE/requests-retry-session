@@ -21,10 +21,23 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
+
+"""
+Return a requests session with retries, timeouts, and logging.
+
+The purpose of this module is to provide a unified way of creating or
+updating a requests retry connection whenever interacting with a
+microservice; these connections are exposed as a requests session
+with an HTTP retry adapter attached to it.
+Created on Nov 2, 2020
+
+@author: jsl
+"""
+
 import requests
-from requests.packages.urllib3.util.retry import Retry
 
 from .timeout_http_adapter import TimeoutHTTPAdapter
+from .retry_with_logs import RetryWithLogs
 
 PROTOCOL = 'http'
 
@@ -33,7 +46,7 @@ def requests_retry_session(retries=10, backoff_factor=0.5,
                            connect_timeout=3, read_timeout=10,
                            session=None, protocol=PROTOCOL):
     session = session or requests.Session()
-    retry = Retry(
+    retry = RetryWithLogs(
         total=retries,
         read=retries,
         connect=retries,
