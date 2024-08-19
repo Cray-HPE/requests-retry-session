@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+- Bump `ruff` from ~=0.0.280 to ~=0.6.1 ([#21](https://github.com/Cray-HPE/requests-retry-session/pull/21))
+
 ## [0.1.3] - 2024-08-16
 
 ### Added
