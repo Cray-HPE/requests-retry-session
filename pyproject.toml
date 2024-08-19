@@ -32,6 +32,9 @@ classifiers = [
     'Natural Language :: English',
     'Operating System :: POSIX',
     'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
@@ -42,9 +45,7 @@ dependencies = [ 'requests' ]
 maintainers = [
     { name = 'Mitch Harding', email = 'mitchell.harding@hpe.com'}
 ]
-# I am not aware of anything in the module which truly requires 3.9, but we
-# do not plan to support it for earlier versions
-requires-python = '>=3.9'
+requires-python = '>=3.6'
 # The actual version is filled in at build time
 version = '0.0.57'
 
