@@ -150,13 +150,13 @@ pipeline {
                                 publishCsmRpms(
                                         arch: env.RPM_ARCH,
                                         isStable: env.IS_STABLE,
-                                        component: "${RPM_NAME}",
+                                        component: env.NAME,
                                         os: env.RPM_OS,
                                         pattern: "${BUILD_RELDIR}/RPMS/${env.RPM_ARCH}/*.rpm",
                                 )
                                 publishCsmRpms(
                                         arch: "src",
-                                        component: "${RPM_NAME}",
+                                        component: env.NAME,
                                         isStable: env.IS_STABLE,
                                         os: env.RPM_OS,
                                         pattern: "${BUILD_RELDIR}/SRPMS/*.rpm",
