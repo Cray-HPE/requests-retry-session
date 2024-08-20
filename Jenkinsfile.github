@@ -28,6 +28,16 @@
 
 def pyImage = 'artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python'
 
+def getRpmName(packageName, pythonVersion) {
+    if (pythonVersion == "3.6") {
+        return "python3-${packageName}"
+    }
+    def pythonVersionParts = pythonVersion.tokenize('.')
+    def pyMajor = "${pythonVersionParts[0]}"
+    def pyMinor = "${pythonVersionParts[0]}"
+    return "python${pyMajor}${pyMinor}-${packageName}"
+}
+
 pipeline {
     agent {
         label "metal-gcp-builder"
@@ -42,6 +52,8 @@ pipeline {
         NAME = "requests-retry-session"
         DESCRIPTION = "Library for creating a requests session with timeouts and retries"
         IS_STABLE = getBuildIsStable()
+        RPM_ARCH = "noarch"
+        RPM_OS = "noos"
     }
 
     stages {
@@ -71,7 +83,7 @@ pipeline {
             steps { sh "make lint" }
         }
 
-        stage('Build Python module') {
+        stage('Build and Publish Python module') {
             agent {
                 docker {
                     args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
@@ -79,12 +91,80 @@ pipeline {
                     image "${pyImage}:3.11"
                 }
             }
-            steps { sh "make pymod" }
+            steps {
+                sh "make pymod"
+                publishCsmPythonModules(module: env.NAME, isStable: env.IS_STABLE)
+            }
         }
 
-        stage('Publish') {
+        // The RPM build metadata can be added outside of the matrix, because it is just based on the
+        // Git commit being built
+        stage("RPM metadata") {
+            environment {
+                BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+            }
             steps {
-                publishCsmPythonModules(module: env.NAME, isStable: env.IS_STABLE)
+                echo "RPM build metadata is ${env.BUILD_METADATA}"
+                runLibraryScript("addRpmMetaData.sh", "${env.WORKSPACE}/${env.NAME}.spec")
+            }
+        }
+
+        stage('Build RPMs') {
+            matrix {
+                axes {
+                    axis {
+                        name 'PY_VERSION'
+                        values '3.6', '3.9', '3.10', '3.11', '3.12'
+                    }
+                }
+
+                agent {
+                    docker {
+                        args '-v /home/jenkins/.ssh:/home/jenkins/.ssh'
+                        reuseNode true
+                        image "${pyImage}:${PY_VERSION}"
+                    }
+                }
+
+                environment {
+                    PY_VERSION = "${PY_VERSION}"
+                    RPM_NAME = getRpmName(env.NAME, "${PY_VERSION}")
+                    BUILD_RELDIR = "dist/rpmbuild/${env.RPM_ARCH}/${PY_VERSION}"
+                    BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+                    SPEC_FILE = "${env.NAME}.spec"
+                }
+
+                stages {
+                    stage('Build RPMs') {
+                        environment {
+                            BUILD_DIR = "${env.WORKSPACE}/${BUILD_RELDIR}"
+                        }
+                        steps {
+                            sh "make rpm"
+                        }
+                    }
+
+                    stage('Publish Rpms') {
+                        steps {
+                            script {
+                                publishCsmRpms(
+                                        arch: env.RPM_ARCH,
+                                        isStable: env.IS_STABLE,
+                                        component: "${RPM_NAME}",
+                                        os: env.RPM_OS,
+                                        pattern: "${BUILD_RELDIR}/RPMS/${env.RPM_ARCH}/*.rpm",
+                                )
+                                publishCsmRpms(
+                                        arch: "src",
+                                        component: "${RPM_NAME}",
+                                        isStable: env.IS_STABLE,
+                                        os: env.RPM_OS,
+                                        pattern: "${BUILD_RELDIR}/SRPMS/*.rpm",
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }

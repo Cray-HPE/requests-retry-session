@@ -25,9 +25,19 @@
 # cms-meta-tools repo to ./cms_meta_tools
 
 NAME ?= requests-retry-session
+RPM_VERSION ?= $(shell head -1 .version)
+RPM_NAME ?= ${NAME}
+
+SPEC_FILE ?= ${NAME}.spec
+BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
+SOURCE_NAME ?= ${RPM_NAME}-${RPM_VERSION}
+SOURCE_BASENAME := ${SOURCE_NAME}.tar.bz2
+BUILD_DIR ?= $(PWD)/dist/rpmbuild
+SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_BASENAME}
+PYTHON_BIN := python$(PY_VERSION)
 
 all : runbuildprep lint pymod
-pymod: pymod_prepare pymod_build
+rpm: rpm_prepare rpm_package_source rpm_build_source rpm_build
 
 runbuildprep:
 		./cms_meta_tools/scripts/runBuildPrep.sh
@@ -35,10 +45,25 @@ runbuildprep:
 lint:
 		./cms_meta_tools/scripts/runLint.sh
 
-pymod_prepare:
-		pip3 install --upgrade pip build setuptools wheel
-
-pymod_build:
+pymod:
 		python3 --version
-		python3 -m build --sdist
-		python3 -m build --wheel
+		python3 -m venv ./build_venv
+		./build_venv/bin/python3 -m pip install --upgrade pip build setuptools wheel
+		./build_venv/bin/python3 -m build --sdist
+		./build_venv/bin/python3 -m build --wheel
+		rm -rf ./build_venv
+
+rpm_prepare:
+		rm -rf $(BUILD_DIR)
+		mkdir -p $(BUILD_DIR)/SPECS $(BUILD_DIR)/SOURCES
+		cp $(SPEC_FILE) $(BUILD_DIR)/SPECS/
+
+rpm_package_source:
+		touch $(SOURCE_PATH)
+		tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .git --exclude ./cms_meta_tools --exclude ./dist --exclude $(SOURCE_BASENAME) -cvjf $(SOURCE_PATH) .
+
+rpm_build_source:
+		RPM_NAME=$(RPM_NAME) PYTHON_BIN=$(PYTHON_BIN) BUILD_METADATA=$(BUILD_METADATA) rpmbuild -bs $(SPEC_FILE) --target $(RPM_ARCH) --define "_topdir $(BUILD_DIR)"
+
+rpm_build:
+		RPM_NAME=$(RPM_NAME) PYTHON_BIN=$(PYTHON_BIN) BUILD_METADATA=$(BUILD_METADATA) rpmbuild -ba $(SPEC_FILE) --target $(RPM_ARCH) --define "_topdir $(BUILD_DIR)"
