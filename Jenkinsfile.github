@@ -54,6 +54,7 @@ pipeline {
         IS_STABLE = getBuildIsStable()
         RPM_ARCH = "noarch"
         RPM_OS = "noos"
+        BUILD_BASE_RELDIR = "dist/rpmbuild/${env.RPM_ARCH}"
     }
 
     stages {
@@ -109,7 +110,7 @@ pipeline {
             }
         }
 
-        stage('Build RPMs') {
+        stage('Build & Publish RPMs') {
             matrix {
                 axes {
                     axis {
@@ -129,15 +130,15 @@ pipeline {
                 environment {
                     PY_VERSION = "${PY_VERSION}"
                     RPM_NAME = getRpmName(env.NAME, "${PY_VERSION}")
-                    BUILD_RELDIR = "dist/rpmbuild/${env.RPM_ARCH}/${PY_VERSION}"
-                    BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
-                    SPEC_FILE = "${env.NAME}.spec"
+                    BUILD_RELDIR = "${env.BUILD_BASE_RELDIR}/${PY_VERSION}"                    
                 }
 
                 stages {
                     stage('Build RPMs') {
                         environment {
-                            BUILD_DIR = "${env.WORKSPACE}/${BUILD_RELDIR}"
+                            BUILD_DIR = "${env.WORKSPACE}/${env.BUILD_RELDIR}"
+                            BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+                            SPEC_FILE = "${env.NAME}.spec"
                         }
                         steps {
                             sh "make rpm"
@@ -148,18 +149,18 @@ pipeline {
                         steps {
                             script {
                                 publishCsmRpms(
-                                        arch: env.RPM_ARCH,
-                                        isStable: env.IS_STABLE,
-                                        component: env.NAME,
-                                        os: env.RPM_OS,
-                                        pattern: "${BUILD_RELDIR}/RPMS/${env.RPM_ARCH}/*.rpm",
+                                    arch: env.RPM_ARCH,
+                                    isStable: env.IS_STABLE,
+                                    component: env.RPM_NAME,
+                                    os: env.RPM_OS,
+                                    pattern: "${env.BUILD_RELDIR}/RPMS/${env.RPM_ARCH}/*.rpm",
                                 )
                                 publishCsmRpms(
-                                        arch: "src",
-                                        component: env.NAME,
-                                        isStable: env.IS_STABLE,
-                                        os: env.RPM_OS,
-                                        pattern: "${BUILD_RELDIR}/SRPMS/*.rpm",
+                                    arch: "src",
+                                    component: env.RPM_NAME,
+                                    isStable: env.IS_STABLE,
+                                    os: env.RPM_OS,
+                                    pattern: "${env.BUILD_RELDIR}/SRPMS/*.rpm",
                                 )
                             }
                         }

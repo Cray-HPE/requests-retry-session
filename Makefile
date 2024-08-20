@@ -47,11 +47,10 @@ lint:
 
 pymod:
 		python3 --version
-		python3 -m venv ./build_venv
-		./build_venv/bin/python3 -m pip install --upgrade pip build setuptools wheel
-		./build_venv/bin/python3 -m build --sdist
-		./build_venv/bin/python3 -m build --wheel
-		rm -rf ./build_venv
+		python3 -m pip install --upgrade --user pip build setuptools wheel
+		python3 -m build --sdist
+		python3 -m build --wheel
+		cp ./dist/requests_retry_session*.whl .
 
 rpm_prepare:
 		rm -rf $(BUILD_DIR)
@@ -60,7 +59,15 @@ rpm_prepare:
 
 rpm_package_source:
 		touch $(SOURCE_PATH)
-		tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' --exclude .git --exclude ./cms_meta_tools --exclude ./dist --exclude $(SOURCE_BASENAME) -cvjf $(SOURCE_PATH) .
+		tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' \
+			--exclude .git \
+			--exclude .requests_retry_session.egg-info \
+			--exclude .github \
+			--exclude ./cms_meta_tools \
+			--exclude ./build \
+			--exclude ./dist \
+			--exclude $(SOURCE_BASENAME) \
+			-cvjf $(SOURCE_PATH) .
 
 rpm_build_source:
 		RPM_NAME=$(RPM_NAME) PYTHON_BIN=$(PYTHON_BIN) BUILD_METADATA=$(BUILD_METADATA) rpmbuild -bs $(SPEC_FILE) --target $(RPM_ARCH) --define "_topdir $(BUILD_DIR)"

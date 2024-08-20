@@ -52,14 +52,12 @@ The requests-retry-session Python package for Python %{py_version}
 
 %prep
 %setup
+%python_exec -m pip install --user --upgrade pip
+
 %build
-%python_exec --version
-%python_exec -m venv ./build_venv
-./build_venv/bin/python3 -m pip install --upgrade pip build setuptools wheel
-./build_venv/bin/python3 -m build --wheel
 
 %install
-%python_exec -m pip install ./dist/*.whl --root %{buildroot} --no-deps
+%python_exec -m pip install ./requests_retry_session*.whl --root %{buildroot} --no-deps
 find %{buildroot} -type f -print | tee -a PY3_INSTALLED_FILES
 sed -i -e 's:^%{buildroot}::' -e 's:^\([^/]\):/\1:' PY3_INSTALLED_FILES
 cat PY3_INSTALLED_FILES
