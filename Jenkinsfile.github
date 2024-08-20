@@ -34,7 +34,7 @@ def getRpmName(packageName, pythonVersion) {
     }
     def pythonVersionParts = pythonVersion.tokenize('.')
     def pyMajor = "${pythonVersionParts[0]}"
-    def pyMinor = "${pythonVersionParts[0]}"
+    def pyMinor = "${pythonVersionParts[1]}"
     return "python${pyMajor}${pyMinor}-${packageName}"
 }
 
