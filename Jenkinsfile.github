@@ -74,7 +74,7 @@ pipeline {
 
         stage("runBuildPrep") {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'artifactory-algol60-readonly', passwordVariable: 'ARTIFACTORY_PASSWORD', usernameVariable: 'ARTIFACTORY_USERNAME')]) {		
+                withCredentials([usernamePassword(credentialsId: 'artifactory-algol60-readonly', passwordVariable: 'ARTIFACTORY_PASSWORD', usernameVariable: 'ARTIFACTORY_USERNAME')]) {
                     sh "make runbuildprep"
                 }
             }
@@ -130,7 +130,7 @@ pipeline {
                 environment {
                     PY_VERSION = "${PY_VERSION}"
                     RPM_NAME = getRpmName(env.NAME, "${PY_VERSION}")
-                    BUILD_RELDIR = "${env.BUILD_BASE_RELDIR}/${PY_VERSION}"                    
+                    BUILD_RELDIR = "${env.BUILD_BASE_RELDIR}/${PY_VERSION}"
                 }
 
                 stages {
