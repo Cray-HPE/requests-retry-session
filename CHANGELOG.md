@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+- Bump `sphinx-autodoc-typehints` from ~=1.24.0 to ~=2.3.0 ([#23](https://github.com/Cray-HPE/requests-retry-session/pull/23))
+
 ## [0.1.5] - 2024-08-21
 ### Changed
 - Change how RPM release value is set
