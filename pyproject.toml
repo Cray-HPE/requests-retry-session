@@ -81,7 +81,7 @@ include = ["requests_retry_session"]
 exclude = []
 
 [tool.setuptools.package-data]
-"requests-retry-session" = ["py.typed"]
+"requests_retry_session" = ["py.typed"]
 
 [build-system]
 build-backend = 'setuptools.build_meta'
