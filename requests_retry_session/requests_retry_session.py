@@ -45,7 +45,7 @@ PROTOCOL = 'http'
 
 def requests_retry_session(retries: int = 10,
                            backoff_factor: float = 0.5,
-                           status_forcelist: Tuple[int] = (500, 502, 503, 504),
+                           status_forcelist: Tuple[int, ...] = (500, 502, 503, 504),
                            connect_timeout: int = 3,
                            read_timeout: int = 10,
                            session: Union[None, requests.Session] = None,
