@@ -41,10 +41,13 @@ from .retry_with_logs import RetryWithLogs
 
 PROTOCOL = 'http'
 
-def requests_retry_session(retries=10, backoff_factor=0.5,
-                           status_forcelist=(500, 502, 503, 504),
-                           connect_timeout=3, read_timeout=10,
-                           session=None, protocol=PROTOCOL):
+def requests_retry_session(retries: int = 10,
+                           backoff_factor: float = 0.5,
+                           status_forcelist: tuple[int] = (500, 502, 503, 504),
+                           connect_timeout: int = 3,
+                           read_timeout: int = 10,
+                           session: requests.Session|None = None,
+                           protocol: str = PROTOCOL) -> requests.Session:
     session = session or requests.Session()
     retry = RetryWithLogs(
         total=retries,
