@@ -80,6 +80,9 @@ test = [
 include = ["requests_retry_session"]
 exclude = []
 
+[tool.setuptools.package-data]
+"requests-retry-session" = ["py.typed"]
+
 [build-system]
 build-backend = 'setuptools.build_meta'
 requires = [
