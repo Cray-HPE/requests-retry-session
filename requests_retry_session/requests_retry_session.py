@@ -35,6 +35,8 @@ Created on Nov 2, 2020
 """
 
 import requests
+# Because we want to support Python 3.6 and 3.9, use old-style type hint syntax
+from typing import Tuple, Union
 
 from .timeout_http_adapter import TimeoutHTTPAdapter
 from .retry_with_logs import RetryWithLogs
@@ -43,10 +45,10 @@ PROTOCOL = 'http'
 
 def requests_retry_session(retries: int = 10,
                            backoff_factor: float = 0.5,
-                           status_forcelist: tuple[int] = (500, 502, 503, 504),
+                           status_forcelist: Tuple[int] = (500, 502, 503, 504),
                            connect_timeout: int = 3,
                            read_timeout: int = 10,
-                           session: requests.Session|None = None,
+                           session: Union[None, requests.Session] = None,
                            protocol: str = PROTOCOL) -> requests.Session:
     session = session or requests.Session()
     retry = RetryWithLogs(
