@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added standalone functions to create http adapters, to allow them to be closed by the caller.
+- Created `RetrySessionManager` context manager class.
+
 ## [0.1.8] - 2024-10-10
 
 ### Fixed
