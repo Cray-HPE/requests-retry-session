@@ -68,6 +68,6 @@ def retry_session_manager(protocol: Optional[str]=None,
     Provides a context manager that will clean up both the session and the adapter on exit
     """
     requests_protocol = protocol if protocol is not None else DEFAULT_PROTOCOL
-    with closing(requests_retry_adapter(**self._requests_retry_adapter_kwargs)) as adapter:
+    with closing(requests_retry_adapter(**adapter_kwargs)) as adapter:
         with requests_session(adapter=adapter, protocol=requests_protocol) as session:
             yield session
