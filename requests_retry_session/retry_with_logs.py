@@ -51,8 +51,8 @@ class RetryWithLogs(Retry):
     system instability and network congestion.
     """
 
-    def __init__(self, *args,
-                 **kwargs) -> None:  # type: ignore[no-untyped-def]
+    def __init__(  # type: ignore[no-untyped-def]
+            self, *args, **kwargs) -> None:
         # Save a copy of upstack callback to the side; this is the context we provide
         # for recursively instantiated instances of the Retry model
         self._callback = kwargs.pop('callback', None)

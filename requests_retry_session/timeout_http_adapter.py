@@ -60,10 +60,11 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     causes our applications to sit and wait forever on a half open socket.
     """
 
-    def __init__(self,
-                 *args,
-                 timeout: TimeoutType = None,
-                 **kwargs) -> None:  # type: ignore[no-untyped-def]
+    def __init__(  # type: ignore[no-untyped-def]
+            self,
+            *args,
+            timeout: TimeoutType = None,
+            **kwargs) -> None:
         self.timeout: TimeoutType = timeout
         super().__init__(*args, **kwargs)
 
