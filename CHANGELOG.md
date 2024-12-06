@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Exclude mypy cache from RPM source tarball
+
 ## [0.2.2] - 2024-12-04
 
 ### Fixed

@@ -63,6 +63,7 @@ rpm_package_source:
 			--exclude .git \
 			--exclude .requests_retry_session.egg-info \
 			--exclude .github \
+			--exclude .mypy_cache \
 			--exclude ./cms_meta_tools \
 			--exclude ./build \
 			--exclude ./dist \
