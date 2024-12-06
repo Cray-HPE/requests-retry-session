@@ -34,7 +34,8 @@ if TYPE_CHECKING:
     BytesOrStringType = Union[bytes, str]
     TimeoutType = Union[float, tuple[float, float], tuple[float, None], None]
     VerifyType = Union[bool, str]
-    CertType = Union[BytesOrStringType, tuple[BytesOrStringType, BytesOrStringType], None]
+    CertType = Union[BytesOrStringType, tuple[BytesOrStringType,
+                                              BytesOrStringType], None]
     ProxiesType = Union[Mapping[str, str], None]
 
     class SendArgs(TypedDict, total=False):
@@ -44,10 +45,13 @@ if TYPE_CHECKING:
         cert: CertType
         proxies: ProxiesType
 
+
 class _NotPassed:
     pass
 
+
 _NOT_PASSED = _NotPassed()
+
 
 class TimeoutHTTPAdapter(HTTPAdapter):
     """
@@ -56,19 +60,25 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     causes our applications to sit and wait forever on a half open socket.
     """
 
-    def __init__(self, *args, timeout: TimeoutType=None, **kwargs) -> None: # type: ignore[no-untyped-def]
+    def __init__(self,
+                 *args,
+                 timeout: TimeoutType = None,
+                 **kwargs) -> None:  # type: ignore[no-untyped-def]
         self.timeout: TimeoutType = timeout
         super().__init__(*args, **kwargs)
 
-    def send(self,
-             request: PreparedRequest,
-             stream: Union[bool, _NotPassed]=_NOT_PASSED,
-             timeout: Union[TimeoutType, _NotPassed]=_NOT_PASSED,
-             verify: Union[VerifyType, _NotPassed]=_NOT_PASSED,
-             cert: Union[CertType, _NotPassed]=_NOT_PASSED,
-             proxies: Union[ProxiesType, _NotPassed]=_NOT_PASSED) -> Response:
+    def send(
+            self,
+            request: PreparedRequest,
+            stream: Union[bool, _NotPassed] = _NOT_PASSED,
+            timeout: Union[TimeoutType, _NotPassed] = _NOT_PASSED,
+            verify: Union[VerifyType, _NotPassed] = _NOT_PASSED,
+            cert: Union[CertType, _NotPassed] = _NOT_PASSED,
+            proxies: Union[ProxiesType, _NotPassed] = _NOT_PASSED) -> Response:
         kwargs: SendArgs = {
-            "timeout": self.timeout if isinstance(timeout, _NotPassed) else timeout }
+            "timeout":
+            self.timeout if isinstance(timeout, _NotPassed) else timeout
+        }
         if not isinstance(stream, _NotPassed):
             kwargs["stream"] = stream
         if not isinstance(verify, _NotPassed):

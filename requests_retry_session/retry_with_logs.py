@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
+
 class RetryWithLogs(Retry):
     """
     A urllib3.Retry adapter that allows us to modify the behavior of
@@ -50,24 +51,25 @@ class RetryWithLogs(Retry):
     system instability and network congestion.
     """
 
-    def __init__(self, *args, **kwargs) -> None: # type: ignore[no-untyped-def]
+    def __init__(self, *args,
+                 **kwargs) -> None:  # type: ignore[no-untyped-def]
         # Save a copy of upstack callback to the side; this is the context we provide
         # for recursively instantiated instances of the Retry model
         self._callback = kwargs.pop('callback', None)
         super().__init__(*args, **kwargs)
 
-    def new(self, **kwargs) -> Self: # type: ignore[no-untyped-def]
+    def new(self, **kwargs) -> Self:  # type: ignore[no-untyped-def]
         # Newly created instances should have a history of callbacks made.
         kwargs['callback'] = self._callback
         return super().new(**kwargs)
 
     def increment(self,
-                  method: Optional[str]=None,
-                  url: Optional[str]=None,
-                  response: Optional[BaseHTTPResponse]=None,
-                  error: Optional[Exception]=None,
-                  _pool: Optional[ConnectionPool]=None,
-                  _stacktrace: Optional[TracebackType]=None) -> Self:
+                  method: Optional[str] = None,
+                  url: Optional[str] = None,
+                  response: Optional[BaseHTTPResponse] = None,
+                  error: Optional[Exception] = None,
+                  _pool: Optional[ConnectionPool] = None,
+                  _stacktrace: Optional[TracebackType] = None) -> Self:
         if _pool is None:
             raise TypeError(f"_pool argument should not be None. {locals()}")
         if url is None:
@@ -78,13 +80,16 @@ class RetryWithLogs(Retry):
         if response is None:
             LOGGER.info("Reattempting %s request for '%s'", method, endpoint)
         else:
-            LOGGER.warning("Previous %s attempt on '%s' resulted in %s response.",
-                           method, endpoint, response.status)
+            LOGGER.warning(
+                "Previous %s attempt on '%s' resulted in %s response.", method,
+                endpoint, response.status)
             LOGGER.info("Reattempting %s request for '%s'", method, endpoint)
         if self._callback:
             try:
                 self._callback(url)
             except Exception:
                 # This is a general except block
-                LOGGER.exception("Callback to '%s' raised an exception, ignoring.", url)
-        return super().increment(method, url, response, error, _pool, _stacktrace)
+                LOGGER.exception(
+                    "Callback to '%s' raised an exception, ignoring.", url)
+        return super().increment(method, url, response, error, _pool,
+                                 _stacktrace)
