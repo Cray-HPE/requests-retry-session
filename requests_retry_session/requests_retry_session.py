@@ -34,8 +34,12 @@ Created on Nov 2, 2020
 @author: jsl
 """
 
-from typing import Optional, TypedDict
-from typing_extensions import Unpack
+from __future__ import annotations
+from typing import TypedDict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Optional
+    from typing_extensions import Unpack
 
 import requests
 
@@ -47,10 +51,14 @@ DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
 DEFAULT_PROTOCOL = 'http'
 DEFAULT_READ_TIMEOUT = 10
-DEFAULT_RETRIES = 10,
+DEFAULT_RETRIES = 10
 DEFAULT_STATUS_FORCELIST = (500, 502, 503, 504)
 
 class RequestsRetryAdapterArgs(TypedDict, total=False):
+    """
+    Used to represent the parameters to the requests_retry_adapter function.
+    Helpful with type hinting.
+    """
     retries: int
     backoff_factor: float
     status_forcelist: tuple[int, ...]

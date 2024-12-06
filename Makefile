@@ -35,9 +35,15 @@ SOURCE_BASENAME := ${SOURCE_NAME}.tar.bz2
 BUILD_DIR ?= $(PWD)/dist/rpmbuild
 SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_BASENAME}
 PYTHON_BIN := python$(PY_VERSION)
+PYLINT_VENV_BASE_DIR ?= pylint-venv
+PYLINT_VENV ?= $(PYLINT_VENV_BASE_DIR)/$(PY_VERSION)
+PYLINT_VENV_PYBIN ?= $(PYLINT_VENV)/bin/python3
+PIP_INSTALL_ARGS ?= --trusted-host arti.hpc.amslabs.hpecorp.net --trusted-host artifactory.algol60.net --index-url https://arti.hpc.amslabs.hpecorp.net:443/artifactory/api/pypi/pypi-remote/simple --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple --no-cache
 
 all : runbuildprep lint pymod
 rpm: rpm_prepare rpm_package_source rpm_build_source rpm_build
+pymod: pymod_build pymod_validate
+pymod_validate: pymod_validate_setup pymod_validate_pylint_error pymod_validate_pylint_full pymod_validate_mypy
 
 runbuildprep:
 		./cms_meta_tools/scripts/runBuildPrep.sh
@@ -45,12 +51,29 @@ runbuildprep:
 lint:
 		./cms_meta_tools/scripts/runLint.sh
 
-pymod:
-		python3 --version
-		python3 -m pip install --upgrade --user pip build setuptools wheel
-		python3 -m build --sdist
-		python3 -m build --wheel
+pymod_build:
+		$(PYTHON_BIN) --version
+		$(PYTHON_BIN) -m pip install --upgrade --user pip build setuptools wheel
+		$(PYTHON_BIN) -m build --sdist
+		$(PYTHON_BIN) -m build --wheel
 		cp ./dist/requests_retry_session*.whl .
+
+pymod_validate_setup:
+		$(PYTHON_BIN) --version
+		mkdir -p $(PYLINT_VENV_BASE_DIR)
+		$(PYTHON_BIN) -m venv $(PYLINT_VENV)
+		$(PYLINT_VENV_PYBIN) -m pip install --upgrade $(PIP_INSTALL_ARGS) pip
+		$(PYLINT_VENV_PYBIN) -m pip install --disable-pip-version-check $(PIP_INSTALL_ARGS) -r validate-requirements.txt requests_retry_session*.whl
+		$(PYLINT_VENV_PYBIN) -m pip list --format freeze
+
+pymod_validate_pylint_error:
+		$(PYLINT_VENV_PYBIN) -m pylint --errors-only requests_retry_session
+
+pymod_validate_pylint_full:
+		$(PYLINT_VENV_PYBIN) -m pylint --disable missing-module-docstring --fail-under 9 requests_retry_session
+
+pymod_validate_mypy:
+		$(PYLINT_VENV_PYBIN) -m mypy requests_retry_session
 
 rpm_prepare:
 		rm -rf $(BUILD_DIR)
@@ -66,7 +89,8 @@ rpm_package_source:
 			--exclude ./cms_meta_tools \
 			--exclude ./build \
 			--exclude ./dist \
-			--exclude $(SOURCE_BASENAME) \
+            --exclude ./'$(PYLINT_VENV_BASE_DIR)' \
+			--exclude '$(SOURCE_BASENAME)' \
 			-cvjf $(SOURCE_PATH) .
 
 rpm_build_source:

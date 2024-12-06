@@ -58,33 +58,26 @@ pipeline {
     }
 
     stages {
-        stage("Clone cms_meta_tools repo") {
+        stage("Prep") {
             steps {
                 // This function is defined in cms-meta-tools:vars/cloneCMSMetaTools.groovy
                 cloneCMSMetaTools()
-            }
-        }
 
-        stage("Set Versions") {
-            steps {
                 // This function is defined in cms-meta-tools:vars/setVersionFiles.groovy
                 setVersionFiles()
-            }
-        }
 
-        stage("runBuildPrep") {
-            steps {
                 withCredentials([usernamePassword(credentialsId: 'artifactory-algol60-readonly', passwordVariable: 'ARTIFACTORY_PASSWORD', usernameVariable: 'ARTIFACTORY_USERNAME')]) {
                     sh "make runbuildprep"
                 }
+
+                sh "make lint"
+
+                // Just using this as a means to generate the netrc file that we need
+                getDockerBuildArgs()
             }
         }
 
-        stage("Lint") {
-            steps { sh "make lint" }
-        }
-
-        stage('Build and Publish Python module') {
+        stage('Build Python module') {
             agent {
                 docker {
                     args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
@@ -92,9 +85,11 @@ pipeline {
                     image "${pyImage}:3.12"
                 }
             }
+            environment {
+                PY_VERSION = "3.11"
+            }
             steps {
-                sh "make pymod"
-                publishCsmPythonModules(module: env.NAME, isStable: env.IS_STABLE)
+                sh "make pymod_build"
             }
         }
 
@@ -110,7 +105,67 @@ pipeline {
             }
         }
 
-        stage('Build & Publish RPMs') {
+        stage('Build RPMs') {
+            matrix {
+                axes {
+                    axis {
+                        name 'PY_VERSION'
+                        values '3.6', '3.9', '3.10', '3.11', '3.12'
+                    }
+                }
+
+                agent {
+                    docker {
+                        args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
+                        reuseNode true
+                        image "${pyImage}:${PY_VERSION}"
+                    }
+                }
+
+                environment {
+                    PY_VERSION = "${PY_VERSION}"
+                    RPM_NAME = getRpmName(env.NAME, "${PY_VERSION}")
+                    BUILD_RELDIR = "${env.BUILD_BASE_RELDIR}/${PY_VERSION}"
+                }
+
+                stages {
+                    stage('Validate Python module') {
+                        steps {
+                            sh "make pymod_validate_setup"
+                            sh "make pymod_validate_pylint_error"
+                            sh "make pymod_validate_pylint_full"
+                            sh "make pymod_validate_mypy"
+                        }
+                    }
+
+                    stage('Build RPMs') {
+                        environment {
+                            BUILD_DIR = "${env.WORKSPACE}/${env.BUILD_RELDIR}"
+                            BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
+                            SPEC_FILE = "${env.NAME}.spec"
+                        }
+                        steps {
+                            sh "make rpm"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Publish Python module') {
+            agent {
+                docker {
+                    args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
+                    reuseNode true
+                    image "${pyImage}:3.11"
+                }
+            }
+            steps {
+                publishCsmPythonModules(module: env.NAME, isStable: env.IS_STABLE)
+            }
+        }
+
+        stage('Publish RPMs') {
             matrix {
                 axes {
                     axis {
@@ -134,17 +189,6 @@ pipeline {
                 }
 
                 stages {
-                    stage('Build RPMs') {
-                        environment {
-                            BUILD_DIR = "${env.WORKSPACE}/${env.BUILD_RELDIR}"
-                            BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
-                            SPEC_FILE = "${env.NAME}.spec"
-                        }
-                        steps {
-                            sh "make rpm"
-                        }
-                    }
-
                     stage('Publish Rpms') {
                         steps {
                             script {
@@ -168,5 +212,6 @@ pipeline {
                 }
             }
         }
+        
     }
 }

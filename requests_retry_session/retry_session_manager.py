@@ -22,14 +22,19 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+from __future__ import annotations
 from contextlib import closing, contextmanager, AbstractContextManager
-from typing import Iterator, Optional
-from typing_extensions import Unpack
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from types import TracebackType
+    from typing import Iterator, Optional, Type
+    from typing_extensions import Unpack
 
 import requests
 
-from .requests_retry_session import requests_retry_adapter, requests_session, RequestsRetryAdapterArgs, DEFAULT_PROTOCOL
-
+from .requests_retry_session import requests_retry_adapter, requests_session, \
+                                    RequestsRetryAdapterArgs, DEFAULT_PROTOCOL
+from .timeout_http_adapter import TimeoutHTTPAdapter
 
 class RetrySessionManager(AbstractContextManager):
     """
@@ -37,23 +42,32 @@ class RetrySessionManager(AbstractContextManager):
     retry session only when needed, and to clean it up in their __exit__ function.
     This class is not thread safe.
     """
-    def __init__(self, protocol: Optional[str]=None,
-                 **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]):
-        self._requests_adapter = None
-        self._requests_session = None
-        self._requests_protocol = protocol if protocol is not None else DEFAULT_PROTOCOL
-        self._requests_retry_adapter_kwargs = adapter_kwargs
+    def __init__(self,
+                 protocol: Optional[str]=None,
+                 **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> None:
+        self._requests_adapter: Optional[TimeoutHTTPAdapter] = None
+        self._requests_session: Optional[requests.Session] = None
+        self._requests_protocol: str = protocol if protocol is not None else DEFAULT_PROTOCOL
+        self._requests_retry_adapter_kwargs: RequestsRetryAdapterArgs = adapter_kwargs
 
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self,
+                 exc_type: Optional[Type[BaseException]],
+                 exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
         if self._requests_session is not None:
             self._requests_session.close()
-            self._requests_adapter.close()
             self._requests_session = None
+        if self._requests_adapter is not None:
+            self._requests_adapter.close()
             self._requests_adapter = None
+        # The following return statement is not needed, but it makes mypy sad without it
+        return None # pylint: disable=useless-return
 
     @property
     def requests_session(self) -> requests.Session:
+        """
+        Returns the requests retry session, after initializing it if needed
+        """
         if self._requests_session is None:
             self._requests_adapter = requests_retry_adapter(**self._requests_retry_adapter_kwargs)
             self._requests_session = requests_session(adapter=self._requests_adapter,
@@ -62,8 +76,9 @@ class RetrySessionManager(AbstractContextManager):
 
 
 @contextmanager
-def retry_session_manager(protocol: Optional[str]=None,
-                          **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> Iterator[None]:
+def retry_session_manager(
+        protocol: Optional[str]=None,
+        **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> Iterator[requests.Session]:
     """
     Provides a context manager that will clean up both the session and the adapter on exit
     """
