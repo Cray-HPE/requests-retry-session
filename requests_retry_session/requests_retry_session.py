@@ -35,15 +35,14 @@ Created on Nov 2, 2020
 
 from __future__ import annotations
 from typing import TypedDict, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from typing import Optional
-    from typing_extensions import Unpack
-
 import requests
 
 from .timeout_http_adapter import TimeoutHTTPAdapter
 from .retry_with_logs import RetryWithLogs
+
+if TYPE_CHECKING:
+    from typing import Optional
+    from typing_extensions import Unpack
 
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3

@@ -52,9 +52,10 @@ class RetrySessionManager(AbstractContextManager):
         self._requests_protocol: str = protocol if protocol is not None else DEFAULT_PROTOCOL
         self._requests_retry_adapter_kwargs: RequestsRetryAdapterArgs = adapter_kwargs
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]],
-                 exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(  # pylint: disable=useless-return
+            self, exc_type: Optional[Type[BaseException]],
+            exc_val: Optional[BaseException],
+            exc_tb: Optional[TracebackType]) -> Optional[bool]:
         if self._requests_session is not None:
             self._requests_session.close()
             self._requests_session = None
@@ -62,7 +63,7 @@ class RetrySessionManager(AbstractContextManager):
             self._requests_adapter.close()
             self._requests_adapter = None
         # The following return statement is not needed, but it makes mypy sad without it
-        return None  # pylint: disable=useless-return
+        return None
 
     @property
     def requests_session(self) -> requests.Session:

@@ -67,15 +67,14 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         self.timeout: TimeoutType = timeout
         super().__init__(*args, **kwargs)
 
-    def send(
-        self,
-        request: PreparedRequest,
-        stream: Union[bool, _NotPassed] = _NOT_PASSED,
-        timeout: Union[TimeoutType, _NotPassed] = _NOT_PASSED,
-        verify: Union[VerifyType, _NotPassed] = _NOT_PASSED,
-        cert: Union[CertType, _NotPassed] = _NOT_PASSED,
-        proxies: Union[ProxiesType, _NotPassed] = _NOT_PASSED
-    ) -> Response:  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    def send(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+            self,
+            request: PreparedRequest,
+            stream: Union[bool, _NotPassed] = _NOT_PASSED,
+            timeout: Union[TimeoutType, _NotPassed] = _NOT_PASSED,
+            verify: Union[VerifyType, _NotPassed] = _NOT_PASSED,
+            cert: Union[CertType, _NotPassed] = _NOT_PASSED,
+            proxies: Union[ProxiesType, _NotPassed] = _NOT_PASSED) -> Response:
         kwargs: _SendArgs = {
             "timeout":
             self.timeout if isinstance(timeout, _NotPassed) else timeout
