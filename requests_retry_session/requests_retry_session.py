@@ -34,9 +34,8 @@ Created on Nov 2, 2020
 @author: jsl
 """
 
-# Because we want to support Python 3.6 and 3.9, use old-style type hint syntax
-from typing import Optional, Tuple
-from typing_extensions import TypedDict, Unpack
+from typing import Optional, TypedDict
+from typing_extensions import Unpack
 
 import requests
 
@@ -54,7 +53,7 @@ DEFAULT_STATUS_FORCELIST = (500, 502, 503, 504)
 class RequestsRetryAdapterArgs(TypedDict, total=False):
     retries: int
     backoff_factor: float
-    status_forcelist: Tuple[int, ...]
+    status_forcelist: tuple[int, ...]
     connect_timeout: int
     read_timeout: int
 
@@ -71,7 +70,7 @@ def requests_session(adapter: requests.adapters.HTTPAdapter,
 
 def requests_retry_adapter(retries: int = DEFAULT_RETRIES,
                            backoff_factor: float = DEFAULT_BACKOFF_FACTOR,
-                           status_forcelist: Tuple[int, ...] = DEFAULT_STATUS_FORCELIST,
+                           status_forcelist: tuple[int, ...] = DEFAULT_STATUS_FORCELIST,
                            connect_timeout: int = DEFAULT_CONNECT_TIMEOUT,
                            read_timeout: int = DEFAULT_READ_TIMEOUT) -> TimeoutHTTPAdapter:
     retry = RetryWithLogs(
