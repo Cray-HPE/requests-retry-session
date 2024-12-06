@@ -38,7 +38,7 @@ if TYPE_CHECKING:
                                               BytesOrStringType], None]
     ProxiesType = Union[Mapping[str, str], None]
 
-    class SendArgs(TypedDict, total=False):
+    class _SendArgs(TypedDict, total=False):  # pylint: disable=missing-class-docstring
         stream: bool
         timeout: TimeoutType
         verify: VerifyType
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
         proxies: ProxiesType
 
 
-class _NotPassed:
+class _NotPassed:  # pylint: disable=missing-class-docstring,too-few-public-methods
     pass
 
 
@@ -68,14 +68,15 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         super().__init__(*args, **kwargs)
 
     def send(
-            self,
-            request: PreparedRequest,
-            stream: Union[bool, _NotPassed] = _NOT_PASSED,
-            timeout: Union[TimeoutType, _NotPassed] = _NOT_PASSED,
-            verify: Union[VerifyType, _NotPassed] = _NOT_PASSED,
-            cert: Union[CertType, _NotPassed] = _NOT_PASSED,
-            proxies: Union[ProxiesType, _NotPassed] = _NOT_PASSED) -> Response:
-        kwargs: SendArgs = {
+        self,
+        request: PreparedRequest,
+        stream: Union[bool, _NotPassed] = _NOT_PASSED,
+        timeout: Union[TimeoutType, _NotPassed] = _NOT_PASSED,
+        verify: Union[VerifyType, _NotPassed] = _NOT_PASSED,
+        cert: Union[CertType, _NotPassed] = _NOT_PASSED,
+        proxies: Union[ProxiesType, _NotPassed] = _NOT_PASSED
+    ) -> Response:  # pylint: disable=too-many-arguments,too-many-positional-arguments
+        kwargs: _SendArgs = {
             "timeout":
             self.timeout if isinstance(timeout, _NotPassed) else timeout
         }

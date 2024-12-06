@@ -25,16 +25,16 @@
 from __future__ import annotations
 from contextlib import closing, contextmanager, AbstractContextManager
 from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from types import TracebackType
-    from typing import Iterator, Optional, Type
-    from typing_extensions import Unpack
-
 import requests
 
 from .requests_retry_session import requests_retry_adapter, requests_session, \
                                     RequestsRetryAdapterArgs, DEFAULT_PROTOCOL
 from .timeout_http_adapter import TimeoutHTTPAdapter
+
+if TYPE_CHECKING:
+    from types import TracebackType
+    from typing import Iterator, Optional, Type
+    from typing_extensions import Unpack
 
 
 class RetrySessionManager(AbstractContextManager):
