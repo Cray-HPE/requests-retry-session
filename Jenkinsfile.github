@@ -110,7 +110,7 @@ pipeline {
                 axes {
                     axis {
                         name 'PY_VERSION'
-                        values '3.9', '3.10', '3.11', '3.12'
+                        values '3.10', '3.11', '3.12'
                     }
                 }
 
@@ -157,7 +157,7 @@ pipeline {
                 docker {
                     args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
                     reuseNode true
-                    image "${pyImage}:3.11"
+                    image "${pyImage}:3.12"
                 }
             }
             steps {
@@ -170,7 +170,7 @@ pipeline {
                 axes {
                     axis {
                         name 'PY_VERSION'
-                        values '3.9', '3.10', '3.11', '3.12'
+                        values '3.10', '3.11', '3.12'
                     }
                 }
 

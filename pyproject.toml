@@ -32,7 +32,6 @@ classifiers = [
     'Natural Language :: English',
     'Operating System :: POSIX',
     'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
@@ -42,7 +41,7 @@ dependencies = [ 'requests', 'typing-extensions', 'urllib3' ]
 maintainers = [
     { name = 'Mitch Harding', email = 'mitchell.harding@hpe.com'}
 ]
-requires-python = '>=3.9'
+requires-python = '>=3.10'
 # The actual version is filled in at build time
 version = '0.0.57'
 
