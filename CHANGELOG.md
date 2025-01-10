@@ -7,10 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.1] - 2024-12-06
+## [1.0.1] - 2025-01-10
 
 ### Added
 - Added mylint and pypy to build pipeline
+
+### Dependencies
+- Added constraints to dependency versions
 
 ## [1.0.0] - 2024-12-06
 
@@ -21,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed syntax error in requests_retry_manager function
+- Exclude mypy cache from RPM source tarball
 
 ## [0.2.1] - 2024-12-04
 
