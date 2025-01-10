@@ -22,27 +22,27 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from contextlib import closing, contextmanager, AbstractContextManager
-from typing import Iterator, Optional
-from typing_extensions import Unpack
+from contextlib import AbstractContextManager
+# Because we want to support Python 3.6 and 3.9, use old-style type hint syntax
+from typing import Optional
 
 import requests
 
-from .requests_retry_session import requests_retry_adapter, requests_session, RequestsRetryAdapterArgs, DEFAULT_PROTOCOL
+from .requests_retry_session import requests_retry_adapter, requests_session
 
 
 class RetrySessionManager(AbstractContextManager):
     """
-    Not intended to be useful on its own, this is a base class for classes that want to create a
+    Not intended to be useful on its own, this is for classes that want to create a
     retry session only when needed, and to clean it up in their __exit__ function.
     This class is not thread safe.
     """
-    def __init__(self, protocol: Optional[str]=None,
-                 **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]):
+    def __init__(self, protocol: Optional[str]=None, **requests_retry_adapter_kwargs):
         self._requests_adapter = None
         self._requests_session = None
-        self._requests_protocol = protocol if protocol is not None else DEFAULT_PROTOCOL
-        self._requests_retry_adapter_kwargs = adapter_kwargs
+        self._requests_protocol = protocol
+        self._requests_session_kwargs = {} if protocol is None else { 'protocol': protocol }
+        self._requests_retry_adapter_kwargs = requests_retry_adapter_kwargs
 
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -56,18 +56,5 @@ class RetrySessionManager(AbstractContextManager):
     def requests_session(self) -> requests.Session:
         if self._requests_session is None:
             self._requests_adapter = requests_retry_adapter(**self._requests_retry_adapter_kwargs)
-            self._requests_session = requests_session(adapter=self._requests_adapter,
-                                                      protocol=self._requests_protocol)
+            self._requests_session = requests_session(adapter=self._requests_adapter, **self._requests_session_kwargs)
         return self._requests_session
-
-
-@contextmanager
-def retry_session_manager(protocol: Optional[str]=None,
-                          **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> Iterator[None]:
-    """
-    Provides a context manager that will clean up both the session and the adapter on exit
-    """
-    requests_protocol = protocol if protocol is not None else DEFAULT_PROTOCOL
-    with closing(requests_retry_adapter(**adapter_kwargs)) as adapter:
-        with requests_session(adapter=adapter, protocol=requests_protocol) as session:
-            yield session

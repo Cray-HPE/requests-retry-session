@@ -1,4 +1,4 @@
-# Copyright 2025 Hewlett Packard Enterprise Development LP
+# Copyright 2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -42,11 +42,9 @@ BuildRequires: python-rpm-generators
 BuildRequires: python-rpm-macros
 Requires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
 %if "%{py_version}" == "3.6"
-Requires: python3-requests >= 2.25, python3-requests < 3
-Requires: python3-typing_extensions >= 4.1, python3-typing_extensions < 5
+Requires: python3-requests
 %else
-Requires: python%{python_version_nodots}-requests >= 2.25, python%{python_version_nodots}-requests < 3
-Requires: python%{python_version_nodots}-typing_extensions >= 4.1, python%{python_version_nodots}-typing_extensions < 5
+Requires: python%{python_version_nodots}-requests
 %endif
 
 %description

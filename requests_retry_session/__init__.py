@@ -22,6 +22,5 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from .requests_retry_session import requests_retry_adapter, requests_retry_session, \
-                                    requests_session, RequestsRetryAdapterArgs
-from .retry_session_manager import retry_session_manager, RetrySessionManager
+from .requests_retry_session import requests_retry_adapter, requests_retry_session, requests_session
+from .retry_session_manager import RetrySessionManager
