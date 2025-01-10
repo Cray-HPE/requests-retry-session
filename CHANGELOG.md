@@ -7,13 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- Exclude mypy cache from RPM source tarball
-
-## [0.2.2] - 2024-12-04
+## [0.2.2] - 2025-01-10
 
 ### Fixed
 - Fixed syntax error in requests_retry_manager function
+- Exclude mypy cache from RPM source tarball
+
+### Dependencies
+- Added constraints to dependency versions
 
 ## [0.2.1] - 2024-12-04
 
