@@ -7,15 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] - 2024-12-06
+## [1.0.0] - 2025-01-10
 
 ### Removed
 - Removed support for Python 3.6
+
+### Dependencies
+- Added constraints to dependency versions
 
 ## [0.2.2] - 2024-12-04
 
 ### Fixed
 - Fixed syntax error in requests_retry_manager function
+- Exclude mypy cache from RPM source tarball
 
 ## [0.2.1] - 2024-12-04
 
