@@ -7,10 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.1] - 2024-12-04
+## [0.2.1] - 2025-01-10
 
 ### Added
 - Added context manager function to handle closing both the session and adapter.
+
+### Dependencies
+- Added constraints to dependency versions
 
 ## [0.2.0] - 2024-12-03
 
