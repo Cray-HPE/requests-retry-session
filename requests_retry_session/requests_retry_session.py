@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2022-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -47,7 +47,7 @@ DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
 DEFAULT_PROTOCOL = 'http'
 DEFAULT_READ_TIMEOUT = 10
-DEFAULT_RETRIES = 10,
+DEFAULT_RETRIES = 10
 DEFAULT_STATUS_FORCELIST = (500, 502, 503, 504)
 
 

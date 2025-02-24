@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] - 2025-02-24
+### Fixed
+- Fixed typo in `DEFAULT_RETRIES` definition
+
 ## [0.2.3] - 2025-01-10
 
 Revert 0.2.1 and 0.2.2.
