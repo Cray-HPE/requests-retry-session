@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2025-05-05
+
+### Changed
+- CASMCMS-9410: Add `TYPE_CHECKING`-only code in `RetrySessionManager` to work around  https://github.com/python/typing/issues/1992
+
 ## [1.0.2] - 2024-12-06
 
 ### Fixed
