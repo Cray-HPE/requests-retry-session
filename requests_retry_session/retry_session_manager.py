@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2024-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -23,12 +23,13 @@
 #
 
 from contextlib import closing, contextmanager, AbstractContextManager
-from typing import Iterator, Optional
-from typing_extensions import Unpack
+from typing import Iterator, Optional, TYPE_CHECKING
+from typing_extensions import Self, Unpack
 
 import requests
 
-from .requests_retry_session import requests_retry_adapter, requests_session, RequestsRetryAdapterArgs, DEFAULT_PROTOCOL
+from .requests_retry_session import requests_retry_adapter, requests_session, \
+                                    RequestsRetryAdapterArgs, DEFAULT_PROTOCOL
 
 
 class RetrySessionManager(AbstractContextManager):
@@ -51,6 +52,11 @@ class RetrySessionManager(AbstractContextManager):
             self._requests_adapter.close()
             self._requests_session = None
             self._requests_adapter = None
+
+    # The following is needed to work around https://github.com/python/typing/issues/1992
+    if TYPE_CHECKING:
+        def __enter__(self) -> Self:
+            return self
 
     @property
     def requests_session(self) -> requests.Session:
