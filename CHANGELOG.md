@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+- Bump `pytest-cov` from ~=4.0 to ~=6.1 ([#28](https://github.com/Cray-HPE/requests-retry-session/pull/28))
+
 ## [2.0.2] - 2025-05-05
 
 ### Changed
