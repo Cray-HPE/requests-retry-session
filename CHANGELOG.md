@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+
+- Bump `dangoslen/dependabot-changelog-helper` from 3 to 4 ([#27](https://github.com/Cray-HPE/requests-retry-session/pull/27))
+
 ## [2.0.2] - 2025-05-05
 
 ### Changed
