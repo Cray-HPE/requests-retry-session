@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+- For Python 3.6, only require `typing_extensions` 4.1.1, as that is the maximum available version
+
 ## [0.5.3] - 2025-06-27
 
 ### Added
