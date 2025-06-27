@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add support for Python 3.13
 
+### Changed
+- Specify minimum `typing_extensions` version (based on what we are using from it)
+
 ## [0.5.2] - 2025-05-05
 
 ### Changed
