@@ -2,7 +2,7 @@
  *
  *  MIT License
  *
- *  (C) Copyright 2024 Hewlett Packard Enterprise Development LP
+ *  (C) Copyright 2024-2025 Hewlett Packard Enterprise Development LP
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a
  *  copy of this software and associated documentation files (the "Software"),
@@ -82,11 +82,11 @@ pipeline {
                 docker {
                     args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
                     reuseNode true
-                    image "${pyImage}:3.12"
+                    image "${pyImage}:3.13"
                 }
             }
             environment {
-                PY_VERSION = "3.12"
+                PY_VERSION = "3.13"
             }
             steps {
                 sh "make pymod_build"
@@ -110,7 +110,7 @@ pipeline {
                 axes {
                     axis {
                         name 'PY_VERSION'
-                        values '3.9', '3.10', '3.11', '3.12'
+                        values '3.9', '3.10', '3.11', '3.12', '3.13'
                     }
                 }
 
@@ -157,7 +157,7 @@ pipeline {
                 docker {
                     args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
                     reuseNode true
-                    image "${pyImage}:3.11"
+                    image "${pyImage}:3.13"
                 }
             }
             steps {
@@ -170,7 +170,7 @@ pipeline {
                 axes {
                     axis {
                         name 'PY_VERSION'
-                        values '3.9', '3.10', '3.11', '3.12'
+                        values '3.9', '3.10', '3.11', '3.12', '3.13'
                     }
                 }
 
