@@ -32,7 +32,6 @@ classifiers = [
     'Natural Language :: English',
     'Operating System :: POSIX',
     'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
 ]
 description = 'Create requests session with timeouts and retries for CSM usage.'
@@ -40,7 +39,7 @@ dependencies = [ 'requests', 'typing-extensions>=4.6', 'urllib3' ]
 maintainers = [
     { name = 'Mitch Harding', email = 'mitchell.harding@hpe.com'}
 ]
-requires-python = '>=3.12'
+requires-python = '>=3.13'
 # The actual version is filled in at build time
 version = '0.0.57'
 
