@@ -91,6 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Dependencies
 - Bump `tj-actions/changed-files` from 44 to 45 ([#22](https://github.com/Cray-HPE/requests-retry-session/pull/22))
+- Bump `pytest` from ~=7.2 to ~=8.3 ([#24](https://github.com/Cray-HPE/requests-retry-session/pull/24))
 
 ## [0.1.5] - 2024-08-21
 ### Changed
