@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+
+- Bump `actions/checkout` from 4 to 5 ([#31](https://github.com/Cray-HPE/requests-retry-session/pull/31))
+
 ## [5.0.0] - 2025-07-02
 
 ### Removed
