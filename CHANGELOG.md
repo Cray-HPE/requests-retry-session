@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 
 - Bump `actions/checkout` from 4 to 5 ([#31](https://github.com/Cray-HPE/requests-retry-session/pull/31))
+- Snyk: Pin `urllib3` to at least `2.6.3` at build time, to avoid a vulnerability
 
 ## [5.0.0] - 2025-07-02
 
