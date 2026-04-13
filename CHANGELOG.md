@@ -8,11 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-
 - When creating RPM source tarball, adjust `tar` command to avoid superfluous `/./` in file paths,
   since that apparently breaks something in the Python 3.13 RPM build environment (and is, as noted,
   superfluous)
 - Disable `mypy` caching to avoid build failures
+
+### Changed
+- Specified minimum dependency versions for specific Python versions, based on basic testing.
+  This is not a statement that these versions have been thoroughly vetted, just that lower versions
+  will definitely not work.
 
 ### Dependencies
 
