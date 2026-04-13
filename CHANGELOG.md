@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   superfluous)
 - Disable `mypy` caching to avoid build failures
 
+### Changed
+- Specified minimum dependency versions for specific Python versions, based on basic testing.
+  This is not a statement that these versions have been thoroughly vetted, just that lower versions
+  will definitely not work.
+
 ## [2.0.3] - 2025-06-27
 
 ### Added
