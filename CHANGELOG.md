@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Specified minimum dependency versions for specific Python versions, based on basic testing.
+  This is not a statement that these versions have been thoroughly vetted, just that lower versions
+  will definitely not work.
+
 ## [0.2.4] - 2025-02-24
 ### Fixed
 - Fixed typo in `DEFAULT_RETRIES` definition
