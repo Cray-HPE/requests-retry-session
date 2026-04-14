@@ -46,6 +46,7 @@ lint:
 		./cms_meta_tools/scripts/runLint.sh
 
 pymod:
+		cat /etc/os-release
 		python3 --version
 		python3 -m pip install --upgrade --user pip build setuptools wheel
 		python3 -m build --sdist
@@ -53,6 +54,8 @@ pymod:
 		cp ./dist/requests_retry_session*.whl .
 
 rpm_prepare:
+		cat /etc/os-release
+		bzip2 --version || true
 		tar --version || true
 		rpmbuild --version -vv || true
 		sh -c 'rpm -qa | grep rpm' || true
@@ -62,7 +65,7 @@ rpm_prepare:
 
 rpm_package_source:
 		touch $(SOURCE_PATH)
-		tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' \
+		tar --transform 'flags=r;s,^[.]/,/$(SOURCE_NAME)/,' \
 			--exclude .git \
 			--exclude .requests_retry_session.egg-info \
 			--exclude .github \
