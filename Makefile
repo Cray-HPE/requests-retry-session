@@ -75,6 +75,9 @@ rpm_package_source:
 
 rpm_build_source:
 		RPM_NAME=$(RPM_NAME) PYTHON_BIN=$(PYTHON_BIN) BUILD_METADATA=$(BUILD_METADATA) rpmbuild -bs $(SPEC_FILE) --target $(RPM_ARCH) --define "_topdir $(BUILD_DIR)"
+		rpm -qlp $(BUILD_DIR)/SRPMS/*.src.rpm
+		sh -c 'rpm2cpio $(BUILD_DIR)/SRPMS/*.src.rpm | cpio -tv'
+		sh -c 'rpm2cpio $(BUILD_DIR)/SRPMS/*.src.rpm  | cpio -i --to-stdout *.tar.bz2 | tar -tjf -'
 
 rpm_build:
 		RPM_NAME=$(RPM_NAME) PYTHON_BIN=$(PYTHON_BIN) BUILD_METADATA=$(BUILD_METADATA) rpmbuild -ba $(SPEC_FILE) --target $(RPM_ARCH) --define "_topdir $(BUILD_DIR)"
