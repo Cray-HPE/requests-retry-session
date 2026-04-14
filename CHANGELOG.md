@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - When creating RPM source tarball, adjust `tar` command to avoid superfluous `/./` in file paths,
   since that apparently breaks something in the Python 3.13 RPM build environment (and is, as noted,
   superfluous)
+- Disable `mypy` caching to avoid build failures
 
 ### Dependencies
 
