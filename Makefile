@@ -53,6 +53,7 @@ pymod:
 		cp ./dist/requests_retry_session*.whl .
 
 rpm_prepare:
+		tar --version || true
 		rpmbuild --version -vv || true
 		sh -c 'rpm -qa | grep rpm' || true
 		rm -rf $(BUILD_DIR)
