@@ -73,7 +73,16 @@ pymod_validate_pylint_full:
 		$(PYLINT_VENV_PYBIN) -m pylint --disable missing-module-docstring --fail-under 9 requests_retry_session
 
 pymod_validate_mypy:
-		$(PYLINT_VENV_PYBIN) -m mypy requests_retry_session
+		# --no-incremental --cache-dir=/dev/null --no-sqlite-cache
+		#    Avoid creating and reading mypy cache
+		# --show-traceback
+		#    Include context if mypy crashes
+		$(PYLINT_VENV_PYBIN) -m mypy \
+			--no-incremental \
+			--cache-dir=/dev/null \
+			--no-sqlite-cache \
+			--show-traceback \
+			requests_retry_session
 
 rpm_prepare:
 		rm -rf $(BUILD_DIR)
