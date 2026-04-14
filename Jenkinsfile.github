@@ -82,11 +82,11 @@ pipeline {
                 docker {
                     args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
                     reuseNode true
-                    image "${pyImage}:3.13"
+                    image "${pyImage}:3.12"
                 }
             }
             environment {
-                PY_VERSION = "3.13"
+                PY_VERSION = "3.12"
             }
             steps {
                 sh "make pymod_build"
@@ -110,7 +110,8 @@ pipeline {
                 axes {
                     axis {
                         name 'PY_VERSION'
-                        values '3.12', '3.13'
+                        // values '3.12', '3.13'
+                        values '3.12'
                     }
                 }
 
@@ -157,7 +158,7 @@ pipeline {
                 docker {
                     args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
                     reuseNode true
-                    image "${pyImage}:3.13"
+                    image "${pyImage}:3.12"
                 }
             }
             steps {
@@ -170,7 +171,8 @@ pipeline {
                 axes {
                     axis {
                         name 'PY_VERSION'
-                        values '3.12', '3.13'
+                        // values '3.12', '3.13'
+                        values '3.12'
                     }
                 }
 
