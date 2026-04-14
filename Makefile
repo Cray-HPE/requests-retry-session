@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2024-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -82,7 +82,7 @@ rpm_prepare:
 
 rpm_package_source:
 		touch $(SOURCE_PATH)
-		tar --transform 'flags=r;s,^,/$(SOURCE_NAME)/,' \
+		tar --transform 'flags=r;s,^[.]/,/$(SOURCE_NAME)/,' \
 			--exclude .git \
 			--exclude .requests_retry_session.egg-info \
 			--exclude .github \
