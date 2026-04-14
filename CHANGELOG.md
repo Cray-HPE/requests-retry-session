@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- When creating RPM source tarball, adjust `tar` command to avoid superfluous `/./` in file paths,
+  since that apparently breaks something in the Python 3.13 RPM build environment (and is, as noted,
+  superfluous)
+
 ## [0.2.5] - 2026-04-13
 ### Changed
 - Specified minimum dependency versions for specific Python versions, based on basic testing.
