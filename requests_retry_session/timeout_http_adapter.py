@@ -27,17 +27,17 @@ from typing import TYPE_CHECKING
 from requests.adapters import HTTPAdapter
 
 if TYPE_CHECKING:
-    from typing import Mapping, TypedDict
+    from typing import Mapping, TypeAlias, TypedDict
     from requests import PreparedRequest, Response
     from urllib3 import Retry
 
     # To simplify type hints
-    BytesOrStringType = bytes | str
-    TimeoutType = float | tuple[float, float] | tuple[float, None] | None
-    VerifyType = bool | str
-    CertType = BytesOrStringType | tuple[BytesOrStringType,
-                                         BytesOrStringType] | None
-    ProxiesType = Mapping[str, str] | None
+    BytesOrStringType: TypeAlias = bytes | str
+    TimeoutType: TypeAlias = float | tuple[float, float] | tuple[float, None] | None
+    VerifyType: TypeAlias = bool | str
+    CertType: TypeAlias = BytesOrStringType | tuple[BytesOrStringType,
+                                                    BytesOrStringType] | None
+    ProxiesType: TypeAlias = Mapping[str, str] | None
 
     class _SendArgs(TypedDict, total=False):
         """
