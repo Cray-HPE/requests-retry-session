@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2022-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -60,8 +60,8 @@ class RequestsRetryAdapterArgs(TypedDict, total=False):
     retries: int
     backoff_factor: float
     status_forcelist: tuple[int, ...]
-    connect_timeout: int
-    read_timeout: int
+    connect_timeout: float
+    read_timeout: float
 
 
 def requests_session(adapter: requests.adapters.HTTPAdapter,
@@ -78,8 +78,8 @@ def requests_retry_adapter(
         retries: int = DEFAULT_RETRIES,
         backoff_factor: float = DEFAULT_BACKOFF_FACTOR,
         status_forcelist: tuple[int, ...] = DEFAULT_STATUS_FORCELIST,
-        connect_timeout: int = DEFAULT_CONNECT_TIMEOUT,
-        read_timeout: int = DEFAULT_READ_TIMEOUT) -> TimeoutHTTPAdapter:
+        connect_timeout: float = DEFAULT_CONNECT_TIMEOUT,
+        read_timeout: float = DEFAULT_READ_TIMEOUT) -> TimeoutHTTPAdapter:
     retry = RetryWithLogs(
         total=retries,
         read=retries,
