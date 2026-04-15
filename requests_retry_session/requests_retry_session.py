@@ -53,7 +53,7 @@ from .utils import NotPassed, NOT_PASSED
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
 # Protocols should omit the trailing "://" because it will be automatically appended
-DEFAULT_PROTOCOL = 'http'
+DEFAULT_PROTOCOL = ('http', 'https')
 DEFAULT_READ_TIMEOUT = 10
 DEFAULT_RETRIES = 10
 DEFAULT_STATUS_FORCELIST = (500, 502, 503, 504)
