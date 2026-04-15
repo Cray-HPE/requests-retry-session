@@ -52,19 +52,6 @@ class RetryWithLogs(Retry):
     API interactions, as well, gives us a more immediate sense of feedback for overall
     system instability and network congestion.
     """
-
-    def __init__(  # type: ignore[no-untyped-def]
-            self, *args, **kwargs) -> None:
-        # Save a copy of upstack callback to the side; this is the context we provide
-        # for recursively instantiated instances of the Retry model
-        self._callback = kwargs.pop('callback', None)
-        super().__init__(*args, **kwargs)
-
-    def new(self, **kwargs) -> Self:  # type: ignore[no-untyped-def]
-        # Newly created instances should have a history of callbacks made.
-        kwargs['callback'] = self._callback
-        return super().new(**kwargs)
-
     def increment(self,
                   method: str | None = None,
                   url: str | None = None,
@@ -86,12 +73,5 @@ class RetryWithLogs(Retry):
                 "Previous %s attempt on '%s' resulted in %s response.", method,
                 endpoint, response.status)
             LOGGER.info("Reattempting %s request for '%s'", method, endpoint)
-        if self._callback:
-            try:
-                self._callback(url)
-            except Exception:
-                # This is a general except block
-                LOGGER.exception(
-                    "Callback to '%s' raised an exception, ignoring.", url)
         return super().increment(method, url, response, error, _pool,
                                  _stacktrace)
