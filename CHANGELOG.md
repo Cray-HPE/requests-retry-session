@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Changed default protocol from `http` to both `http` and `https`.
+  This is a BREAKING CHANGE for anyone relying on the previous default behavior.
+
 ## [2.0.5] - 2026-04-15
 
 ### Added

@@ -56,7 +56,7 @@ DEFAULT_ALLOWED_METHODS: AllowedMethodsType = Retry.DEFAULT_ALLOWED_METHODS
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
 # Protocols should omit the trailing "://" because it will be automatically appended
-DEFAULT_PROTOCOL: ProtocolType = 'http'
+DEFAULT_PROTOCOL: ProtocolType = ('http', 'https')
 DEFAULT_READ_TIMEOUT = 10
 DEFAULT_RETRIES = 10
 DEFAULT_STATUS_FORCELIST: StatusForcelistType = (500, 502, 503, 504)
