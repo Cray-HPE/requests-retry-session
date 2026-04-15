@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Changed type hint for timeout arguments from `int` to `float` (`float` values
   already work fine, except for raising type check errors)
+- Change `Optional` to `| None` since all supported Python versions allow this syntax.
 
 ## [2.0.4] - 2026-04-14
 

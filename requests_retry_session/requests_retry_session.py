@@ -41,7 +41,6 @@ from .timeout_http_adapter import TimeoutHTTPAdapter
 from .retry_with_logs import RetryWithLogs
 
 if TYPE_CHECKING:
-    from typing import Optional
     from typing_extensions import Unpack
 
 DEFAULT_BACKOFF_FACTOR = 0.5
@@ -65,7 +64,7 @@ class RequestsRetryAdapterArgs(TypedDict, total=False):
 
 
 def requests_session(adapter: requests.adapters.HTTPAdapter,
-                     session: Optional[requests.Session] = None,
+                     session: requests.Session | None = None,
                      protocol: str = DEFAULT_PROTOCOL) -> requests.Session:
     session = session or requests.Session()
     # Must mount to http://
@@ -92,7 +91,7 @@ def requests_retry_adapter(
 
 
 def requests_retry_session(
-        session: Optional[requests.Session] = None,
+        session: requests.Session | None = None,
         protocol: str = DEFAULT_PROTOCOL,
         **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]
 ) -> requests.Session:

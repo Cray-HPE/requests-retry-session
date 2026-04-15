@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2024-2025 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2024-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -33,7 +33,7 @@ from .timeout_http_adapter import TimeoutHTTPAdapter
 
 if TYPE_CHECKING:
     from types import TracebackType
-    from typing import Iterator, Optional, Type
+    from typing import Iterator, Type
     from typing_extensions import Self, Unpack
 
 
@@ -45,17 +45,17 @@ class RetrySessionManager(AbstractContextManager):
     """
 
     def __init__(self,
-                 protocol: Optional[str] = None,
+                 protocol: str | None = None,
                  **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> None:
-        self._requests_adapter: Optional[TimeoutHTTPAdapter] = None
-        self._requests_session: Optional[requests.Session] = None
+        self._requests_adapter: TimeoutHTTPAdapter | None = None
+        self._requests_session: requests.Session | None = None
         self._requests_protocol: str = protocol if protocol is not None else DEFAULT_PROTOCOL
         self._requests_retry_adapter_kwargs: RequestsRetryAdapterArgs = adapter_kwargs
 
     def __exit__(  # pylint: disable=useless-return
-            self, exc_type: Optional[Type[BaseException]],
-            exc_val: Optional[BaseException],
-            exc_tb: Optional[TracebackType]) -> Optional[bool]:
+            self, exc_type: Type[BaseException] | None,
+            exc_val: BaseException | None,
+            exc_tb: TracebackType | None) -> bool | None:
         if self._requests_session is not None:
             self._requests_session.close()
             self._requests_session = None
@@ -86,7 +86,7 @@ class RetrySessionManager(AbstractContextManager):
 
 @contextmanager
 def retry_session_manager(
-    protocol: Optional[str] = None,
+    protocol: str | None = None,
     **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]
 ) -> Iterator[requests.Session]:
     """
