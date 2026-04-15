@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2024-2025 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2024-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -47,6 +47,9 @@ class RetrySessionManager(AbstractContextManager):
     def __init__(self,
                  protocol: Optional[str] = None,
                  **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> None:
+        """
+        If specified, protocol should omit the trailing "://" because it will be automatically appended later
+        """
         self._requests_adapter: Optional[TimeoutHTTPAdapter] = None
         self._requests_session: Optional[requests.Session] = None
         self._requests_protocol: str = protocol if protocol is not None else DEFAULT_PROTOCOL
@@ -91,6 +94,8 @@ def retry_session_manager(
 ) -> Iterator[requests.Session]:
     """
     Provides a context manager that will clean up both the session and the adapter on exit
+
+    If specified, protocol should omit the trailing "://" because it will be automatically appended later
     """
     requests_protocol = protocol if protocol is not None else DEFAULT_PROTOCOL
     with closing(requests_retry_adapter(**adapter_kwargs)) as adapter:
