@@ -25,9 +25,12 @@
 from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
+
 from urllib3 import Retry
+
 if TYPE_CHECKING:
     from types import TracebackType
+
     from typing_extensions import Self
     from urllib3 import BaseHTTPResponse
     from urllib3.connectionpool import ConnectionPool

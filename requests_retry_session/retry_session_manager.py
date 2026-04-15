@@ -25,6 +25,7 @@
 from __future__ import annotations
 from contextlib import closing, contextmanager, AbstractContextManager
 from typing import TYPE_CHECKING
+
 import requests
 
 from .requests_retry_session import requests_retry_adapter, requests_session, \
@@ -34,6 +35,7 @@ from .timeout_http_adapter import TimeoutHTTPAdapter
 if TYPE_CHECKING:
     from types import TracebackType
     from typing import Iterator, Type
+
     from typing_extensions import Self, Unpack
 
     from .requests_retry_session import ProtocolType
