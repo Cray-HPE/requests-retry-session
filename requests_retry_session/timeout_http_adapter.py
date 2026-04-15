@@ -51,7 +51,7 @@ if TYPE_CHECKING:
         cert: CertType
         proxies: ProxiesType
 
-    class _InitArgs(TypedDict, total=False):  # pylint: disable=missing-class-docstring
+    class _InitArgs(TypedDict, total=False):
         """
         The valid kwargs for HTTPAdapter.__init__()
         """
