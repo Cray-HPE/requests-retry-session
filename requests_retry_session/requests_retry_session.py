@@ -46,6 +46,7 @@ from .retry_with_logs import RetryWithLogs
 
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
+# protocol should omit the trailing "://" because it will be automatically appended
 DEFAULT_PROTOCOL = 'http'
 DEFAULT_READ_TIMEOUT = 10
 DEFAULT_RETRIES = 10
@@ -62,6 +63,9 @@ class RequestsRetryAdapterArgs(TypedDict, total=False):
 def requests_session(adapter: requests.adapters.HTTPAdapter,
                      session: Optional[requests.Session] = None,
                      protocol: str = DEFAULT_PROTOCOL) -> requests.Session:
+    """
+    protocol should omit the trailing "://" because it will be automatically appended
+    """
     session = session or requests.Session()
     # Must mount to http://
     # Mounting to only http will not work!
@@ -85,8 +89,13 @@ def requests_retry_adapter(
     return TimeoutHTTPAdapter(max_retries=retry, timeout=(connect_timeout, read_timeout))
 
 
-def requests_retry_session(session: Optional[requests.Session] = None,
-                           protocol: str = DEFAULT_PROTOCOL,
-                           **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> requests.Session:
+def requests_retry_session(
+        session: Optional[requests.Session] = None,
+        protocol: str = DEFAULT_PROTOCOL,
+        **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]
+) -> requests.Session:
+    """
+    protocol should omit the trailing "://" because it will be automatically appended later
+    """
     adapter = requests_retry_adapter(**adapter_kwargs)
     return requests_session(adapter=adapter, session=session, protocol=protocol)

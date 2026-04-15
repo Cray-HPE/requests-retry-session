@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2024-2025 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2024-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -38,13 +38,16 @@ class RetrySessionManager(AbstractContextManager):
     retry session only when needed, and to clean it up in their __exit__ function.
     This class is not thread safe.
     """
-    def __init__(self, protocol: Optional[str]=None,
-                 **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]):
-        self._requests_adapter = None
-        self._requests_session = None
-        self._requests_protocol = protocol if protocol is not None else DEFAULT_PROTOCOL
-        self._requests_retry_adapter_kwargs = adapter_kwargs
-
+    def __init__(self,
+                 protocol: Optional[str] = None,
+                 **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> None:
+        """
+        If specified, protocol should omit the trailing "://" because it will be automatically appended later
+        """
+        self._requests_adapter: Optional[TimeoutHTTPAdapter] = None
+        self._requests_session: Optional[requests.Session] = None
+        self._requests_protocol: str = protocol if protocol is not None else DEFAULT_PROTOCOL
+        self._requests_retry_adapter_kwargs: RequestsRetryAdapterArgs = adapter_kwargs
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self._requests_session is not None:
@@ -72,6 +75,8 @@ def retry_session_manager(protocol: Optional[str]=None,
                           **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> Iterator[None]:
     """
     Provides a context manager that will clean up both the session and the adapter on exit
+
+    If specified, protocol should omit the trailing "://" because it will be automatically appended later
     """
     requests_protocol = protocol if protocol is not None else DEFAULT_PROTOCOL
     with closing(requests_retry_adapter(**adapter_kwargs)) as adapter:
