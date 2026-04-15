@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2020-2022, 2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2020-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -25,10 +25,13 @@
 from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
+
 from urllib3 import Retry
+
 if TYPE_CHECKING:
     from types import TracebackType
     from typing import Optional
+
     from typing_extensions import Self
     from urllib3 import BaseHTTPResponse
     from urllib3.connectionpool import ConnectionPool

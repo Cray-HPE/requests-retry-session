@@ -24,6 +24,7 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
 from requests.adapters import HTTPAdapter
 
 if TYPE_CHECKING:

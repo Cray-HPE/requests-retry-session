@@ -29,4 +29,4 @@ from .requests_retry_session import requests_retry_adapter, requests_retry_sessi
 from .retry_session_manager import retry_session_manager, RetrySessionManager
 
 if TYPE_CHECKING:
-    from .requests_retry_session import ProtocolType, StatusForcelistType
+    from .requests_retry_session import AllowedMethodsType, ProtocolType, StatusForcelistType
