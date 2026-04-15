@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2022-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -21,7 +21,52 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
+
+from typing import TYPE_CHECKING
 from requests.adapters import HTTPAdapter
+
+if TYPE_CHECKING:
+    from typing import Mapping, Tuple, TypedDict, Union
+    from requests import PreparedRequest, Response
+    from requests.packages.urllib3.util.retry import Retry
+
+    # To simplify type hints
+    BytesOrStringType = Union[bytes, str]
+    TimeoutType = Union[float, Tuple[float, float], Tuple[float, None], None]
+    VerifyType = Union[bool, str]
+    CertType = Union[BytesOrStringType, Tuple[BytesOrStringType,
+                                              BytesOrStringType], None]
+    ProxiesType = Union[Mapping[str, str], None]
+
+    class _SendArgs(TypedDict, total=False):
+        """
+        The valid kwargs for HTTPAdapter.send()
+        """
+        stream: bool
+        timeout: TimeoutType
+        verify: VerifyType
+        cert: CertType
+        proxies: ProxiesType
+
+    class _InitArgs(TypedDict, total=False):  # pylint: disable=missing-class-docstring
+        """
+        The valid kwargs for HTTPAdapter.__init__()
+        """
+        pool_connections: int
+        pool_maxsize: int
+        max_retries: Union[Retry, int, None]
+        pool_block: bool
+
+class _NotPassed:  # pylint: disable=too-few-public-methods
+    """
+    A dummy class to let us distinguish between an argument not being passed versus
+    an argument explicitly being passed with a None value
+    """
+    pass
+
+
+_NOT_PASSED = _NotPassed()
+
 
 class TimeoutHTTPAdapter(HTTPAdapter):
     """
@@ -30,14 +75,43 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     causes our applications to sit and wait forever on a half open socket.
     """
 
-    def __init__(self, *args, **kwargs):
-        if "timeout" in kwargs:
-            self.timeout = kwargs["timeout"]
-            del kwargs["timeout"]
-        super().__init__(*args, **kwargs)
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+            self,
+            pool_connections: Union[int, _NotPassed] = _NOT_PASSED,
+            pool_maxsize: Union[int, _NotPassed] = _NOT_PASSED,
+            max_retries: Union[Retry, int, None, _NotPassed] = _NOT_PASSED,
+            pool_block: Union[bool, _NotPassed] = _NOT_PASSED,
+            timeout: TimeoutType = None) -> None:
+        self.timeout: TimeoutType = timeout
+        kwargs: _InitArgs = {}
+        if not isinstance(pool_connections, _NotPassed):
+            kwargs["pool_connections"] = pool_connections
+        if not isinstance(pool_maxsize, _NotPassed):
+            kwargs["pool_maxsize"] = pool_maxsize
+        if not isinstance(max_retries, _NotPassed):
+            kwargs["max_retries"] = max_retries
+        if not isinstance(pool_block, _NotPassed):
+            kwargs["pool_block"] = pool_block
+        super().__init__(**kwargs)
 
-    def send(self, request, **kwargs):
-        timeout = kwargs.get("timeout")
-        if timeout is None and hasattr(self, 'timeout'):
-            kwargs["timeout"] = self.timeout
+    def send(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+            self,
+            request: PreparedRequest,
+            stream: Union[bool, _NotPassed] = _NOT_PASSED,
+            timeout: Union[TimeoutType, _NotPassed] = _NOT_PASSED,
+            verify: Union[VerifyType, _NotPassed] = _NOT_PASSED,
+            cert: Union[CertType, _NotPassed] = _NOT_PASSED,
+            proxies: Union[ProxiesType, _NotPassed] = _NOT_PASSED) -> Response:
+        kwargs: _SendArgs = {
+            "timeout":
+            self.timeout if isinstance(timeout, _NotPassed) else timeout
+        }
+        if not isinstance(stream, _NotPassed):
+            kwargs["stream"] = stream
+        if not isinstance(verify, _NotPassed):
+            kwargs["verify"] = verify
+        if not isinstance(cert, _NotPassed):
+            kwargs["cert"] = cert
+        if not isinstance(proxies, _NotPassed):
+            kwargs["proxies"] = proxies
         return super().send(request, **kwargs)

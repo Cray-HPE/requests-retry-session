@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Added comments explaining that protocol arguments must omit the trailing "://"
+- Added explicit type annotations for `TimeoutHTTPAdapter.__init__()`
 
 ### Changed
 - Changed type hint for timeout arguments from `int` to `float` (`float` values
