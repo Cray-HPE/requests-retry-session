@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Changed type hint for timeout arguments from `int` to `float` (`float` values
+  already work fine, except for raising type check errors)
+
 ## [1.0.5] - 2026-04-14
 
 ### Changed
