@@ -44,12 +44,13 @@ if TYPE_CHECKING:
     from collections.abc import Collection
     from typing_extensions import Unpack
 
+    type ProtocolType = str
     type StatusForcelistType = Collection[int]
 
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
 # protocol should omit the trailing "://" because it will be automatically appended
-DEFAULT_PROTOCOL = 'http'
+DEFAULT_PROTOCOL: ProtocolType = 'http'
 DEFAULT_READ_TIMEOUT = 10
 DEFAULT_RETRIES = 10
 DEFAULT_STATUS_FORCELIST: StatusForcelistType = (500, 502, 503, 504)
@@ -69,7 +70,7 @@ class RequestsRetryAdapterArgs(TypedDict, total=False):
 
 def requests_session(adapter: requests.adapters.HTTPAdapter,
                      session: requests.Session | None = None,
-                     protocol: str = DEFAULT_PROTOCOL) -> requests.Session:
+                     protocol: ProtocolType = DEFAULT_PROTOCOL) -> requests.Session:
     """
     protocol should omit the trailing "://" because it will be automatically appended
     """
@@ -99,7 +100,7 @@ def requests_retry_adapter(
 
 def requests_retry_session(
         session: requests.Session | None = None,
-        protocol: str = DEFAULT_PROTOCOL,
+        protocol: ProtocolType = DEFAULT_PROTOCOL,
         **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]
 ) -> requests.Session:
     """
