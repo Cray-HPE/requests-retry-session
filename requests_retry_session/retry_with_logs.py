@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2020-2022, 2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2020-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -28,7 +28,6 @@ from typing import TYPE_CHECKING
 from urllib3 import Retry
 if TYPE_CHECKING:
     from types import TracebackType
-    from typing import Optional
     from typing_extensions import Self
     from urllib3 import BaseHTTPResponse
     from urllib3.connectionpool import ConnectionPool
@@ -64,12 +63,12 @@ class RetryWithLogs(Retry):
         return super().new(**kwargs)
 
     def increment(self,
-                  method: Optional[str] = None,
-                  url: Optional[str] = None,
-                  response: Optional[BaseHTTPResponse] = None,
-                  error: Optional[Exception] = None,
-                  _pool: Optional[ConnectionPool] = None,
-                  _stacktrace: Optional[TracebackType] = None) -> Self:
+                  method: str | None = None,
+                  url: str | None = None,
+                  response: BaseHTTPResponse | None = None,
+                  error: Exception | None = None,
+                  _pool: ConnectionPool | None = None,
+                  _stacktrace: TracebackType | None = None) -> Self:
         if _pool is None:
             raise TypeError(f"_pool argument should not be None. {locals()}")
         if url is None:
