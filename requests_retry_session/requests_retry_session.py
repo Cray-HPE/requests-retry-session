@@ -43,19 +43,19 @@ from .timeout_http_adapter import TimeoutHTTPAdapter
 from .retry_with_logs import RetryWithLogs
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
-    from typing import Optional
+    from collections.abc import Collection, Iterable
+    from typing import Optional, Union
 
     from typing_extensions import TypeAlias, Unpack
 
     AllowedMethodsType: TypeAlias = Collection[str]
-    ProtocolType: TypeAlias = str
+    ProtocolType: TypeAlias = Union[str, Iterable[str]]
     StatusForcelistType: TypeAlias = Collection[int]
 
 DEFAULT_ALLOWED_METHODS: AllowedMethodsType = Retry.DEFAULT_ALLOWED_METHODS
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
-# protocol should omit the trailing "://" because it will be automatically appended
+# Protocols should omit the trailing "://" because it will be automatically appended
 DEFAULT_PROTOCOL: ProtocolType = 'http'
 DEFAULT_READ_TIMEOUT = 10
 DEFAULT_RETRIES = 10
@@ -79,12 +79,15 @@ def requests_session(adapter: requests.adapters.HTTPAdapter,
                      session: Optional[requests.Session] = None,
                      protocol: ProtocolType = DEFAULT_PROTOCOL) -> requests.Session:
     """
-    protocol should omit the trailing "://" because it will be automatically appended
+    Protocols should omit the trailing "://" because it will be automatically appended
     """
+    if isinstance(protocol, str):
+        return requests_session(adapter=adapter, session=session, protocol=[protocol])
     session = session or requests.Session()
-    # Must mount to <protocol>://
-    # Mounting to only <protocol> will not work!
-    session.mount(f"{protocol}://", adapter)
+    for proto in protocol:
+        # Must mount to <proto>://
+        # Mounting to only <proto> will not work!
+        session.mount(f"{proto}://", adapter)
     return session
 
 
@@ -113,7 +116,7 @@ def requests_retry_session(
         **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]
 ) -> requests.Session:
     """
-    protocol should omit the trailing "://" because it will be automatically appended later
+    Protocols should omit the trailing "://" because it will be automatically appended later
     """
     adapter = requests_retry_adapter(**adapter_kwargs)
     return requests_session(adapter=adapter,

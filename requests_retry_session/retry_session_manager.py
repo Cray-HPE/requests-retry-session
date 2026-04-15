@@ -51,7 +51,7 @@ class RetrySessionManager(AbstractContextManager):
                  protocol: Optional[ProtocolType] = None,
                  **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> None:
         """
-        If specified, protocol should omit the trailing "://" because it will be automatically appended later
+        If specified, protocols should omit the trailing "://" because it will be automatically appended later
         """
         self._requests_adapter: Optional[TimeoutHTTPAdapter] = None
         self._requests_session: Optional[requests.Session] = None
@@ -98,7 +98,7 @@ def retry_session_manager(
     """
     Provides a context manager that will clean up both the session and the adapter on exit
 
-    If specified, protocol should omit the trailing "://" because it will be automatically appended later
+    If specified, protocols should omit the trailing "://" because it will be automatically appended later
     """
     requests_protocol = protocol if protocol is not None else DEFAULT_PROTOCOL
     with closing(requests_retry_adapter(**adapter_kwargs)) as adapter:
