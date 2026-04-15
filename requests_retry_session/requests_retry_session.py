@@ -34,15 +34,19 @@ Created on Nov 2, 2020
 @author: jsl
 """
 
-# Because we want to support Python 3.6 and 3.9, use old-style type hint syntax
-from typing import Optional, Tuple
-from typing_extensions import TypedDict, Unpack
-
 import requests
 
 from .timeout_http_adapter import TimeoutHTTPAdapter
 from .retry_with_logs import RetryWithLogs
 
+if TYPE_CHECKING:
+    from collections.abc import Collection
+    # Because we want to support Python 3.6 and 3.9, use old-style type hint syntax
+    from typing import Optional
+
+    from typing_extensions import TypeAlias, TypedDict, Unpack
+
+    StatusForcelistType: TypeAlias = Collection[int]
 
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
@@ -50,12 +54,12 @@ DEFAULT_CONNECT_TIMEOUT = 3
 DEFAULT_PROTOCOL = 'http'
 DEFAULT_READ_TIMEOUT = 10
 DEFAULT_RETRIES = 10
-DEFAULT_STATUS_FORCELIST = (500, 502, 503, 504)
+DEFAULT_STATUS_FORCELIST: StatusForcelistType = (500, 502, 503, 504)
 
 class RequestsRetryAdapterArgs(TypedDict, total=False):
     retries: int
     backoff_factor: float
-    status_forcelist: Tuple[int, ...]
+    status_forcelist: StatusForcelistType
     connect_timeout: float
     read_timeout: float
 
@@ -76,7 +80,7 @@ def requests_session(adapter: requests.adapters.HTTPAdapter,
 def requests_retry_adapter(
         retries: int = DEFAULT_RETRIES,
         backoff_factor: float = DEFAULT_BACKOFF_FACTOR,
-        status_forcelist: Tuple[int, ...] = DEFAULT_STATUS_FORCELIST,
+        status_forcelist: StatusForcelistType = DEFAULT_STATUS_FORCELIST,
         connect_timeout: float = DEFAULT_CONNECT_TIMEOUT,
         read_timeout: float = DEFAULT_READ_TIMEOUT) -> TimeoutHTTPAdapter:
     retry = RetryWithLogs(
