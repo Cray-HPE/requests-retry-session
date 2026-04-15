@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added explicit type annotations for `TimeoutHTTPAdapter.__init__()`
 - Mark type definitions as `TypeAlias`
 - Add `ProtocolType`, `StatusForcelistType` to simplify type annotations
+- Added support for specifying multiple protocols
 
 ### Changed
 - Changed type hint for timeout arguments from `int` to `float` (`float` values
