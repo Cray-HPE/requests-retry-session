@@ -48,6 +48,7 @@ from .retry_with_logs import RetryWithLogs
 
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
+# protocol should omit the trailing "://" because it will be automatically appended
 DEFAULT_PROTOCOL = 'http'
 DEFAULT_READ_TIMEOUT = 10
 DEFAULT_RETRIES = 10
@@ -70,6 +71,8 @@ def requests_session(adapter,
                      session = None,
                      protocol = DEFAULT_PROTOCOL):
     """
+    protocol should omit the trailing "://" because it will be automatically appended
+
     adapter: requests.adapters.HTTPAdapter,
     session: Optional[requests.Session]
     protocol: str
@@ -113,6 +116,8 @@ def requests_retry_session(
         **adapter_kwargs
 ):
     """
+    protocol should omit the trailing "://" because it will be automatically appended later
+
     session: Optional[requests.Session]
     protocol: str
     **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]

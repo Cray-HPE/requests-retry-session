@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added basic build time tests to catch bugs that break the module in a basic way,
   for any of the supported Python versions
+- Added comments explaining that protocol arguments must omit the trailing "://"
 
 ### Changed
 - Backported improvements from 1.0 branch, to keep v0.5 and v1.0 as consistent as possible,
