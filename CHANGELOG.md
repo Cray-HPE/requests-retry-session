@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added comments explaining that protocol arguments must omit the trailing "://"
+
 ### Changed
 - Changed type hint for timeout arguments from `int` to `float` (`float` values
   already work fine, except for raising type check errors)
