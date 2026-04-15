@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from typing import Iterator, Type
     from typing_extensions import Self, Unpack
 
+    from .requests_retry_session import ProtocolType
 
 class RetrySessionManager(AbstractContextManager):
     """
@@ -45,14 +46,14 @@ class RetrySessionManager(AbstractContextManager):
     """
 
     def __init__(self,
-                 protocol: str | None = None,
+                 protocol: ProtocolType | None = None,
                  **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> None:
         """
         If specified, protocol should omit the trailing "://" because it will be automatically appended later
         """
         self._requests_adapter: TimeoutHTTPAdapter | None = None
         self._requests_session: requests.Session | None = None
-        self._requests_protocol: str = protocol if protocol is not None else DEFAULT_PROTOCOL
+        self._requests_protocol: ProtocolType = protocol if protocol is not None else DEFAULT_PROTOCOL
         self._requests_retry_adapter_kwargs: RequestsRetryAdapterArgs = adapter_kwargs
 
     def __exit__(  # pylint: disable=useless-return
@@ -89,7 +90,7 @@ class RetrySessionManager(AbstractContextManager):
 
 @contextmanager
 def retry_session_manager(
-    protocol: str | None = None,
+    protocol: ProtocolType | None = None,
     **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]
 ) -> Iterator[requests.Session]:
     """
