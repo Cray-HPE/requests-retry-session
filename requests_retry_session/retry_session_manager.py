@@ -23,14 +23,18 @@
 #
 
 from contextlib import closing, contextmanager, AbstractContextManager
-from typing import Iterator, Optional, TYPE_CHECKING
-from typing_extensions import Self, Unpack
-
-import requests
+from typing import TYPE_CHECKING
 
 from .requests_retry_session import requests_retry_adapter, requests_session, \
-                                    RequestsRetryAdapterArgs, DEFAULT_PROTOCOL
+                                    DEFAULT_PROTOCOL
 
+if TYPE_CHECKING:
+    from typing import Iterator, Optional
+
+    import requests
+    from typing_extensions import Self, Unpack
+
+    from .requests_retry_session import ProtocolType, RequestsRetryAdapterArgs
 
 class RetrySessionManager(AbstractContextManager):
     """
@@ -39,14 +43,14 @@ class RetrySessionManager(AbstractContextManager):
     This class is not thread safe.
     """
     def __init__(self,
-                 protocol: Optional[str] = None,
+                 protocol: Optional[ProtocolType] = None,
                  **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> None:
         """
         If specified, protocol should omit the trailing "://" because it will be automatically appended later
         """
         self._requests_adapter: Optional[TimeoutHTTPAdapter] = None
         self._requests_session: Optional[requests.Session] = None
-        self._requests_protocol: str = protocol if protocol is not None else DEFAULT_PROTOCOL
+        self._requests_protocol: ProtocolType = protocol if protocol is not None else DEFAULT_PROTOCOL
         self._requests_retry_adapter_kwargs: RequestsRetryAdapterArgs = adapter_kwargs
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -71,8 +75,10 @@ class RetrySessionManager(AbstractContextManager):
 
 
 @contextmanager
-def retry_session_manager(protocol: Optional[str]=None,
-                          **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]) -> Iterator[None]:
+def retry_session_manager(
+    protocol: Optional[ProtocolType]=None,
+    **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]
+) -> Iterator[requests.Session]:
     """
     Provides a context manager that will clean up both the session and the adapter on exit
 

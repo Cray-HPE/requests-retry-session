@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added comments explaining that protocol arguments must omit the trailing "://"
 - Added explicit type annotations for `TimeoutHTTPAdapter.__init__()`
 - Mark type definitions as `TypeAlias`
-- Add `StatusForcelistType` to simplify type annotations
+- Add `ProtocolType`, `StatusForcelistType` to simplify type annotations
 
 ### Changed
 - Changed type hint for timeout arguments from `int` to `float` (`float` values
