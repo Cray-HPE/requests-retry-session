@@ -62,8 +62,8 @@ class RequestsRetryAdapterArgs(TypedDict, total=False):
     retries: int
     backoff_factor: float
     status_forcelist: Tuple[int, ...]
-    connect_timeout: int
-    read_timeout: int
+    connect_timeout: float
+    read_timeout: float
 
 
 def requests_session(adapter,
@@ -92,8 +92,8 @@ def requests_retry_adapter(
     retries: int
     backoff_factor: float
     status_forcelist: Tuple[int, ...]
-    connect_timeout: int
-    read_timeout: int
+    connect_timeout: float
+    read_timeout: float
     -> .timeout_http_adapter.TimeoutHTTPAdapter:
     """
     retry = RetryWithLogs(
