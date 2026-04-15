@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2024-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,6 +22,11 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+from typing import TYPE_CHECKING
+
 from .requests_retry_session import requests_retry_adapter, requests_retry_session, \
                                     requests_session, RequestsRetryAdapterArgs
 from .retry_session_manager import retry_session_manager, RetrySessionManager
+
+if TYPE_CHECKING:
+    from .requests_retry_session import StatusForcelistType
