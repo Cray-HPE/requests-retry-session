@@ -32,12 +32,12 @@ if TYPE_CHECKING:
     from urllib3 import Retry
 
     # To simplify type hints
-    BytesOrStringType = bytes | str
-    TimeoutType = float | tuple[float, float] | tuple[float, None] | None
-    VerifyType = bool | str
-    CertType = BytesOrStringType | tuple[BytesOrStringType,
-                                         BytesOrStringType] | None
-    ProxiesType = Mapping[str, str] | None
+    type BytesOrStringType = bytes | str
+    type TimeoutType = float | tuple[float, float] | tuple[float, None] | None
+    type VerifyType = bool | str
+    type CertType = BytesOrStringType | tuple[BytesOrStringType,
+                                              BytesOrStringType] | None
+    type ProxiesType = Mapping[str, str] | None
 
     class _SendArgs(TypedDict, total=False):
         """
