@@ -24,10 +24,12 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
 from requests.adapters import HTTPAdapter
 
 if TYPE_CHECKING:
     from typing import Mapping, TypeAlias, TypedDict
+
     from requests import PreparedRequest, Response
     from urllib3 import Retry
 
