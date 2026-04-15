@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2022-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -29,6 +29,7 @@ from requests.adapters import HTTPAdapter
 if TYPE_CHECKING:
     from typing import Mapping, TypedDict
     from requests import PreparedRequest, Response
+    from urllib3 import Retry
 
     # To simplify type hints
     BytesOrStringType = bytes | str
@@ -38,15 +39,30 @@ if TYPE_CHECKING:
                                          BytesOrStringType] | None
     ProxiesType = Mapping[str, str] | None
 
-    class _SendArgs(TypedDict, total=False):  # pylint: disable=missing-class-docstring
+    class _SendArgs(TypedDict, total=False):
+        """
+        The valid kwargs for HTTPAdapter.send()
+        """
         stream: bool
         timeout: TimeoutType
         verify: VerifyType
         cert: CertType
         proxies: ProxiesType
 
+    class _InitArgs(TypedDict, total=False):  # pylint: disable=missing-class-docstring
+        """
+        The valid kwargs for HTTPAdapter.__init__()
+        """
+        pool_connections: int
+        pool_maxsize: int
+        max_retries: Retry | int | None
+        pool_block: bool
 
-class _NotPassed:  # pylint: disable=missing-class-docstring,too-few-public-methods
+class _NotPassed:  # pylint: disable=too-few-public-methods
+    """
+    A dummy class to let us distinguish between an argument not being passed versus
+    an argument explicitly being passed with a None value
+    """
     pass
 
 
@@ -60,13 +76,24 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     causes our applications to sit and wait forever on a half open socket.
     """
 
-    def __init__(  # type: ignore[no-untyped-def]
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
             self,
-            *args,
-            timeout: TimeoutType = None,
-            **kwargs) -> None:
+            pool_connections: int | _NotPassed = _NOT_PASSED,
+            pool_maxsize: int | _NotPassed = _NOT_PASSED,
+            max_retries: Retry | int | None | _NotPassed = _NOT_PASSED,
+            pool_block: bool | _NotPassed = _NOT_PASSED,
+            timeout: TimeoutType = None) -> None:
         self.timeout: TimeoutType = timeout
-        super().__init__(*args, **kwargs)
+        kwargs: _InitArgs = {}
+        if not isinstance(pool_connections, _NotPassed):
+            kwargs["pool_connections"] = pool_connections
+        if not isinstance(pool_maxsize, _NotPassed):
+            kwargs["pool_maxsize"] = pool_maxsize
+        if not isinstance(max_retries, _NotPassed):
+            kwargs["max_retries"] = max_retries
+        if not isinstance(pool_block, _NotPassed):
+            kwargs["pool_block"] = pool_block
+        super().__init__(**kwargs)
 
     def send(  # pylint: disable=too-many-arguments,too-many-positional-arguments
             self,
