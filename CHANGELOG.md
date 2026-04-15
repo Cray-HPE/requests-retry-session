@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added support for specifying multiple protocols
+
 ## [5.0.2] - 2026-04-15
 
 ### Added
