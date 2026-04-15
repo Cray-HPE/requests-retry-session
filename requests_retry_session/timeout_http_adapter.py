@@ -27,16 +27,18 @@ from requests.adapters import HTTPAdapter
 
 if TYPE_CHECKING:
     from typing import Mapping, Tuple, TypedDict, Union
+
     from requests import PreparedRequest, Response
     from requests.packages.urllib3.util.retry import Retry
+    from typing_extensions import TypeAlias
 
     # To simplify type hints
-    BytesOrStringType = Union[bytes, str]
-    TimeoutType = Union[float, Tuple[float, float], Tuple[float, None], None]
-    VerifyType = Union[bool, str]
-    CertType = Union[BytesOrStringType, Tuple[BytesOrStringType,
-                                              BytesOrStringType], None]
-    ProxiesType = Union[Mapping[str, str], None]
+    BytesOrStringType: TypeAlias = Union[bytes, str]
+    TimeoutType: TypeAlias = Union[float, Tuple[float, float], Tuple[float, None], None]
+    VerifyType: TypeAlias = Union[bool, str]
+    CertType: TypeAlias = Union[BytesOrStringType, Tuple[BytesOrStringType,
+                                                         BytesOrStringType], None]
+    ProxiesType: TypeAlias = Union[Mapping[str, str], None]
 
     class _SendArgs(TypedDict, total=False):
         """
