@@ -41,7 +41,12 @@ from .timeout_http_adapter import TimeoutHTTPAdapter
 from .retry_with_logs import RetryWithLogs
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+    from typing import TypeAlias
+
     from typing_extensions import Unpack
+
+    StatusForcelistType: TypeAlias = Collection[int]
 
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
@@ -49,7 +54,7 @@ DEFAULT_CONNECT_TIMEOUT = 3
 DEFAULT_PROTOCOL = 'http'
 DEFAULT_READ_TIMEOUT = 10
 DEFAULT_RETRIES = 10
-DEFAULT_STATUS_FORCELIST = (500, 502, 503, 504)
+DEFAULT_STATUS_FORCELIST: StatusForcelistType = (500, 502, 503, 504)
 
 
 class RequestsRetryAdapterArgs(TypedDict, total=False):
@@ -59,7 +64,7 @@ class RequestsRetryAdapterArgs(TypedDict, total=False):
     """
     retries: int
     backoff_factor: float
-    status_forcelist: tuple[int, ...]
+    status_forcelist: StatusForcelistType
     connect_timeout: float
     read_timeout: float
 
@@ -80,7 +85,7 @@ def requests_session(adapter: requests.adapters.HTTPAdapter,
 def requests_retry_adapter(
         retries: int = DEFAULT_RETRIES,
         backoff_factor: float = DEFAULT_BACKOFF_FACTOR,
-        status_forcelist: tuple[int, ...] = DEFAULT_STATUS_FORCELIST,
+        status_forcelist: StatusForcelistType = DEFAULT_STATUS_FORCELIST,
         connect_timeout: float = DEFAULT_CONNECT_TIMEOUT,
         read_timeout: float = DEFAULT_READ_TIMEOUT) -> TimeoutHTTPAdapter:
     retry = RetryWithLogs(
