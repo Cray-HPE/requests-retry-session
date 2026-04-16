@@ -152,6 +152,30 @@ pipeline {
             }
         }
 
+        stage('Test modules') {
+            matrix {
+                axes {
+                    axis {
+                        name 'PY_VERSION'
+                        values '3.9', '3.10', '3.11', '3.12', '3.13'
+                    }
+                }
+
+                environment {
+                    PY_VERSION = "${PY_VERSION}"
+                }
+
+                stages {
+                    stage('Test Python module') {
+                        steps {
+                            sh "make pymod_test_docker_build"
+                            sh "make pymod_test_docker_run"
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Publish Python module') {
             agent {
                 docker {
