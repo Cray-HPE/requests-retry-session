@@ -94,7 +94,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 self._send_ok()
             else:
                 self._send_err(522)
-                SENT_SC[522]=True               
+                SENT_SC[522]=True
             return
 
         if self.path == ONCE_523_URI:
@@ -102,7 +102,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 self._send_ok()
             else:
                 self._send_err(523)
-                SENT_SC[523]=True               
+                SENT_SC[523]=True
             return
 
         self._send_err(550)
