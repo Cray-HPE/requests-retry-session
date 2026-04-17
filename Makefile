@@ -38,7 +38,7 @@ PYTHON_BIN := python$(PY_VERSION)
 PYLINT_VENV_BASE_DIR ?= pylint-venv
 PYLINT_VENV ?= $(PYLINT_VENV_BASE_DIR)/$(PY_VERSION)
 PYLINT_VENV_PYBIN ?= $(PYLINT_VENV)/bin/python3
-PIP_INSTALL_ARGS ?= --trusted-host arti.hpc.amslabs.hpecorp.net --trusted-host artifactory.algol60.net --index-url https://arti.hpc.amslabs.hpecorp.net:443/artifactory/api/pypi/pypi-remote/simple --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple --no-cache
+PIP_INSTALL_ARGS ?= --no-cache
 
 all : runbuildprep lint pymod
 rpm: rpm_prepare rpm_package_source rpm_build_source rpm_build
