@@ -1,3 +1,5 @@
 mypy
 pylint
 types-requests
+types-urllib3 ; python_version < "3.9"
+-c validate-constraints.txt
