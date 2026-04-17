@@ -37,10 +37,10 @@ from __future__ import annotations
 from typing import TypedDict, TYPE_CHECKING
 
 import requests
-from urllib3 import Retry
 
-from .timeout_http_adapter import TimeoutHTTPAdapter
 from .retry_with_logs import RetryWithLogs
+from .timeout_http_adapter import TimeoutHTTPAdapter
+from .utils import NotPassed, NOT_PASSED
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Iterable
@@ -51,7 +51,18 @@ if TYPE_CHECKING:
     type ProtocolType = str | Iterable[str]
     type StatusForcelistType = Collection[int]
 
-DEFAULT_ALLOWED_METHODS: AllowedMethodsType = Retry.DEFAULT_ALLOWED_METHODS
+    class _RetryArgs(TypedDict, total=False):
+        """
+        The valid kwargs for urllib3.Retry.__init__()
+        """
+        total: int
+        read: int
+        connect: int
+        backoff_factor: float
+        status_forcelist: StatusForcelistType
+        allowed_methods: AllowedMethodsType
+
+
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
 # Protocols should omit the trailing "://" because it will be automatically appended
@@ -96,15 +107,17 @@ def requests_retry_adapter(
         status_forcelist: StatusForcelistType = DEFAULT_STATUS_FORCELIST,
         connect_timeout: float = DEFAULT_CONNECT_TIMEOUT,
         read_timeout: float = DEFAULT_READ_TIMEOUT,
-        allowed_methods: AllowedMethodsType = DEFAULT_ALLOWED_METHODS) -> TimeoutHTTPAdapter:
-    retry = RetryWithLogs(
-        total=retries,
-        read=retries,
-        connect=retries,
-        backoff_factor=backoff_factor,
-        status_forcelist=status_forcelist,
-        allowed_methods=allowed_methods
-    )
+        allowed_methods: AllowedMethodsType | NotPassed = NOT_PASSED
+) -> TimeoutHTTPAdapter:
+    retry_kwargs: _RetryArgs = {
+        "total": retries,
+        "read": retries,
+        "connect": retries,
+        "backoff_factor": backoff_factor,
+        "status_forcelist": status_forcelist }
+    if not isinstance(allowed_methods, NotPassed):
+        retry_kwargs["allowed_methods"] = allowed_methods
+    retry = RetryWithLogs(**retry_kwargs)
     return TimeoutHTTPAdapter(max_retries=retry,
                               timeout=(connect_timeout, read_timeout))
 
