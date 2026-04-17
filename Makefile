@@ -27,6 +27,7 @@
 NAME ?= requests-retry-session
 RPM_VERSION ?= $(shell head -1 .version)
 RPM_NAME ?= ${NAME}
+DOCKER_VERSION ?= $(shell head -1 .docker_version)
 
 SPEC_FILE ?= ${NAME}.spec
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
@@ -38,12 +39,17 @@ PYTHON_BIN := python$(PY_VERSION)
 PYLINT_VENV_BASE_DIR ?= pylint-venv
 PYLINT_VENV ?= $(PYLINT_VENV_BASE_DIR)/$(PY_VERSION)
 PYLINT_VENV_PYBIN ?= $(PYLINT_VENV)/bin/python3
-PIP_INSTALL_ARGS ?= --trusted-host arti.hpc.amslabs.hpecorp.net --trusted-host artifactory.algol60.net --index-url https://arti.hpc.amslabs.hpecorp.net:443/artifactory/api/pypi/pypi-remote/simple --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple --no-cache
+PIP_INSTALL_ARGS ?= --no-cache
+
+ifneq ($(wildcard ${HOME}/.netrc),)
+        DOCKER_ARGS ?= --secret id=netrc,src=${HOME}/.netrc
+endif
 
 all : runbuildprep lint pymod
 rpm: rpm_prepare rpm_package_source rpm_build_source rpm_build
 pymod: pymod_build pymod_validate
 pymod_validate: pymod_validate_setup pymod_validate_pylint_error pymod_validate_pylint_full pymod_validate_mypy
+pymod_test: pymod_test_docker_build pymod_test_docker_run
 
 runbuildprep:
 		./cms_meta_tools/scripts/runBuildPrep.sh
@@ -83,6 +89,16 @@ pymod_validate_mypy:
 			--no-sqlite-cache \
 			--show-traceback \
 			requests_retry_session
+
+pymod_test_docker_build:
+		docker build \
+			--pull ${DOCKER_ARGS} \
+			--tag 'pytest-$(PY_VERSION):$(DOCKER_VERSION)' \
+			--build-arg PY_VERSION=$(PY_VERSION) \
+			.
+
+pymod_test_docker_run:
+		PY_VERSION=$(PY_VERSION) DOCKER_VERSION=${DOCKER_VERSION} ./run_test_rrs.sh
 
 rpm_prepare:
 		rm -rf $(BUILD_DIR)
