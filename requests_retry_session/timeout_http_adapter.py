@@ -69,7 +69,9 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         self.timeout: TimeoutType = timeout
         super().__init__(*args, **kwargs)
 
-    def send(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    # bad-option-value needed because too-many-positional-arguments does not exist for all
+    # pylint versions, and in that case, pylint raises a bad-option-value error
+    def send(  # pylint: disable=bad-option-value,too-many-arguments,too-many-positional-arguments
             self,
             request: PreparedRequest,
             stream: Union[bool, _NotPassed] = _NOT_PASSED,
