@@ -28,11 +28,11 @@ from typing import Optional
 
 from typing_extensions import Self
 from urllib3 import Retry
+from urllib3.connectionpool import ConnectionPool
 try:
-    from urllib3 import BaseHTTPResponse, ConnectionPool  # pylint: disable=import-error
+    from urllib3 import BaseHTTPResponse  # pylint: disable=import-error
 except ImportError:
-    from urllib3.connectionpool import ConnectionPool
-    from urllib3.response import HTTPResponse as BaseHTTPResponse
+    from urllib3 import HTTPResponse as BaseHTTPResponse
 
 
 LOGGER = logging.getLogger(__name__)
