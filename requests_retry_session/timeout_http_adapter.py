@@ -27,6 +27,8 @@ from typing import TYPE_CHECKING
 
 from requests.adapters import HTTPAdapter
 
+from .utils import NotPassed, NOT_PASSED
+
 if TYPE_CHECKING:
     from typing import Mapping, TypedDict
 
@@ -51,7 +53,7 @@ if TYPE_CHECKING:
         cert: CertType
         proxies: ProxiesType
 
-    class _InitArgs(TypedDict, total=False):  # pylint: disable=missing-class-docstring
+    class _InitArgs(TypedDict, total=False):
         """
         The valid kwargs for HTTPAdapter.__init__()
         """
@@ -59,16 +61,6 @@ if TYPE_CHECKING:
         pool_maxsize: int
         max_retries: Retry | int | None
         pool_block: bool
-
-class _NotPassed:  # pylint: disable=too-few-public-methods
-    """
-    A dummy class to let us distinguish between an argument not being passed versus
-    an argument explicitly being passed with a None value
-    """
-    pass
-
-
-_NOT_PASSED = _NotPassed()
 
 
 class TimeoutHTTPAdapter(HTTPAdapter):
@@ -80,41 +72,41 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
     def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
             self,
-            pool_connections: int | _NotPassed = _NOT_PASSED,
-            pool_maxsize: int | _NotPassed = _NOT_PASSED,
-            max_retries: Retry | int | None | _NotPassed = _NOT_PASSED,
-            pool_block: bool | _NotPassed = _NOT_PASSED,
+            pool_connections: int | NotPassed = NOT_PASSED,
+            pool_maxsize: int | NotPassed = NOT_PASSED,
+            max_retries: Retry | int | None | NotPassed = NOT_PASSED,
+            pool_block: bool | NotPassed = NOT_PASSED,
             timeout: TimeoutType = None) -> None:
         self.timeout: TimeoutType = timeout
         kwargs: _InitArgs = {}
-        if not isinstance(pool_connections, _NotPassed):
+        if not isinstance(pool_connections, NotPassed):
             kwargs["pool_connections"] = pool_connections
-        if not isinstance(pool_maxsize, _NotPassed):
+        if not isinstance(pool_maxsize, NotPassed):
             kwargs["pool_maxsize"] = pool_maxsize
-        if not isinstance(max_retries, _NotPassed):
+        if not isinstance(max_retries, NotPassed):
             kwargs["max_retries"] = max_retries
-        if not isinstance(pool_block, _NotPassed):
+        if not isinstance(pool_block, NotPassed):
             kwargs["pool_block"] = pool_block
         super().__init__(**kwargs)
 
     def send(  # pylint: disable=too-many-arguments,too-many-positional-arguments
             self,
             request: PreparedRequest,
-            stream: bool | _NotPassed = _NOT_PASSED,
-            timeout: TimeoutType | _NotPassed = _NOT_PASSED,
-            verify: VerifyType | _NotPassed = _NOT_PASSED,
-            cert: CertType | _NotPassed = _NOT_PASSED,
-            proxies: ProxiesType | _NotPassed = _NOT_PASSED) -> Response:
+            stream: bool | NotPassed = NOT_PASSED,
+            timeout: TimeoutType | NotPassed = NOT_PASSED,
+            verify: VerifyType | NotPassed = NOT_PASSED,
+            cert: CertType | NotPassed = NOT_PASSED,
+            proxies: ProxiesType | NotPassed = NOT_PASSED) -> Response:
         kwargs: _SendArgs = {
             "timeout":
-            self.timeout if isinstance(timeout, _NotPassed) else timeout
+            self.timeout if isinstance(timeout, NotPassed) else timeout
         }
-        if not isinstance(stream, _NotPassed):
+        if not isinstance(stream, NotPassed):
             kwargs["stream"] = stream
-        if not isinstance(verify, _NotPassed):
+        if not isinstance(verify, NotPassed):
             kwargs["verify"] = verify
-        if not isinstance(cert, _NotPassed):
+        if not isinstance(cert, NotPassed):
             kwargs["cert"] = cert
-        if not isinstance(proxies, _NotPassed):
+        if not isinstance(proxies, NotPassed):
             kwargs["proxies"] = proxies
         return super().send(request, **kwargs)
