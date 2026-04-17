@@ -2,7 +2,7 @@
  *
  *  MIT License
  *
- *  (C) Copyright 2024-2025 Hewlett Packard Enterprise Development LP
+ *  (C) Copyright 2024-2026 Hewlett Packard Enterprise Development LP
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a
  *  copy of this software and associated documentation files (the "Software"),
@@ -109,6 +109,8 @@ pipeline {
             matrix {
                 axes {
                     axis {
+                        // The same Python versions should be listed for the
+                        // the "Build RPMs", "Test modules", and "Publish RPMs" stages
                         name 'PY_VERSION'
                         values '3.13'
                     }
@@ -152,6 +154,32 @@ pipeline {
             }
         }
 
+        stage('Test modules') {
+            matrix {
+                axes {
+                    axis {
+                        // The same Python versions should be listed for the
+                        // the "Build RPMs", "Test modules", and "Publish RPMs" stages
+                        name 'PY_VERSION'
+                        values '3.13'
+                    }
+                }
+
+                environment {
+                    PY_VERSION = "${PY_VERSION}"
+                }
+
+                stages {
+                    stage('Test Python module') {
+                        steps {
+                            sh "make pymod_test_docker_build"
+                            sh "make pymod_test_docker_run"
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Publish Python module') {
             agent {
                 docker {
@@ -169,6 +197,8 @@ pipeline {
             matrix {
                 axes {
                     axis {
+                        // The same Python versions should be listed for the
+                        // the "Build RPMs", "Test modules", and "Publish RPMs" stages
                         name 'PY_VERSION'
                         values '3.13'
                     }
