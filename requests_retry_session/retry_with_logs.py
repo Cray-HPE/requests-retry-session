@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2020-2022, 2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2020-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -23,7 +23,10 @@
 #
 
 import logging
-from requests.packages.urllib3.util.retry import Retry
+try:
+    from urllib3 import Retry  # pylint: disable=import-error
+except ImportError:
+    from requests.packages.urllib3.util.retry import Retry
 
 LOGGER = logging.getLogger(__name__)
 
