@@ -44,13 +44,12 @@ else:
     from typing_extensions import TypedDict
 
 import requests
-from urllib3 import Retry
 
-from .timeout_http_adapter import TimeoutHTTPAdapter
 from .retry_with_logs import RetryWithLogs
+from .timeout_http_adapter import TimeoutHTTPAdapter
+from .utils import NotPassed, NOT_PASSED
 
 
-DEFAULT_ALLOWED_METHODS: Collection[str] = Retry.DEFAULT_ALLOWED_METHODS
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
 # Protocols should omit the trailing "://" because it will be automatically appended
@@ -100,24 +99,25 @@ def requests_retry_adapter(
         status_forcelist = DEFAULT_STATUS_FORCELIST,
         connect_timeout = DEFAULT_CONNECT_TIMEOUT,
         read_timeout = DEFAULT_READ_TIMEOUT,
-        allowed_methods = DEFAULT_ALLOWED_METHODS):
+        allowed_methods = NOT_PASSED):
     """
     retries: int
     backoff_factor: float
     status_forcelist: Collection[int]
     connect_timeout: float
     read_timeout: float
-    allowed_methods: Collection[str]
+    allowed_methods: Union[Collection[str], NotPassed]
     -> .timeout_http_adapter.TimeoutHTTPAdapter:
     """
-    retry = RetryWithLogs(
-        total=retries,
-        read=retries,
-        connect=retries,
-        backoff_factor=backoff_factor,
-        status_forcelist=status_forcelist,
-        allowed_methods=allowed_methods
-    )
+    retry_kwargs = {
+        "total": retries,
+        "read": retries,
+        "connect": retries,
+        "backoff_factor": backoff_factor,
+        "status_forcelist": status_forcelist }
+    if not isinstance(allowed_methods, NotPassed):
+        retry_kwargs["allowed_methods"] = allowed_methods
+    retry = RetryWithLogs(**retry_kwargs)
     return TimeoutHTTPAdapter(max_retries=retry,
                               timeout=(connect_timeout, read_timeout))
 
