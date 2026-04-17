@@ -25,20 +25,20 @@
 import logging
 from types import TracebackType
 from typing import Optional
-from typing_extensions import Self
 
+from typing_extensions import Self
+from urllib3 import Retry
 try:
-    import urllib3  # pylint: disable=import-error
-    #from urllib3 import Retry  # pylint: disable=import-error
+    from urllib3 import BaseHTTPResponse, ConnectionPool  # pylint: disable=import-error
 except ImportError:
-    #from requests.packages.urllib3.util.retry import Retry
-    from requests.packages import urllib3
+    from urllib3.connectionpool import ConnectionPool
+    from urllib3.response import HTTPResponse as BaseHTTPResponse
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-class RetryWithLogs(urllib3.Retry):
+class RetryWithLogs(Retry):
     """
     A urllib3.Retry adapter that allows us to modify the behavior of
     what happens during retry. By overwriting the superclassed method increment, we
@@ -68,9 +68,9 @@ class RetryWithLogs(urllib3.Retry):
     def increment(self,
                   method: Optional[str] = None,
                   url: Optional[str] = None,
-                  response: Optional[urllib3.BaseHTTPResponse] = None,
+                  response: Optional[BaseHTTPResponse] = None,
                   error: Optional[Exception] = None,
-                  _pool: Optional[urllib3.ConnectionPool] = None,
+                  _pool: Optional[ConnectionPool] = None,
                   _stacktrace: Optional[TracebackType] = None) -> Self:
         if _pool is None:
             raise TypeError(f"_pool argument should not be None. {locals()}")

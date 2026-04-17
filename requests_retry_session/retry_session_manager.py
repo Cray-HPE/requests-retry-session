@@ -24,7 +24,7 @@
 
 from contextlib import closing, contextmanager, AbstractContextManager
 from types import TracebackType
-from typing import Iterator, Optional, Type
+from typing import Iterator, Optional, Type, TYPE_CHECKING
 
 import requests
 from typing_extensions import Self, Unpack
