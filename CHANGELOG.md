@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added basic build time tests to catch bugs that break the module in a basic way,
   for any of the supported Python versions
 
+### Removed
+- Removed `py.typed` from package; accurate type annotations will only be for versions of this
+  package with a minimum supported Python version of 3.9+ (`requests_retry_session` v1+)
+
 ## [0.5.5] - 2026-04-14
 
 ### Changed
