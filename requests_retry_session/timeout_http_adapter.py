@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2022-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -21,7 +21,16 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
+
 from requests.adapters import HTTPAdapter
+
+
+class _NotPassed:  # pylint: disable=missing-class-docstring,too-few-public-methods
+    pass
+
+
+_NOT_PASSED = _NotPassed()
+
 
 class TimeoutHTTPAdapter(HTTPAdapter):
     """
@@ -30,14 +39,35 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     causes our applications to sit and wait forever on a half open socket.
     """
 
-    def __init__(self, *args, **kwargs):
-        if "timeout" in kwargs:
-            self.timeout = kwargs["timeout"]
-            del kwargs["timeout"]
+    def __init__(
+            self,
+            *args,
+            timeout = None,
+            **kwargs) -> None:
+        """
+        timeout: Union[float, tuple[float, float], tuple[float, None], None]
+        """
+        self.timeout = timeout
         super().__init__(*args, **kwargs)
 
-    def send(self, request, **kwargs):
-        timeout = kwargs.get("timeout")
-        if timeout is None and hasattr(self, 'timeout'):
-            kwargs["timeout"] = self.timeout
+    def send(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+            self,
+            request,
+            stream = _NOT_PASSED,
+            timeout = _NOT_PASSED,
+            verify = _NOT_PASSED,
+            cert = _NOT_PASSED,
+            proxies = _NOT_PASSED):
+        kwargs = {
+            "timeout":
+            self.timeout if isinstance(timeout, _NotPassed) else timeout
+        }
+        if not isinstance(stream, _NotPassed):
+            kwargs["stream"] = stream
+        if not isinstance(verify, _NotPassed):
+            kwargs["verify"] = verify
+        if not isinstance(cert, _NotPassed):
+            kwargs["cert"] = cert
+        if not isinstance(proxies, _NotPassed):
+            kwargs["proxies"] = proxies
         return super().send(request, **kwargs)

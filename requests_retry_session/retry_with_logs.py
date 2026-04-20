@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2020-2022, 2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2020-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -23,13 +23,14 @@
 #
 
 import logging
-from requests.packages.urllib3.util.retry import Retry
+from urllib3 import Retry
 
 LOGGER = logging.getLogger(__name__)
 
+
 class RetryWithLogs(Retry):
     """
-    A urllib3.utils.Retry adapter that allows us to modify the behavior of
+    A urllib3.Retry adapter that allows us to modify the behavior of
     what happens during retry. By overwriting the superclassed method increment, we
     can provide the user with information about how frequently we are reattempting
     an endpoint.
@@ -42,30 +43,54 @@ class RetryWithLogs(Retry):
     system instability and network congestion.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+            self, *args, **kwargs) -> None:
         # Save a copy of upstack callback to the side; this is the context we provide
         # for recursively instantiated instances of the Retry model
         self._callback = kwargs.pop('callback', None)
-        super(RetryWithLogs, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-    def new(self, *args, **kwargs):
+    def new(self, **kwargs):
         # Newly created instances should have a history of callbacks made.
         kwargs['callback'] = self._callback
-        return super(RetryWithLogs, self).new(*args, **kwargs)
+        return super().new(**kwargs)
 
-    def increment(self, method, url, *args, **kwargs):
-        pool = kwargs['_pool']
-        endpoint = "%s://%s%s" % (pool.scheme, pool.host, url)
-        try:
-            response = kwargs['response']
-            LOGGER.warning("Previous %s attempt on '%s' resulted in %s response.", method, endpoint, response.status)
+    def increment(self,
+                  method = None,
+                  url = None,
+                  response = None,
+                  error = None,
+                  _pool = None,
+                  _stacktrace = None):
+        """
+        method: Optional[str]
+        url: Optional[str]
+        response: Optional[BaseHTTPResponse]
+        error: Optional[Exception]
+        _pool: Optional[ConnectionPool]
+        _stacktrace: Optional[TracebackType]
+        -> Self
+        """
+        if _pool is None:
+            raise TypeError(f"_pool argument should not be None. {locals()}")
+        if url is None:
+            raise TypeError(f"url argument should not be None. {locals()}")
+        if method is None:
+            raise TypeError(f"method argument should not be None. {locals()}")
+        endpoint = f"{_pool.scheme}://{_pool.host}{url}"
+        if response is None:
             LOGGER.info("Reattempting %s request for '%s'", method, endpoint)
-        except KeyError:
+        else:
+            LOGGER.warning(
+                "Previous %s attempt on '%s' resulted in %s response.", method,
+                endpoint, response.status)
             LOGGER.info("Reattempting %s request for '%s'", method, endpoint)
         if self._callback:
             try:
                 self._callback(url)
             except Exception:
                 # This is a general except block
-                LOGGER.exception("Callback to '%s' raised an exception, ignoring.", url)
-        return super(RetryWithLogs, self).increment(method, url, *args, **kwargs)
+                LOGGER.exception(
+                    "Callback to '%s' raised an exception, ignoring.", url)
+        return super().increment(method, url, response, error, _pool,
+                                 _stacktrace)
