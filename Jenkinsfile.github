@@ -2,7 +2,7 @@
  *
  *  MIT License
  *
- *  (C) Copyright 2024-2025 Hewlett Packard Enterprise Development LP
+ *  (C) Copyright 2024-2026 Hewlett Packard Enterprise Development LP
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a
  *  copy of this software and associated documentation files (the "Software"),
@@ -58,33 +58,26 @@ pipeline {
     }
 
     stages {
-        stage("Clone cms_meta_tools repo") {
+        stage("Prep") {
             steps {
                 // This function is defined in cms-meta-tools:vars/cloneCMSMetaTools.groovy
                 cloneCMSMetaTools()
-            }
-        }
 
-        stage("Set Versions") {
-            steps {
                 // This function is defined in cms-meta-tools:vars/setVersionFiles.groovy
                 setVersionFiles()
-            }
-        }
 
-        stage("runBuildPrep") {
-            steps {
                 withCredentials([usernamePassword(credentialsId: 'artifactory-algol60-readonly', passwordVariable: 'ARTIFACTORY_PASSWORD', usernameVariable: 'ARTIFACTORY_USERNAME')]) {
                     sh "make runbuildprep"
                 }
+
+                sh "make lint"
+
+                // Just using this as a means to generate the netrc file that we need
+                getDockerBuildArgs()
             }
         }
 
-        stage("Lint") {
-            steps { sh "make lint" }
-        }
-
-        stage('Build and Publish Python module') {
+        stage('Build Python module') {
             agent {
                 docker {
                     args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
@@ -92,9 +85,11 @@ pipeline {
                     image "${pyImage}:3.13"
                 }
             }
+            environment {
+                PY_VERSION = "3.13"
+            }
             steps {
                 sh "make pymod"
-                publishCsmPythonModules(module: env.NAME, isStable: env.IS_STABLE)
             }
         }
 
@@ -110,10 +105,38 @@ pipeline {
             }
         }
 
-        stage('Build & Publish RPMs') {
+        stage('Test modules') {
             matrix {
                 axes {
                     axis {
+                        // The same Python versions should be listed for the
+                        // the "Build RPMs", "Test modules", and "Publish RPMs" stages
+                        name 'PY_VERSION'
+                        values '3.6', '3.9', '3.10', '3.11', '3.12', '3.13'
+                    }
+                }
+
+                environment {
+                    PY_VERSION = "${PY_VERSION}"
+                }
+
+                stages {
+                    stage('Test Python module') {
+                        steps {
+                            sh "make pymod_test_docker_build"
+                            sh "make pymod_test_docker_run"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build RPMs') {
+            matrix {
+                axes {
+                    axis {
+                        // The same Python versions should be listed for the
+                        // the "Build RPMs", "Test modules", and "Publish RPMs" stages
                         name 'PY_VERSION'
                         values '3.6', '3.9', '3.10', '3.11', '3.12', '3.13'
                     }
@@ -121,7 +144,7 @@ pipeline {
 
                 agent {
                     docker {
-                        args '-v /home/jenkins/.ssh:/home/jenkins/.ssh'
+                        args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
                         reuseNode true
                         image "${pyImage}:${PY_VERSION}"
                     }
@@ -144,7 +167,49 @@ pipeline {
                             sh "make rpm"
                         }
                     }
+                }
+            }
+        }
 
+        stage('Publish Python module') {
+            agent {
+                docker {
+                    args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
+                    reuseNode true
+                    image "${pyImage}:3.13"
+                }
+            }
+            steps {
+                publishCsmPythonModules(module: env.NAME, isStable: env.IS_STABLE)
+            }
+        }
+
+        stage('Publish RPMs') {
+            matrix {
+                axes {
+                    axis {
+                        // The same Python versions should be listed for the
+                        // the "Build RPMs", "Test modules", and "Publish RPMs" stages
+                        name 'PY_VERSION'
+                        values '3.6', '3.9', '3.10', '3.11', '3.12', '3.13'
+                    }
+                }
+
+                agent {
+                    docker {
+                        args '-v /home/jenkins/.ssh:/home/jenkins/.ssh'
+                        reuseNode true
+                        image "${pyImage}:${PY_VERSION}"
+                    }
+                }
+
+                environment {
+                    PY_VERSION = "${PY_VERSION}"
+                    RPM_NAME = getRpmName(env.NAME, "${PY_VERSION}")
+                    BUILD_RELDIR = "${env.BUILD_BASE_RELDIR}/${PY_VERSION}"
+                }
+
+                stages {
                     stage('Publish Rpms') {
                         steps {
                             script {
@@ -168,5 +233,6 @@ pipeline {
                 }
             }
         }
+        
     }
 }

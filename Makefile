@@ -27,6 +27,7 @@
 NAME ?= requests-retry-session
 RPM_VERSION ?= $(shell head -1 .version)
 RPM_NAME ?= ${NAME}
+DOCKER_VERSION ?= $(shell head -1 .docker_version)
 
 SPEC_FILE ?= ${NAME}.spec
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
@@ -35,9 +36,18 @@ SOURCE_BASENAME := ${SOURCE_NAME}.tar.bz2
 BUILD_DIR ?= $(PWD)/dist/rpmbuild
 SOURCE_PATH := ${BUILD_DIR}/SOURCES/${SOURCE_BASENAME}
 PYTHON_BIN := python$(PY_VERSION)
+PYLINT_VENV_BASE_DIR ?= pylint-venv
+PYLINT_VENV ?= $(PYLINT_VENV_BASE_DIR)/$(PY_VERSION)
+PYLINT_VENV_PYBIN ?= $(PYLINT_VENV)/bin/python3
+PIP_INSTALL_ARGS ?= --no-cache
+
+ifneq ($(wildcard ${HOME}/.netrc),)
+        DOCKER_ARGS ?= --secret id=netrc,src=${HOME}/.netrc
+endif
 
 all : runbuildprep lint pymod
 rpm: rpm_prepare rpm_package_source rpm_build_source rpm_build
+pymod_test: pymod_test_docker_build pymod_test_docker_run
 
 runbuildprep:
 		./cms_meta_tools/scripts/runBuildPrep.sh
@@ -46,11 +56,21 @@ lint:
 		./cms_meta_tools/scripts/runLint.sh
 
 pymod:
-		python3 --version
-		python3 -m pip install --upgrade --user pip build setuptools wheel
-		python3 -m build --sdist
-		python3 -m build --wheel
+		$(PYTHON_BIN) --version
+		$(PYTHON_BIN) -m pip install --upgrade --user pip build setuptools wheel
+		$(PYTHON_BIN) -m build --sdist
+		$(PYTHON_BIN) -m build --wheel
 		cp ./dist/requests_retry_session*.whl .
+
+pymod_test_docker_build:
+		docker build \
+			--pull ${DOCKER_ARGS} \
+			--tag 'pytest-$(PY_VERSION):$(DOCKER_VERSION)' \
+			--build-arg PY_VERSION=$(PY_VERSION) \
+			.
+
+pymod_test_docker_run:
+		PY_VERSION=$(PY_VERSION) DOCKER_VERSION=${DOCKER_VERSION} ./run_test_rrs.sh
 
 rpm_prepare:
 		rm -rf $(BUILD_DIR)
@@ -67,7 +87,8 @@ rpm_package_source:
 			--exclude ./cms_meta_tools \
 			--exclude ./build \
 			--exclude ./dist \
-			--exclude $(SOURCE_BASENAME) \
+            --exclude ./'$(PYLINT_VENV_BASE_DIR)' \
+			--exclude '$(SOURCE_BASENAME)' \
 			-cvjf $(SOURCE_PATH) .
 
 rpm_build_source:
