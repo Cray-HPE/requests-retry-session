@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.6] - 2026-04-21
+
 ### Added
 - Added basic build time tests to catch bugs that break the module in a basic way,
   for any of the supported Python versions
