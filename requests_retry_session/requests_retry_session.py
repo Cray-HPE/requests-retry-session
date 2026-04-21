@@ -34,18 +34,23 @@ Created on Nov 2, 2020
 """
 
 import sys
-from typing import Optional, Tuple
+from typing import Optional
 
 if sys.version_info >= (3, 9):
+    from collections.abc import Collection
     from typing import TypedDict
 else:
+    from typing import Collection
     from typing_extensions import TypedDict
 
 import requests
+from urllib3 import Retry
 
 from .timeout_http_adapter import TimeoutHTTPAdapter
 from .retry_with_logs import RetryWithLogs
 
+
+DEFAULT_ALLOWED_METHODS: Collection[str] = Retry.DEFAULT_ALLOWED_METHODS
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
 # protocol should omit the trailing "://" because it will be automatically appended
@@ -62,7 +67,8 @@ class RequestsRetryAdapterArgs(TypedDict, total=False):
     """
     retries: int
     backoff_factor: float
-    status_forcelist: Tuple[int, ...]
+    status_forcelist: Collection[int]
+    allowed_methods: Collection[str]
     connect_timeout: float
     read_timeout: float
 
@@ -79,8 +85,8 @@ def requests_session(adapter,
     -> requests.Session:
     """
     session = session or requests.Session()
-    # Must mount to http://
-    # Mounting to only http will not work!
+    # Must mount to <protocol>://
+    # Mounting to only <protocol> will not work!
     session.mount(f"{protocol}://", adapter)
     return session
 
@@ -90,13 +96,15 @@ def requests_retry_adapter(
         backoff_factor = DEFAULT_BACKOFF_FACTOR,
         status_forcelist = DEFAULT_STATUS_FORCELIST,
         connect_timeout = DEFAULT_CONNECT_TIMEOUT,
-        read_timeout = DEFAULT_READ_TIMEOUT):
+        read_timeout = DEFAULT_READ_TIMEOUT,
+        allowed_methods = DEFAULT_ALLOWED_METHODS):
     """
     retries: int
     backoff_factor: float
-    status_forcelist: Tuple[int, ...]
+    status_forcelist: Collection[int]
     connect_timeout: float
     read_timeout: float
+    allowed_methods: Collection[str]
     -> .timeout_http_adapter.TimeoutHTTPAdapter:
     """
     retry = RetryWithLogs(
@@ -105,6 +113,7 @@ def requests_retry_adapter(
         connect=retries,
         backoff_factor=backoff_factor,
         status_forcelist=status_forcelist,
+        allowed_methods=allowed_methods
     )
     return TimeoutHTTPAdapter(max_retries=retry,
                               timeout=(connect_timeout, read_timeout))

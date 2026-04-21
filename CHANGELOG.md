@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added support for `allowed_methods` argument, to allow retries for non-default
+  methods like `PATCH` and `POST`.
+
 ## [0.5.6] - 2026-04-21
 
 ### Added
