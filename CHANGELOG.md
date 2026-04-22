@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed `py.typed` from package; accurate type annotations will only be for versions of this
   package with a minimum supported Python version of 3.9+ (`requests_retry_session` v1+)
 
+### Dependencies
+- Relax minimum version requirements of `typing-extensions` down to `3.7.4.3` (for Python 3.6)
+  and `4.6`) for (Python 3.9+), since that provides all of the necessary functionality
+
 ## [0.5.5] - 2026-04-14
 
 ### Changed
