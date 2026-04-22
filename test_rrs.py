@@ -40,14 +40,20 @@ import threading
 from typing import Callable, DefaultDict, Iterable, NamedTuple, Tuple, Type, Union
 from urllib.parse import parse_qs, urlparse
 
+# Literal was added to typing in 3.9
+# TypeAlias was added to typing in 3.10
 if sys.version_info >= (3, 10):
-    from typing import TypeAlias
-else:
+    from typing import Literal, TypeAlias
+elif sys.version_info >= (3, 9):
+    from typing import Literal
     from typing_extensions import TypeAlias
+else:
+    from typing_extensions import Literal, TypeAlias
 
+import requests
 import requests_retry_session as rrs
 
-ProtocolType: TypeAlias = str
+ProtocolType: TypeAlias = Union[str, Iterable[str]]
 PROTOCOL: ProtocolType = 'http'
 PORT=8000
 URL=f"{PROTOCOL}://localhost:{PORT}/"
@@ -66,7 +72,7 @@ RR_ADAPTER_ARGS = rrs.RequestsRetryAdapterArgs(
 
 # Using int as the factory function means that all values will
 # default to 0
-REQ_COUNT: DefaultDict[ReqParams, int] = defaultdict(int)
+REQ_COUNT: DefaultDict[Tuple[Literal['GET', 'POST'], ReqParams], int] = defaultdict(int)
 
 class MyHandler(BaseHTTPRequestHandler):
     def _extract_params_from_query(self) -> Union[None, ReqParams]:
@@ -110,11 +116,11 @@ class MyHandler(BaseHTTPRequestHandler):
             msg = f"{prefix}: {msg}"
         self.wfile.write(msg.encode())
 
-    def do_GET(self) -> None:
+    def _do_method(self, method: str) -> None:
         params = self._extract_params_from_query()
         if params is None:
             return
-        req_key = params
+        req_key = (method, params)
         current_count = min(REQ_COUNT[req_key], len(params.scs)-1)
         REQ_COUNT[req_key] += 1
 
@@ -123,6 +129,12 @@ class MyHandler(BaseHTTPRequestHandler):
         if sc > 0:
             self._send(sc)
         return
+
+    def do_GET(self) -> None:
+        self._do_method("GET")
+
+    def do_POST(self) -> None:
+        self._do_method("POST")
 
 class MyRRSessionManager(rrs.RetrySessionManager):
     """
@@ -206,6 +218,43 @@ def run_get_tests(
 
     return exit_rc
 
+def run_post_tests(
+    non_cm_session: Callable,
+    cm_func_session: Callable,
+    cm_class_session: Callable
+) -> int:
+    exit_rc = 0
+    for sfunc, sdesc in [
+        (non_cm_session.get, "rrs.requests_retry_session GET"),
+        (cm_func_session.get, "rrs.retry_session_manager GET"),
+        (cm_class_session.get, "rrs.RetrySessionManager GET")
+    ]:
+        # With no parameters being specified, we still expect a simple 200 response
+        exit_rc += test_req(sfunc, sdesc, 200, scs=200)
+        # Now test an endpoint that always returns 520
+        exit_rc += test_req(sfunc, sdesc, 520, scs=520)
+        # Now test an endpoint that initially returns 521, then returns 201
+        exit_rc += test_req(sfunc, sdesc, 521, scs=[521,201])
+        # Now test an endpoint that initially should drop connection, then returns 202
+        # We should not be retrying on the dropped connection, so a ConnectionError is expected
+        exit_rc += test_req(sfunc, sdesc, requests.exceptions.ConnectionError, scs=[0,202])
+
+    for sfunc, sdesc in [
+        (non_cm_session.post, "rrs.requests_retry_session POST"),
+        (cm_func_session.post, "rrs.retry_session_manager POST"),
+        (cm_class_session.post, "rrs.RetrySessionManager POST")
+    ]:
+        # With no parameters being specified, we expect a simple 200 response
+        exit_rc += test_req(sfunc, sdesc, 200, scs=200)
+        # Now test an endpoint that always returns 520
+        exit_rc += test_req(sfunc, sdesc, 520, scs=520)
+        # Now test an endpoint that initially returns 521, then returns 201
+        exit_rc += test_req(sfunc, sdesc, 201, scs=[521,201])
+        # Now test an endpoint that initially should time out, then returns 202
+        exit_rc += test_req(sfunc, sdesc, 202, scs=[0,202])
+
+    return exit_rc
+
 def main() -> int:
     exit_rc = 0
     print_msg(f"Start background {PROTOCOL} server on localhost:{PORT}")
@@ -213,19 +262,33 @@ def main() -> int:
     thread = threading.Thread(target=start_server, kwargs={"server":server}, daemon=True)
     thread.start()
 
-    print_msg(f"Creating RRS session using rrs.requests_retry_session")
-    non_cm_session = rrs.requests_retry_session(protocol=PROTOCOL,
-                                                **RR_ADAPTER_ARGS)
-    print_msg(f"Creating RRS session using rrs.retry_session_manager")
-    with rrs.retry_session_manager(protocol=PROTOCOL,
-                                   **RR_ADAPTER_ARGS) as cm_func_session:
-        print_msg(f"Creating RRS session using rrs.RetrySessionManager")
-        with MyRRSessionManager(PROTOCOL, RR_ADAPTER_ARGS) as my_mgr:
-            cm_class_session=my_mgr.requests_session
-            print_msg("Running tests")
-            exit_rc += run_get_tests(non_cm_session=non_cm_session,
-                                     cm_func_session=cm_func_session,
-                                     cm_class_session=cm_class_session)
+    for proto in [ 'http', ('https', 'http') ]:
+        print_msg(f"Creating RRS session using rrs.requests_retry_session (protocol={proto})")
+        non_cm_session = rrs.requests_retry_session(protocol=proto, **RR_ADAPTER_ARGS)
+        print_msg(f"Creating RRS session using rrs.retry_session_manager (protocol={proto})")
+        with rrs.retry_session_manager(protocol=proto, **RR_ADAPTER_ARGS) as cm_func_session:
+            print_msg(f"Creating RRS session using rrs.RetrySessionManager (protocol={proto})")
+            with MyRRSessionManager(proto, RR_ADAPTER_ARGS) as my_mgr:
+                cm_class_session=my_mgr.requests_session
+                print_msg(f"Running tests (protocol={proto})")
+                exit_rc += run_get_tests(non_cm_session=non_cm_session,
+                                         cm_func_session=cm_func_session,
+                                         cm_class_session=cm_class_session)
+
+    post_only_adapter_args = RR_ADAPTER_ARGS.copy()
+    post_only_adapter_args['allowed_methods'] = ('POST',)
+    for proto in [ 'http', ('https', 'http') ]:
+        print_msg(f"Creating RRS session using rrs.requests_retry_session (allowed_methods=POST, protocol={proto})")
+        non_cm_session = rrs.requests_retry_session(protocol=proto, **post_only_adapter_args)
+        print_msg(f"Creating RRS session using rrs.retry_session_manager (allowed_methods=POST, protocol={proto})")
+        with rrs.retry_session_manager(protocol=proto, **post_only_adapter_args) as cm_func_session:
+            print_msg(f"Creating RRS session using rrs.RetrySessionManager (allowed_methods=POST, protocol={proto})")
+            with MyRRSessionManager(proto, post_only_adapter_args) as my_mgr:
+                cm_class_session=my_mgr.requests_session
+                print(f"Running tests (allowed_methods=POST, protocol={proto})")
+                exit_rc += run_post_tests(non_cm_session=non_cm_session,
+                                          cm_func_session=cm_func_session,
+                                          cm_class_session=cm_class_session)
 
     print_msg(f"Stopping {PROTOCOL} server")
     server.shutdown()
