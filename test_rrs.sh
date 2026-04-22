@@ -39,4 +39,5 @@ fi
 
 . /app/venv/bin/activate
 pip3 install --disable-pip-version-check --no-cache-dir /app/requests_retry_session*.whl -c "${CONSTRAINTS_FILE}"
+pip3 list --format freeze
 python /app/test_rrs.py

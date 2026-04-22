@@ -27,158 +27,210 @@ Minimal RRS module test, mainly to ensure that it is not completely broken.
 """
 
 from collections import defaultdict
-import threading
+from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
+import random
+import string
 import sys
-from typing import Dict
+import threading
+# Because we wish to support Python versions back to 3.6, we import
+# Iterable from typing rather than collections.abc
+# For the same reason, we import Tuple, Type, and Union, rather
+# than using tuple, type, or |
+from typing import Callable, DefaultDict, Iterable, NamedTuple, Tuple, Type, Union
+from urllib.parse import parse_qs, urlparse
+
+if sys.version_info >= (3, 10):
+    from typing import TypeAlias
+else:
+    from typing_extensions import TypeAlias
 
 import requests_retry_session as rrs
 
-PROTOCOL = 'http'
+ProtocolType: TypeAlias = str
+PROTOCOL: ProtocolType = 'http'
 PORT=8000
-URL=f"{PROTOCOL}://localhost:{PORT}"
+URL=f"{PROTOCOL}://localhost:{PORT}/"
 
-GOOD_URI="/rc/200"
-BAD_URI="/rc/520"
-ONCE_521_URI="/once/521/rc/200"
-ONCE_522_URI="/once/522/rc/200"
-ONCE_523_URI="/once/523/rc/200"
+class ReqParams(NamedTuple):
+    id: str
+    scs: Tuple[int, ...]
 
-GOOD_URL=f"{URL}{GOOD_URI}"
-BAD_URL=f"{URL}{BAD_URI}"
-ONCE_521_URL=f"{URL}{ONCE_521_URI}"
-ONCE_522_URL=f"{URL}{ONCE_522_URI}"
-ONCE_523_URL=f"{URL}{ONCE_523_URI}"
-
-DEFAULT_RETRY_ADAPTER_ARGS = rrs.RequestsRetryAdapterArgs(
+RR_ADAPTER_ARGS = rrs.RequestsRetryAdapterArgs(
     retries=2,
     backoff_factor=0.05,
     status_forcelist=(521, 522, 523),
-    connect_timeout=2,
-    read_timeout=2)
+    connect_timeout=0.2,
+    read_timeout=0.2
+)
 
-# Using bool as the factory function means that all values will
-# default to False
-SENT_SC: Dict[int, bool] = defaultdict(bool)
+# Using int as the factory function means that all values will
+# default to 0
+REQ_COUNT: DefaultDict[ReqParams, int] = defaultdict(int)
 
 class MyHandler(BaseHTTPRequestHandler):
-    def _send_ok(self) -> None:
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"OK")
+    def _extract_params_from_query(self) -> Union[None, ReqParams]:
+        query = urlparse(self.path).query
+        params={}
+        for k, v in parse_qs(query).items():
+            if k not in ReqParams.__annotations__:
+                self._send(400, f"Unknown request parameter: '{k}'")
+                return None
+            if not v:
+                self._send(400, f"No value specified for parameter '{k}'")
+                return None
+            if k == "id":
+                if len(v) > 1:
+                    self._send(400, f"Parameter '{k}' was specified '{len(v)}' times")
+                    return None
+                params[k] = str(v[0])
+                continue
+            assert k == "scs"
+            try:
+                params[k] = tuple([ int(v_item) for v_item in v ])
+            except (ValueError, TypeError):
+                self._send(400, f"Parameter '{k}' has an invalid value '{value}'")
+                return None
+        try:
+            return ReqParams(**params)
+        except (ValueError, TypeError) as e:
+            self._send(400, f"{type(e).__name__}: {e}")
+            return None
 
-    def _send_err(self, sc: int) -> None:
+    def _send(self, sc: int, msg: str = None) -> None:
         self.send_response(sc)
         self.end_headers()
-        self.wfile.write(b"Custom %d error" % sc)
+        if sc == 200:
+            prefix = "OK"
+        else:
+            prefix = f"Custom {sc} error"
+        if msg is None:
+            msg = prefix
+        else:
+            msg = f"{prefix}: {msg}"
+        self.wfile.write(msg.encode())
 
     def do_GET(self) -> None:
-        if self.path == GOOD_URI:
-            self._send_ok()
+        params = self._extract_params_from_query()
+        if params is None:
             return
+        req_key = params
+        current_count = min(REQ_COUNT[req_key], len(params.scs)-1)
+        REQ_COUNT[req_key] += 1
 
-        if self.path == BAD_URI:
-            self._send_err(520)
-            return
-
-        if self.path == ONCE_521_URI:
-            if SENT_SC[521]:
-                self._send_ok()
-            else:
-                self._send_err(521)
-                SENT_SC[521]=True
-            return
-
-        if self.path == ONCE_522_URI:
-            if SENT_SC[522]:
-                self._send_ok()
-            else:
-                self._send_err(522)
-                SENT_SC[522]=True               
-            return
-
-        if self.path == ONCE_523_URI:
-            if SENT_SC[523]:
-                self._send_ok()
-            else:
-                self._send_err(523)
-                SENT_SC[523]=True               
-            return
-
-        self._send_err(550)
+        sc = params.scs[current_count]
+        # Only send a response if sc is positive
+        if sc > 0:
+            self._send(sc)
+        return
 
 class MyRRSessionManager(rrs.RetrySessionManager):
     """
     As a subclass of RetrySessionManager, this class can be used as a context manager,
     and will have a requests session available as self.requests_session
     """
-    def __init__(self) -> None:
-        super().__init__(protocol=PROTOCOL, **DEFAULT_RETRY_ADAPTER_ARGS)
+    def __init__(self, proto: ProtocolType, adapter_args: rrs.RequestsRetryAdapterArgs) -> None:
+        super().__init__(protocol=proto, **adapter_args)
 
-def print_err(s) -> None:
-    sys.stderr.write(f"ERROR: {s}\n")
+def random_id() -> str:
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(16))
+
+def prepend_timestamp(text: str) -> str:
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+    return f"{timestamp} {text}"
+
+def print_msg(s: str) -> None:
+    sys.stdout.write(prepend_timestamp(f"{s}\n"))
     sys.stderr.flush()
 
-def retry_session_manager():
-    return rrs.retry_session_manager(protocol=PROTOCOL, **DEFAULT_RETRY_ADAPTER_ARGS)
-
-def requests_retry_session():
-    return rrs.requests_retry_session(protocol=PROTOCOL, **DEFAULT_RETRY_ADAPTER_ARGS)
+def print_err(s: str) -> None:
+    sys.stderr.write(f"ERROR: {prepend_timestamp(s)}\n")
+    sys.stderr.flush()
 
 def start_server(server: HTTPServer) -> None:
     server.serve_forever()
 
-def test_get(session, session_desc: str, url: str, expected_sc: int) -> int:
-    msg_pre=f"{session_desc} GET to {url}"
-    msg_post=f"(expected status code {expected_sc})"
-    print(f"{msg_pre} {msg_post}")
+def test_req(
+    session_method: Callable,
+    session_desc: str,
+    expected_sc: Union[int, Type[Exception]],
+    scs: Union[int, Iterable[int]]
+) -> int:
+    """
+    expected_sc is either the expected status code, or the type of Exception
+    we expect to be raised
+    """
+    req_params = { 'id': random_id(), 'scs': scs }
+    msg_pre=f"{session_desc} with params={req_params}"
+    if isinstance(expected_sc, int):
+        msg_post=f"(expected status code {expected_sc})"
+    else:
+        msg_post=f"(expected to raise {expected_sc.__name__} exception)"
+    print_msg(f"{msg_pre} {msg_post}")
     try:
-        sc = session.get(url).status_code
+        sc = session_method(URL, params=req_params).status_code
         msg = f"{msg_pre} returned status code {sc} {msg_post}"
-        if sc == expected_sc:
-            print(msg)
+        if isinstance(expected_sc, int) and sc == expected_sc:
+            print_msg(msg)
             return 0
         print_err(msg)
     except Exception as err:
-        print_err(f"{msg_pre} raised {type(err).__name__}: {err} {msg_post}")
+        msg = f"{msg_pre} raised {type(err).__name__}: {err} {msg_post}"
+        if issubclass(expected_sc, Exception) and isinstance(err, expected_sc):
+            print_msg(msg)
+            return 0
+        print_err(msg)
     return 1
 
 
-def run_tests(non_cm_session, cm_func_session, cm_class_session) -> int:
+def run_get_tests(
+    non_cm_session: Callable,
+    cm_func_session: Callable,
+    cm_class_session: Callable
+) -> int:
     exit_rc = 0
-    for sfunc, sdesc, once_url in [
-        (non_cm_session, "rrs.requests_retry_session", ONCE_521_URL),
-        (cm_func_session, "rrs.retry_session_manager", ONCE_522_URL),
-        (cm_class_session, "rrs.RetrySessionManager", ONCE_523_URL)
+    for sfunc, sdesc in [
+        (non_cm_session.get, "rrs.requests_retry_session GET"),
+        (cm_func_session.get, "rrs.retry_session_manager GET"),
+        (cm_class_session.get, "rrs.RetrySessionManager GET")
     ]:
-        exit_rc += test_get(sfunc, sdesc, GOOD_URL, 200)
-        exit_rc += test_get(sfunc, sdesc, BAD_URL, 520)
-        exit_rc += test_get(sfunc, sdesc, once_url, 200)
+        # With no parameters being specified, we expect a simple 200 response
+        exit_rc += test_req(sfunc, sdesc, 200, scs=200)
+        # Now test an endpoint that always returns 520
+        exit_rc += test_req(sfunc, sdesc, 520, scs=520)
+        # Now test an endpoint that initially returns 521, then returns 201
+        exit_rc += test_req(sfunc, sdesc, 201, scs=[521,201])
+        # Now test an endpoint that initially should time out, then returns 202
+        exit_rc += test_req(sfunc, sdesc, 202, scs=[0,202])
 
     return exit_rc
 
 def main() -> int:
-    print("Start background {PROTOCOL} server on localhost:{PORT}")
+    exit_rc = 0
+    print_msg(f"Start background {PROTOCOL} server on localhost:{PORT}")
     server = HTTPServer(("localhost", PORT), MyHandler)
     thread = threading.Thread(target=start_server, kwargs={"server":server}, daemon=True)
     thread.start()
 
-    print("Creating RRS session using rrs.requests_retry_session")
-    non_cm_session = requests_retry_session()
-    print("Creating RRS session using rrs.retry_session_manager")
-    with retry_session_manager() as cm_func_session:
-        print("Creating RRS session using rrs.RetrySessionManager")
-        with MyRRSessionManager() as my_mgr:
+    print_msg(f"Creating RRS session using rrs.requests_retry_session")
+    non_cm_session = rrs.requests_retry_session(protocol=PROTOCOL,
+                                                **RR_ADAPTER_ARGS)
+    print_msg(f"Creating RRS session using rrs.retry_session_manager")
+    with rrs.retry_session_manager(protocol=PROTOCOL,
+                                   **RR_ADAPTER_ARGS) as cm_func_session:
+        print_msg(f"Creating RRS session using rrs.RetrySessionManager")
+        with MyRRSessionManager(PROTOCOL, RR_ADAPTER_ARGS) as my_mgr:
             cm_class_session=my_mgr.requests_session
-            print("Running tests")
-            exit_rc = run_tests(non_cm_session=non_cm_session,
-                                cm_func_session=cm_func_session,
-                                cm_class_session=cm_class_session)
+            print_msg("Running tests")
+            exit_rc += run_get_tests(non_cm_session=non_cm_session,
+                                     cm_func_session=cm_func_session,
+                                     cm_class_session=cm_class_session)
 
-    print(f"Stopping {PROTOCOL} server")
+    print_msg(f"Stopping {PROTOCOL} server")
     server.shutdown()
     thread.join()
-    print(f"{PROTOCOL} server stopped")
+    print_msg(f"{PROTOCOL} server stopped")
     return exit_rc
 
 

@@ -26,13 +26,49 @@
 set -euo pipefail
 
 IMG="pytest-${PY_VERSION}:${DOCKER_VERSION}"
+constfile=$(mktemp)
+summfile=$(mktemp)
 
-python3 ./gen_test_constraints.py | while read ARGS; do
+python3 ./gen_test_constraints.py > "${constfile}"
+mapfile -t lines < "${constfile}"
+
+total=0
+failed=0
+
+for ARGS in "${lines[@]}"; do
     # Deliberately do not quote $ARGS, so it is split into multiple arguments
     # if there is whitespace in it, or it will not be an argument at all,
     # if it is empty
-    echo "Testing ${PY_VERSION} with constraints $ARGS"
-    docker run "$IMG" $ARGS || exit 1
+    echo "###############################################################"
+    echo "#"
+    echo "# Testing ${PY_VERSION} with constraints $ARGS"
+    echo "#"
+    echo "###############################################################"
+    let total+=1
+    if docker run "$IMG" $ARGS ; then
+        verb=PASSED
+    else
+        verb=FAILED
+        let failed+=1
+    fi
+    echo "###############################################################"
+    echo "#"
+    echo "# ${verb}: ${PY_VERSION} with constraints '$ARGS'"
+    echo "${verb} constraints='$ARGS'" >> "${summfile}"
+    echo "#"
+    echo "###############################################################"
+    echo
 done
 
+sort "${summfile}"
+
+if [[ $total == 0 ]]; then
+    echo "ERROR: No tests performed (this should never happen)" 1>&2
+    exit 2
+elif [[ $failed != 0 ]]; then
+    echo "ERROR: $failed tests passed (out of $total total)"
+    exit 1
+fi
+
+echo "All $total tests passed"
 exit 0
