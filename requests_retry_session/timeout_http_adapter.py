@@ -94,13 +94,13 @@ class TimeoutHTTPAdapter(HTTPAdapter):
             self,
             request: PreparedRequest,
             stream: Union[bool, NotPassed] = NOT_PASSED,
-            timeout: Union[TimeoutType, NotPassed] = NOT_PASSED,
+            timeout: TimeoutType = None,
             verify: Union[VerifyType, NotPassed] = NOT_PASSED,
             cert: Union[CertType, NotPassed] = NOT_PASSED,
             proxies: Union[ProxiesType, NotPassed] = NOT_PASSED) -> Response:
         kwargs: _SendArgs = {
             "timeout":
-            self.timeout if isinstance(timeout, NotPassed) else timeout
+            self.timeout if timeout is None else timeout
         }
         if not isinstance(stream, NotPassed):
             kwargs["stream"] = stream
