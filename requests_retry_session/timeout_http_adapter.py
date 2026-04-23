@@ -25,7 +25,11 @@
 from requests.adapters import HTTPAdapter
 
 
-class _NotPassed:  # pylint: disable=missing-class-docstring,too-few-public-methods
+class _NotPassed:  # pylint: disable=too-few-public-methods
+    """
+    A dummy class to let us distinguish between an argument not being passed versus
+    an argument explicitly being passed with a None value
+    """
     pass
 
 
@@ -41,26 +45,54 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
     def __init__(
             self,
-            *args,
-            timeout = None,
-            **kwargs) -> None:
+            pool_connections = _NOT_PASSED,
+            pool_maxsize = _NOT_PASSED,
+            max_retries = _NOT_PASSED,
+            pool_block = _NOT_PASSED,
+            timeout = None):
         """
+        pool_connections: Union[int, _NotPassed]
+        pool_maxsize: Union[int, _NotPassed]
+        max_retries: Union[Retry, int, None, _NotPassed]
+        pool_block: Union[bool, _NotPassed]
         timeout: Union[float, tuple[float, float], tuple[float, None], None]
+        -> None
         """
         self.timeout = timeout
-        super().__init__(*args, **kwargs)
+        kwargs = {}
+        if not isinstance(pool_connections, _NotPassed):
+            kwargs["pool_connections"] = pool_connections
+        if not isinstance(pool_maxsize, _NotPassed):
+            kwargs["pool_maxsize"] = pool_maxsize
+        if not isinstance(max_retries, _NotPassed):
+            kwargs["max_retries"] = max_retries
+        if not isinstance(pool_block, _NotPassed):
+            kwargs["pool_block"] = pool_block
+        super().__init__(**kwargs)
 
     def send(  # pylint: disable=too-many-arguments,too-many-positional-arguments
             self,
             request,
             stream = _NOT_PASSED,
-            timeout = _NOT_PASSED,
+            timeout = None,
             verify = _NOT_PASSED,
             cert = _NOT_PASSED,
             proxies = _NOT_PASSED):
+        """
+        request: PreparedRequest,
+        stream: Union[bool, _NotPassed]
+        timeout: Union[float,
+                       tuple[float, float],
+                       tuple[float, None],
+                       None]
+        verify: Union[VerifyType, _NotPassed]
+        cert: Union[CertType, _NotPassed]
+        proxies: Union[ProxiesType, _NotPassed]
+        -> Response:
+        """
         kwargs = {
             "timeout":
-            self.timeout if isinstance(timeout, _NotPassed) else timeout
+            self.timeout if timeout is None else timeout
         }
         if not isinstance(stream, _NotPassed):
             kwargs["stream"] = stream
