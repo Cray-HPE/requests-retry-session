@@ -65,18 +65,17 @@ class TimeoutHTTPAdapter(HTTPAdapter):
             self,
             request,
             stream = NOT_PASSED,
-            timeout = NOT_PASSED,
+            timeout = None,
             verify = NOT_PASSED,
             cert = NOT_PASSED,
             proxies = NOT_PASSED):
         """
         request: PreparedRequest,
         stream: Union[bool, NotPassed]
-        timeout: Union[Union[float,
-                             tuple[float, float],
-                             tuple[float, None],
-                             None]
-                       NotPassed]
+        timeout: Union[float,
+                       tuple[float, float],
+                       tuple[float, None],
+                       None]
         verify: Union[VerifyType, NotPassed]
         cert: Union[CertType, NotPassed]
         proxies: Union[ProxiesType, NotPassed]
@@ -84,7 +83,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         """
         kwargs = {
             "timeout":
-            self.timeout if isinstance(timeout, NotPassed) else timeout
+            self.timeout if timeout is None else timeout
         }
         if not isinstance(stream, NotPassed):
             kwargs["stream"] = stream

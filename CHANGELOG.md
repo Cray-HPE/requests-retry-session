@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed callback functionality from `RetryWithLogs`.
   This is a BREAKING CHANGE for anyone using that option.
 
+### Fixed
+- Fixed bug in `TimeoutHTTPAdapter` preventing timeouts from happening
+
 ### Dependencies
 - Raise minimum required versions for `requests` (to `2.25`) and
   `urllib3` (to `1.26.5`) for all Python versions, to support `allowed_methods` `Retry`
