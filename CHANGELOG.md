@@ -12,10 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   methods like `PATCH` and `POST`, without dependence on `Retry.DEFAULT_ALLOWED_METHODS`
 - Added support for specifying multiple protocols
 - Updated test suite to cover the above new options
+- Added timeout tests
 
 ### Changed
 - Changed default protocol from `http` to both `http` and `https`.
   This is a BREAKING CHANGE for anyone relying on the previous default behavior.
+- Refactored tests for clarity
 
 ### Removed
 - Removed callback functionality from `RetryWithLogs`.

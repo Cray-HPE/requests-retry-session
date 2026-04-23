@@ -21,34 +21,3 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-
-ARG BASE_IMAGE_NAME=artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python
-ARG PY_VERSION=3.13
-ARG PYBIN=python$PY_VERSION
-ARG BASE_IMAGE_VERSION=$PY_VERSION
-ARG PIP_CACHE_DIR=/app/pip-cache
-
-FROM $BASE_IMAGE_NAME:$BASE_IMAGE_VERSION
-ARG PYBIN
-ARG PY_VERSION
-ARG PIP_CACHE_DIR
-ENV PY_VERSION=${PY_VERSION}
-ENV PIP_CACHE_DIR="${PIP_CACHE_DIR}"
-WORKDIR /app
-COPY test_rrs/ /app/test_rrs
-COPY cache_pip.sh \
-     gen_test_constraints.py \
-     requests_retry_session*.whl \
-     test_rrs.sh \
-     test_constraint_combinations.dat /app/
-RUN chmod +rx /app/test_rrs.sh /app/cache_pip.sh && \
-    mkdir -p "${PIP_CACHE_DIR}" && \
-    "${PYBIN}" -m venv /app/venv && \
-    /app/venv/bin/pip3 install --no-cache-dir -U pip && \
-    /app/venv/bin/pip3 list --format freeze && \
-    /app/cache_pip.sh && \
-    /app/venv/bin/pip3 list --format freeze && \
-    ls "${PIP_CACHE_DIR}" && \
-    chmod -R a+rwx "${PIP_CACHE_DIR}"
-
-ENTRYPOINT ["/app/test_rrs.sh"]

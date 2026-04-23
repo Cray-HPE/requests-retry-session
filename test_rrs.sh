@@ -38,6 +38,35 @@ else
 fi
 
 . /app/venv/bin/activate
-pip3 install --disable-pip-version-check --no-cache-dir /app/requests_retry_session*.whl -c "${CONSTRAINTS_FILE}"
-pip3 list --format freeze
-python /app/test_rrs.py
+# Use --no-index to avoid contacting PyPi, since we pre-cached the images when
+# we build our Dockerfile
+pip3 install --disable-pip-version-check --no-index /app/requests_retry_session*.whl -c "${CONSTRAINTS_FILE}"
+pip3 list --format freeze | tee /app/freeze.txt
+if [[ -d /app/freeze ]]; then
+    fsize=$(stat -c%s /app/freeze.txt)
+    if find /app/freeze \
+            -type f \
+            -name \*.freeze.txt \
+            -size ${fsize}c \
+            -exec cmp -s /app/freeze.txt {} \; \
+            -print -quit | grep -q .
+    then
+        # This means our current pip install list matches one we have already
+        # tested -- no need to repeat it
+        echo "This set of packages has already been tested for this Python version -- SKIPPING"
+        exit 0
+    fi
+    # This means this is a new install list, so copy it to the directory
+    echo "This set of packages has not been tested yet for this Python version"
+    ffile=$(mktemp -p /app/freeze --suffix .freeze.txt)
+    cp /app/freeze.txt "${ffile}"
+    chmod a+rw "${ffile}"
+fi
+pushd /app
+if ! python -m test_rrs ; then
+    # Display log file
+    echo "test_rrs FAILED; Showing log file contents"
+    cat test_rrs.log
+    exit 1
+fi
+popd

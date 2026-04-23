@@ -28,6 +28,7 @@ set -euo pipefail
 IMG="pytest-${PY_VERSION}:${DOCKER_VERSION}"
 constfile=$(mktemp)
 summfile=$(mktemp)
+pip_freeze_dir=$(mktemp -d)
 
 python3 ./gen_test_constraints.py > "${constfile}"
 mapfile -t lines < "${constfile}"
@@ -45,7 +46,7 @@ for ARGS in "${lines[@]}"; do
     echo "#"
     echo "###############################################################"
     let total+=1
-    if docker run "$IMG" $ARGS ; then
+    if docker run -v "${pip_freeze_dir}":/app/freeze "$IMG" $ARGS ; then
         verb=PASSED
     else
         verb=FAILED
@@ -61,6 +62,10 @@ for ARGS in "${lines[@]}"; do
 done
 
 sort "${summfile}"
+num_tested_configs=$(ls "${pip_freeze_dir}" | wc -l)
+echo "Number of configs tested (ignoring duplicates): ${num_tested_configs}"
+
+rm -rf "${constfile}" "${summfile}" "${pip_freeze_dir}" || true
 
 if [[ $total == 0 ]]; then
     echo "ERROR: No tests performed (this should never happen)" 1>&2
