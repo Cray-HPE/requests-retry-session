@@ -93,13 +93,13 @@ class TimeoutHTTPAdapter(HTTPAdapter):
             self,
             request: PreparedRequest,
             stream: bool | NotPassed = NOT_PASSED,
-            timeout: TimeoutType | NotPassed = NOT_PASSED,
+            timeout: TimeoutType = None,
             verify: VerifyType | NotPassed = NOT_PASSED,
             cert: CertType | NotPassed = NOT_PASSED,
             proxies: ProxiesType | NotPassed = NOT_PASSED) -> Response:
         kwargs: _SendArgs = {
             "timeout":
-            self.timeout if isinstance(timeout, NotPassed) else timeout
+            self.timeout if timeout is None else timeout
         }
         if not isinstance(stream, NotPassed):
             kwargs["stream"] = stream
