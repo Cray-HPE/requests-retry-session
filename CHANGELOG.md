@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed bug in `TimeoutHTTPAdapter` preventing timeouts from happening
+
 ## [2.0.6] - 2026-04-17
 
 ### Added
