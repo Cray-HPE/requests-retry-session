@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.2] - 2026-04-23
+
 ### Added
 - Added tests for `allowed_methods` and specifying multiple protocols
 - Added timeout tests
