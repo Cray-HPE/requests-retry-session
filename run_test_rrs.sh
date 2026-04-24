@@ -25,14 +25,66 @@
 
 set -euo pipefail
 
-IMG="pytest-${PY_VERSION}:${DOCKER_VERSION}"
+# Make sure SKIP_RC variable is set
+./validate_skip_rc.sh
 
-python3 ./gen_test_constraints.py | while read ARGS; do
+IMG="pytest-${PY_VERSION}:${DOCKER_VERSION}"
+constfile=$(mktemp)
+summfile=$(mktemp)
+pip_freeze_dir=$(mktemp -d)
+
+python3 ./gen_test_constraints.py > "${constfile}"
+mapfile -t lines < "${constfile}"
+
+total=0
+failed=0
+
+for ARGS in "${lines[@]}"; do
     # Deliberately do not quote $ARGS, so it is split into multiple arguments
     # if there is whitespace in it, or it will not be an argument at all,
     # if it is empty
-    echo "Testing ${PY_VERSION} with constraints $ARGS"
-    docker run "$IMG" $ARGS || exit 1
+    echo "###############################################################"
+    echo "#"
+    echo "# Testing ${PY_VERSION} with constraints $ARGS"
+    echo "#"
+    echo "###############################################################"
+    # Temporarily disable set -e so we can more easily grab the return code
+    set +e
+    docker run -v "${pip_freeze_dir}":/app/freeze "$IMG" $ARGS
+    docker_rc=$?
+    set -e
+    if (( docker_rc == 0 )); then
+        verb=PASSED
+        let total+=1
+    elif (( docker_rc == SKIP_RC )); then
+        verb=SKIPPED
+    else
+        verb=FAILED
+        let failed+=1
+        let total+=1
+    fi
+    echo "###############################################################"
+    echo "#"
+    echo "# ${verb}: ${PY_VERSION} with constraints '$ARGS'"
+    echo "${verb} constraints='$ARGS'" >> "${summfile}"
+    echo "#"
+    echo "###############################################################"
+    echo
 done
 
+sort "${summfile}"
+num_tested_configs=$(ls "${pip_freeze_dir}" | wc -l)
+echo "Number of configs tested (ignoring duplicates): ${num_tested_configs}"
+
+rm -rf "${constfile}" "${summfile}" "${pip_freeze_dir}" || true
+
+if [[ $total == 0 ]]; then
+    echo "ERROR: No tests performed (this should never happen)" 1>&2
+    exit 2
+elif [[ $failed != 0 ]]; then
+    echo "ERROR: $failed tests failed (out of $total total)"
+    exit 1
+fi
+
+echo "All $total tests passed"
 exit 0
