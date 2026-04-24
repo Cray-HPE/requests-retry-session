@@ -40,6 +40,7 @@ PYLINT_VENV_BASE_DIR ?= pylint-venv
 PYLINT_VENV ?= $(PYLINT_VENV_BASE_DIR)/$(PY_VERSION)
 PYLINT_VENV_PYBIN ?= $(PYLINT_VENV)/bin/python3
 PIP_INSTALL_ARGS ?= --no-cache
+SKIP_RC ?= 57
 
 ifneq ($(wildcard ${HOME}/.netrc),)
         DOCKER_ARGS ?= --secret id=netrc,src=${HOME}/.netrc
@@ -95,10 +96,11 @@ pymod_test_docker_build:
 			--pull ${DOCKER_ARGS} \
 			--tag 'pytest-$(PY_VERSION):$(DOCKER_VERSION)' \
 			--build-arg PY_VERSION=$(PY_VERSION) \
+			--build-arg SKIP_RC=$(SKIP_RC) \
 			.
 
 pymod_test_docker_run:
-		PY_VERSION=$(PY_VERSION) DOCKER_VERSION=${DOCKER_VERSION} ./run_test_rrs.sh
+		SKIP_RC=$(SKIP_RC) PY_VERSION=$(PY_VERSION) DOCKER_VERSION=$(DOCKER_VERSION) ./run_test_rrs.sh
 
 rpm_prepare:
 		rm -rf $(BUILD_DIR)
