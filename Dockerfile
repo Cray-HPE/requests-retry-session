@@ -26,14 +26,36 @@ ARG BASE_IMAGE_NAME=artifactory.algol60.net/csm-docker/stable/csm-docker-sle-pyt
 ARG PY_VERSION=3.13
 ARG PYBIN=python$PY_VERSION
 ARG BASE_IMAGE_VERSION=$PY_VERSION
+ARG PIP_CACHE_DIR=/app/pip-cache
+ARG PIP_DL_DIR=/app/pip-dl
+ARG SKIP_RC=57
 
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_VERSION
 ARG PYBIN
+ARG PY_VERSION
+ARG PIP_CACHE_DIR
+ARG PIP_DL_DIR
+ARG SKIP_RC
+ENV PY_VERSION=${PY_VERSION}
+ENV PIP_CACHE_DIR="${PIP_CACHE_DIR}"
+ENV PIP_DL_DIR="${PIP_DL_DIR}"
+ENV SKIP_RC=${SKIP_RC}
 WORKDIR /app
-COPY requests_retry_session*.whl test_rrs.py test_rrs.sh test_constraint_combinations.dat /app/
-RUN chmod +rx /app/test_rrs.sh && \
-    $PYBIN -m venv /app/venv && \
+COPY test_rrs/ /app/test_rrs
+COPY cache_pip.sh \
+     gen_test_constraints.py \
+     requests_retry_session*.whl \
+     test_rrs.sh \
+     test_constraint_combinations.dat \
+     validate_skip_rc.sh /app/
+RUN chmod +rx /app/test_rrs.sh /app/cache_pip.sh /app/validate_skip_rc.sh && \
+    mkdir -p "${PIP_CACHE_DIR}" "${PIP_DL_DIR}" && \
+    "${PYBIN}" -m venv /app/venv && \
     /app/venv/bin/pip3 install --no-cache-dir -U pip && \
-    /app/venv/bin/pip3 list --format freeze
+    /app/venv/bin/pip3 list --format freeze && \
+    /app/cache_pip.sh && \
+    /app/venv/bin/pip3 list --format freeze && \
+    ls "${PIP_DL_DIR}" && \
+    chmod -R a+rwx "${PIP_CACHE_DIR}" "${PIP_DL_DIR}"
 
 ENTRYPOINT ["/app/test_rrs.sh"]
