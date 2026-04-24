@@ -12,12 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for any of the supported Python versions
 - Added comments explaining that protocol arguments must omit the trailing "://"
 - Added explicit type annotations for `TimeoutHTTPAdapter.__init__()`
+- Added timeout tests
 
 ### Changed
 - Backported improvements from 1.0 branch, to keep v0.5 and v1.0 as consistent as possible,
   except for the type annotations
 - Changed type hint for timeout arguments from `int` to `float` (`float` values
   already work fine)
+- Refactored tests for clarity
 
 ### Removed
 - Removed `py.typed` from package; accurate type annotations will only be for versions of this
