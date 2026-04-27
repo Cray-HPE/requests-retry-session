@@ -1,28 +1,8 @@
 #If additional Python versions are added to this file, gen_test_constraints.py must also be updated.
 #py versions (or all)   |constraint1            |constraint2           |constraint3 ...
-3.6                     |                        urllib3>1.25,<1.26    |typing_extensions==3.7.4.3
-3.9 3.10 3.11           |                        urllib3>1.25,<1.26    |typing_extensions==4.6
+3.6 3.9 3.10 3.11       |                        urllib3==1.26.0
+3.6 3.9 3.10 3.11       |                        urllib3==1.26.4
 3.9 3.10 3.11 3.12 3.13 |                        urllib3==2.2.0
-3.6                     |requests==2.16.2       |urllib3==1.21.1       |typing_extensions==3.7.4.3
-3.9                     |requests==2.16.2                              |typing_extensions==4.6
-3.6                     |requests==2.19.0       |urllib3==1.23
-3.9 3.10 3.11           |requests==2.19.0       |urllib3==1.23
-3.6                     |requests>=2.16.3,<2.17
-3.9                     |requests>=2.16.3,<2.17
-3.6                     |requests>=2.17,<2.18
-3.9                     |requests>=2.17,<2.18
-3.6                     |requests>=2.18,<2.19
-3.9                     |requests>=2.18,<2.19
-3.6                     |requests>=2.20,<2.21
-3.9 3.10 3.11           |requests>=2.20,<2.21
-3.6                     |requests>=2.21,<2.22
-3.9 3.10 3.11           |requests>=2.21,<2.22
-3.6                     |requests>=2.22,<2.23
-3.9 3.10 3.11           |requests>=2.22,<2.23
-3.6                     |requests>=2.23,<2.24
-3.9 3.10 3.11           |requests>=2.23,<2.24
-3.6                     |requests>=2.24,<2.25
-3.9 3.10 3.11           |requests>=2.24,<2.25
 3.6                     |requests==2.25.0       |urllib3==1.26.5       |typing_extensions==3.7.4.3
 3.9 3.10 3.11 3.12 3.13 |requests==2.25.0       |urllib3==1.26.5       |typing_extensions==4.6
 3.6                     |requests>=2.26,<2.27   |urllib3>1.26.5,<1.27
