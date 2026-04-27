@@ -42,7 +42,6 @@ if sys.version_info >= (3, 9):
 else:
     from typing import Callable, Iterable
 
-from requests import Response as RequestsResponse
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import ReadTimeout as RequestsReadTimeout
 from requests.exceptions import RetryError as RequestsRetryError
@@ -61,20 +60,6 @@ from .defs import NOTICE_LOG_LEVEL as NOTICE
 from .request_sessions import RequestSessions
 from .server import BackgroundServer
 from .utils import random_id
-
-# Prior to requests 2.18, response objects were not context managers.
-# Since this version of RRS supports these older requests versions, let's check
-# and define our request response handling accordingly
-
-if hasattr(RequestsResponse, "__enter__") and hasattr(RequestsResponse, "__exit__"):
-    # Responses are context managers
-    def req_sc(session_method, url, params):
-        with session_method(url, params=params) as resp:
-            return resp.status_code
-else:
-    # Responses are not context managers
-    def req_sc(session_method, url, params):
-        return session_method(url, params=params).status_code
 
 def test_req(
     session_method: Callable,
@@ -104,7 +89,8 @@ def test_req(
 
     logging.debug("%s %s", msg_pre, msg_post)
     try:
-        sc = req_sc(session_method, URL, req_params)
+        with session_method(URL, params=req_params) as resp:
+            sc = resp.status_code
     except Exception as err:
         msg = f"{msg_pre} raised {type(err).__name__}: {err} {msg_post}"
         if isinstance(expected_sc, int):
@@ -223,12 +209,19 @@ def run_tests(
 
 def run_all_tests() -> int:
     exit_rc = 0
+    post_only_adapter_args = RR_ADAPTER_ARGS.copy()
+    post_only_adapter_args['allowed_methods'] = ('POST',)
 
-    for proto in [ 'http' ]:
+    for proto in [ 'http', ('https', 'http') ]:
         with RequestSessions(proto, RR_ADAPTER_ARGS) as rrs_sessions:
             logging.log(NOTICE, "Running tests (protocol=%s args=%s)", proto, RR_ADAPTER_ARGS)
-            exit_rc += run_tests(retry_test_list=rrs_sessions.test_list("get"),
-                                 nonretry_test_list=rrs_sessions.test_list("post"))
+            exit_rc += run_tests(retry_test_list=rrs_sessions.test_list("get"))
+
+        with RequestSessions(proto, post_only_adapter_args) as rrs_sessions:
+            logging.log(NOTICE, "Running tests (protocol=%s args=%s)", proto, post_only_adapter_args)
+            exit_rc += run_tests(
+                        retry_test_list=rrs_sessions.test_list("post"),
+                        nonretry_test_list=rrs_sessions.test_list("get"))
 
     if exit_rc:
         logging.error("At least one subtest failed")

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for `allowed_methods` argument, to allow retries for non-default
   methods like `PATCH` and `POST`, without dependence on `Retry.DEFAULT_ALLOWED_METHODS`
 - Added support for specifying multiple protocols
+- Added tests for `allowed_methods` and specifying multiple protocols
 
 ### Dependencies
 - Raise minimum required versions for `requests` (to `2.25`) and

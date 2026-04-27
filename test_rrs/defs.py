@@ -48,7 +48,7 @@ else:
 
 import requests_retry_session as rrs
 
-ProtocolType: TypeAlias = str
+ProtocolType: TypeAlias = Union[str, Iterable[str]]
 PROTOCOL: ProtocolType = 'http'
 PORT=8000
 URL=f"{PROTOCOL}://localhost:{PORT}/"
