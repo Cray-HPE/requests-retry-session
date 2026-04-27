@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Dependencies
 - Raise minimum required versions for `requests` (to `2.25`) and
-  `urllib3` (to `1.26.5`) for all Python versions, to support `allowed_methods` `Retry`
+  `urllib3` (to `1.26`) for all Python versions, to support `allowed_methods` `Retry`
   argument.
 
 ## [3.1.1] - 2026-04-17
