@@ -1,5 +1,7 @@
 #If additional Python versions are added to this file, gen_test_constraints.py must also be updated.
 #py versions (or all)   |constraint1            |constraint2           |constraint3 ...
+3.6 3.9 3.10 3.11       |                        urllib3==1.26.0
+3.6 3.9 3.10 3.11       |                        urllib3==1.26.4
 3.9 3.10 3.11 3.12 3.13 |                        urllib3==2.2.0
 3.6                     |requests==2.25.0       |urllib3==1.26.5       |typing_extensions==3.7.4.3
 3.9 3.10 3.11 3.12 3.13 |requests==2.25.0       |urllib3==1.26.5       |typing_extensions==4.6
