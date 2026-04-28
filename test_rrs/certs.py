@@ -87,7 +87,6 @@ class CertFiles(AbstractContextManager):
     def __init__(self):
         self._cert_file: Union[str, None] = None
         self._key_file: Union[str, None] = None
-        self._stack: Union[ExitStack, None] = None
 
     @property
     def cert_file(self) -> str:
