@@ -179,7 +179,6 @@ def run_server(stop_event: multiprocessing.Event, port: int, https: bool) -> Non
         # Create an ad-hoc self-signed certificate automatically
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.load_default_certs()
-        context = ssl._create_unverified_context()  # allows insecure cert
         httpd.socket = context.wrap_socket(httpd.socket, server_side=True)
     logging.debug("Server running on %s://%s:%d", proto, SERVER_HOSTNAME, port)
     while not stop_event.is_set():
