@@ -24,7 +24,7 @@
 
 ARG BASE_IMAGE_NAME=artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python
 ARG ALPINE_BASE_IMAGE=artifactory.algol60.net/csm-docker/stable/docker.io/library/alpine:3.22
-RG PY_VERSION=3.13
+ARG PY_VERSION=3.13
 ARG PYBIN=python$PY_VERSION
 ARG BASE_IMAGE_VERSION=$PY_VERSION
 ARG PIP_CACHE_DIR=/app/pip-cache
