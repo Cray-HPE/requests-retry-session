@@ -32,7 +32,7 @@ import os
 import ssl
 import tempfile
 from types import TracebackType
-from typing import BinaryIO, Type, Union
+from typing import Type, Union
 
 from cryptography import x509
 from cryptography.x509.oid import NameOID
