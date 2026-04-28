@@ -26,8 +26,9 @@
 Context manager to suppress insecure request warnings
 """
 
-from contextlib import AbstractContextManager, ExitStack
+from contextlib import AbstractContextManager
 import datetime
+import os
 import ssl
 import tempfile
 from types import TracebackType
@@ -38,7 +39,7 @@ from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-def generate_self_signed_cert(cert_file, key_file):
+def generate_self_signed_cert(cert_file_path: str, key_file_path: str):
     # Generate private key
     key = rsa.generate_private_key(
         public_exponent=65537,
@@ -70,46 +71,37 @@ def generate_self_signed_cert(cert_file, key_file):
         .sign(key, hashes.SHA256())
     )
 
-    key_file.write(
-        key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.NoEncryption(),
+    with open(key_file_path, "wb") as key_file:
+        key_file.write(
+            key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption(),
+            )
         )
-    )
-    key_file.close()
 
-    cert_file.write(cert.public_bytes(serialization.Encoding.PEM))
-    cert_file.close()
-
+    with open(cert_file_path, "wb") as cert_file:
+        cert_file.write(cert.public_bytes(serialization.Encoding.PEM))
 
 class CertFiles(AbstractContextManager):
     def __init__(self):
-        self._cert_file: Union[BinaryIO, None] = None
-        self._key_file: Union[BinaryIO, None] = None
+        self._cert_file: Union[str, None] = None
+        self._key_file: Union[str, None] = None
         self._stack: Union[ExitStack, None] = None
 
     @property
     def cert_file(self) -> str:
         assert self._cert_file is not None
-        return self._cert_file.name
+        return self._cert_file
 
     @property
     def key_file(self) -> str:
         assert self._key_file is not None
-        return self._key_file.name
+        return self._key_file
 
     def __enter__(self):
-        # Create an ExitStack to manage multiple context managers
-        self._stack = ExitStack()
-
-        # Enter two internal context managers for the two temporary files
-        self._cert_file = self._stack.enter_context(
-            tempfile.NamedTemporaryFile(delete=True)
-        )
-        self._key_file = self._stack.enter_context(
-            tempfile.NamedTemporaryFile(delete=True)
-        )
+        self._cert_file = tempfile.mkstemp()[1]
+        self._key_file = tempfile.mkstemp()[1]
         generate_self_signed_cert(self._cert_file, self._key_file)
         return self
 
@@ -118,5 +110,15 @@ class CertFiles(AbstractContextManager):
             exc_val: Union[BaseException, None],
             exc_tb: Union[TracebackType, None]) -> Union[bool, None]:
         # Delegate cleanup to the ExitStack
-        self._cert_file, self._key_file = None, None
-        return self._stack.__exit__(exc_type, exc_val, exc_tb)
+        (cert_fp,
+         key_fp,
+         self._cert_file,
+         self._key_file) = (self._cert_file,
+                            self._key_file,
+                            None, None)
+        for fpath in [cert_cp, key_fp]:
+            try:
+                os.remove(fpath)
+            except FileNotFoundError:
+                pass 
+        return None
