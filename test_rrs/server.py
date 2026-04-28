@@ -31,6 +31,7 @@ from contextlib import AbstractContextManager
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import logging
 import multiprocessing
+import os
 import socket
 import ssl
 import time
@@ -179,6 +180,8 @@ def run_server(stop_event: multiprocessing.Event, port: int, https: bool) -> Non
         # Create an ad-hoc self-signed certificate automatically
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.load_default_certs()
+        context.load_cert_chain(certfile=os.environ["CERTFILE"],
+                                keyfile=os.environ["KEYFILE"])
         httpd.socket = context.wrap_socket(httpd.socket, server_side=True)
     logging.debug("Server running on %s://%s:%d", proto, SERVER_HOSTNAME, port)
     while not stop_event.is_set():

@@ -23,12 +23,34 @@
 #
 
 ARG BASE_IMAGE_NAME=artifactory.algol60.net/csm-docker/stable/csm-docker-sle-python
-ARG PY_VERSION=3.13
+ARG ALPINE_BASE_IMAGE=artifactory.algol60.net/csm-docker/stable/docker.io/library/alpine:3.22
+RG PY_VERSION=3.13
 ARG PYBIN=python$PY_VERSION
 ARG BASE_IMAGE_VERSION=$PY_VERSION
 ARG PIP_CACHE_DIR=/app/pip-cache
 ARG PIP_DL_DIR=/app/pip-dl
 ARG SKIP_RC=57
+ARG SSL_DIR=/app/ssl
+ARG KEYFILE_NAME=key.pem
+ARG CERTFILE_NAME=key.pem
+ARG KEYFILE=${SSL_DIR}/${KEYFILE_NAME}
+ARG CERTFILE=${SSL_DIR}/${CERTFILE_NAME}
+
+from $ALPINE_BASE_IMAGE as openssl
+ARG SSL_DIR
+ARG KEYFILE
+ARG CERTFILE
+WORKDIR /app
+RUN --mount=type=secret,id=netrc,target=/root/.netrc \
+    apk add --no-cache openssl-dev && \
+    apk -U upgrade --no-cache && \
+    mkdir -p "${SSL_DIR}" && \
+    openssl req -x509 \
+                -newkey rsa:2048 \
+                -keyout "${KEYFILE}" \
+                -out "${CERTFILE}" \
+                -days 365 \
+                -nodes
 
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_VERSION
 ARG PYBIN
@@ -36,11 +58,17 @@ ARG PY_VERSION
 ARG PIP_CACHE_DIR
 ARG PIP_DL_DIR
 ARG SKIP_RC
+ARG SSL_DIR
+ARG KEYFILE
+ARG CERTFILE
+ENV KEYFILE=${KEYFILE}
+ENV CERTFILE=${CERTFILE}
 ENV PY_VERSION=${PY_VERSION}
 ENV PIP_CACHE_DIR="${PIP_CACHE_DIR}"
 ENV PIP_DL_DIR="${PIP_DL_DIR}"
 ENV SKIP_RC=${SKIP_RC}
 WORKDIR /app
+COPY --from=openssl "${SSL_DIR}/" "${SSL_DIR}"
 COPY test_rrs/ /app/test_rrs
 COPY cache_pip.sh \
      gen_test_constraints.py \
