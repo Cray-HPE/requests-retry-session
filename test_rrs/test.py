@@ -222,13 +222,13 @@ def run_all_tests() -> int:
                    ('https', 'http') ]:
         with RequestSessions(proto, RR_ADAPTER_ARGS) as rrs_sessions:
             logging.log(NOTICE, "Running tests (protocol=%s args=%s)", proto, RR_ADAPTER_ARGS)
-            exit_rc += run_tests(protocol=proto,
+            exit_rc += run_tests(protocols=proto,
                                  retry_test_list=rrs_sessions.test_list("get"))
 
         with RequestSessions(proto, post_only_adapter_args) as rrs_sessions:
             logging.log(NOTICE, "Running tests (protocol=%s args=%s)", proto, post_only_adapter_args)
             exit_rc += run_tests(
-                        protocol=proto,
+                        protocols=proto,
                         retry_test_list=rrs_sessions.test_list("post"),
                         nonretry_test_list=rrs_sessions.test_list("get"))
 
