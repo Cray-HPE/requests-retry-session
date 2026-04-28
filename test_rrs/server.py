@@ -31,7 +31,6 @@ from contextlib import AbstractContextManager
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import logging
 import multiprocessing
-import os
 import socket
 import ssl
 import time
@@ -45,6 +44,7 @@ from typing import (
 )
 from urllib.parse import parse_qs, urlparse
 
+from .certs import CertFiles
 from .defs import (DROP_SC,
                    ProtocolType,
                    ReqCountDict,
@@ -171,7 +171,13 @@ def get_free_port() -> int:
         s.bind(("", 0))  # 0 tells the OS to pick an available port
         return s.getsockname()[1]
 
-def run_server(stop_event: multiprocessing.Event, port: int, https: bool) -> None:
+def run_server(
+    stop_event: multiprocessing.Event,
+    port: int,
+    https: bool,
+    cert_file: str,
+    key_file: str
+) -> None:
     """Run a simple HTTP server until stop_event is set."""
     proto = 'https' if https else 'http'
     httpd = HTTPServer((SERVER_HOSTNAME, port), MyHandler)
@@ -180,8 +186,7 @@ def run_server(stop_event: multiprocessing.Event, port: int, https: bool) -> Non
         # Create an ad-hoc self-signed certificate automatically
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.load_default_certs()
-        context.load_cert_chain(certfile=os.environ["CERTFILE"],
-                                keyfile=os.environ["KEYFILE"])
+        context.load_cert_chain(certfile=cert_file, keyfile=key_file)
         httpd.socket = context.wrap_socket(httpd.socket, server_side=True)
     logging.debug("Server running on %s://%s:%d", proto, SERVER_HOSTNAME, port)
     while not stop_event.is_set():
@@ -196,6 +201,7 @@ class BackgroundServer(AbstractContextManager):
         self._stop_event: Union[multiprocessing.Event, None] = None
         self._server_process: Union[multiprocessing.Process, None] = None
         self._port: Union[int, None] = None
+        self._certs: Union[CertFiles, None] = None
 
     @property
     def url(self) -> str:
@@ -210,13 +216,16 @@ class BackgroundServer(AbstractContextManager):
         self._stop_event = multiprocessing.Event()
         # Start server
         self._port = get_free_port()
+        self._certs = CertFiles().__enter__()
         logging.debug("Start background server: %s", self.url)
         self._server_process = multiprocessing.Process(
                                 target=run_server,
                                 kwargs={
                                     "stop_event": self._stop_event,
                                     "port": self._port,
-                                    "https": self._https}
+                                    "https": self._https,
+                                    "cert_file": self._certs.cert_file,
+                                    "key_file": self._certs.key_file}
         )
         self._server_process.start()
 
@@ -230,16 +239,19 @@ class BackgroundServer(AbstractContextManager):
             exc_val: Union[BaseException, None],
             exc_tb: Union[TracebackType, None]) -> Union[bool, None]:
         (url,
+         certs,
          stop_event,
          server_process,
+         self._certs,
          self._stop_event,
          self._port,
          self._server_process) = (self.url,
+                                  self._certs,
                                   self._stop_event,
                                   self._server_process,
-                                  None, None, None)
+                                  None, None, None, None)
         logging.debug("Stopping background server %s", url)
         stop_event.set()
         server_process.join()
         logging.debug("Stopped background server %s", url)
-        return None
+        return certs.__exit__(exc_type, exc_val, exc_tb)
