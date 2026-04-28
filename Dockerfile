@@ -42,7 +42,7 @@ ARG KEYFILE
 ARG CERTFILE
 WORKDIR /app
 RUN --mount=type=secret,id=netrc,target=/root/.netrc \
-    apk add --no-cache openssl-dev && \
+    apk add --no-cache openssl && \
     apk -U upgrade --no-cache && \
     mkdir -p "${SSL_DIR}" && \
     openssl req -x509 \
