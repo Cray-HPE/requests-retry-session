@@ -30,7 +30,12 @@ import logging
 import sys
 # Because we wish to support Python versions back to 3.6, we
 # import Union rather than using |
-from typing import DefaultDict, NamedTuple, Tuple, Union
+from typing import (get_args,
+                    DefaultDict,
+                    FrozenSet,
+                    NamedTuple,
+                    Tuple,
+                    Union)
 
 # collections.abc.Callable/Iterable made parameterizable in Python 3.9
 # Literal was added to typing in 3.9
@@ -48,10 +53,11 @@ else:
 
 import requests_retry_session as rrs
 
-ProtocolType: TypeAlias = Union[str, Iterable[str]]
-PROTOCOL: ProtocolType = 'http'
-PORT=8000
-URL=f"{PROTOCOL}://localhost:{PORT}/"
+# In our testing, we are only going to ever use protocols http and https
+SingleProtocol: TypeAlias = Literal['http', 'https']
+SINGLE_PROTOCOLS: FrozenSet[SingleProtocol] = frozenset(get_args(SingleProtocol))
+ProtocolType: TypeAlias = Union[SingleProtocol, Iterable[SingleProtocol]]
+SERVER_HOSTNAME = 'localhost'
 
 class ReqParams(NamedTuple):
     id: str

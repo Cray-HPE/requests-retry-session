@@ -53,12 +53,13 @@ from .defs import (
     ReqMethodToTest,
     RR_ADAPTER_ARGS,
     RR_STATUS_FORCELIST,
-    TIMEOUT_DELAY,
-    URL
+    SingleProtocol,
+    TIMEOUT_DELAY
 )
 from .defs import NOTICE_LOG_LEVEL as NOTICE
 from .request_sessions import RequestSessions
 from .server import BackgroundServer
+from .suppress_ssl_warnings import suppress_ssl_warnings
 from .utils import random_id
 
 def test_req(
@@ -89,8 +90,9 @@ def test_req(
 
     logging.debug("%s %s", msg_pre, msg_post)
     try:
-        with session_method(URL, params=req_params) as resp:
-            sc = resp.status_code
+        with suppress_ssl_warnings():
+            with session_method(URL, params=req_params) as resp:
+                sc = resp.status_code
     except Exception as err:
         msg = f"{msg_pre} raised {type(err).__name__}: {err} {msg_post}"
         if isinstance(expected_sc, int):
@@ -112,6 +114,7 @@ def test_req(
     return 1
 
 def run_tests(
+    protocols: Iterable[SingleProtocol],
     retry_test_list: Iterable[ReqMethodToTest],
     nonretry_test_list: Union[Iterable[ReqMethodToTest], None] = None
 ) -> int:
@@ -122,88 +125,90 @@ def run_tests(
     exit_rc = 0
     if nonretry_test_list is None:
         nonretry_test_list = []
-    for sfunc, sdesc in retry_test_list:
-        with BackgroundServer():
-            # Verify that a good status code is returned to us
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=GOOD_SCS[0],
-                                scs=GOOD_SCS[0]
-            )
-            # Now test that a bad non-retry-able SC is also returned to us
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=BAD_NORETRY_SCS[0],
-                                scs=BAD_NORETRY_SCS[0]
-            )
-            # Now test an endpoint that initially returns bad retry-able SC, then returns a good one
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=GOOD_SCS[0],
-                                scs=(RR_STATUS_FORCELIST[0], GOOD_SCS[0])
-            )
-            # Now test an endpoint that always returns bad retry-able statuses
-            # Once our retries are exhausted, we should get RequestsRetryError
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=RequestsRetryError,
-                                scs=RR_STATUS_FORCELIST
-            )
-            # Now test an endpoint that initially should drop connection, then returns good SC
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=GOOD_SCS[0],
-                                scs=(DROP_SC, GOOD_SCS[0])
-            )
-            # Now test an endpoint that should always drop connection (so we expect ConnectionError)
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=RequestsConnectionError,
-                                scs=DROP_SC
-            )
-            # Now test an endpoint that initially should time out, but always returns good SCs.
-            # We expect to get back the second good SC, since the first one should time out and
-            # be retries.
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=GOOD_SCS[1],
-                                scs=GOOD_SCS[:2],
-                                delays=(TIMEOUT_DELAY, 0)
-            )
-        # To make sure the server is not still dealing with the timeout from the previous subtest,
-        # use a fresh one
-        with BackgroundServer():
-            # Now test an endpoint that should always time out (so we expect ConnectionError)
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=RequestsConnectionError,
-                                scs=GOOD_SCS[0],
-                                delays=TIMEOUT_DELAY
-            )
+    for proto in protocols:
+        for sfunc, sdesc in retry_test_list:
+            with BackgroundServer(proto) as url:
+                # Verify that a good status code is returned to us
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=GOOD_SCS[0],
+                                    scs=GOOD_SCS[0]
+                )
+                # Now test that a bad non-retry-able SC is also returned to us
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=BAD_NORETRY_SCS[0],
+                                    scs=BAD_NORETRY_SCS[0]
+                )
+                # Now test an endpoint that initially returns bad retry-able SC, then returns a good one
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=GOOD_SCS[0],
+                                    scs=(RR_STATUS_FORCELIST[0], GOOD_SCS[0])
+                )
+                # Now test an endpoint that always returns bad retry-able statuses
+                # Once our retries are exhausted, we should get RequestsRetryError
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=RequestsRetryError,
+                                    scs=RR_STATUS_FORCELIST
+                )
+                # Now test an endpoint that initially should drop connection, then returns good SC
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=GOOD_SCS[0],
+                                    scs=(DROP_SC, GOOD_SCS[0])
+                )
+                # Now test an endpoint that should always drop connection (so we expect ConnectionError)
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=RequestsConnectionError,
+                                    scs=DROP_SC
+                )
+                # Now test an endpoint that initially should time out, but always returns good SCs.
+                # We expect to get back the second good SC, since the first one should time out and
+                # be retries.
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=GOOD_SCS[1],
+                                    scs=GOOD_SCS[:2],
+                                    delays=(TIMEOUT_DELAY, 0)
+                )
 
-    for sfunc, sdesc in nonretry_test_list:
-        with BackgroundServer():
-            # Verify that a good status code is returned to us
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=GOOD_SCS[0],
-                                scs=GOOD_SCS[0]
-            )
-            # Now test that a bad non-retry-able SC is also returned to us
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=BAD_NORETRY_SCS[0],
-                                scs=BAD_NORETRY_SCS[0]
-            )
-            # Now test an endpoint that initially returns bad retry-able SC, then returns a good one.
-            # Without retries, we should get the bad SC back.
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=RR_STATUS_FORCELIST[0],
-                                scs=(RR_STATUS_FORCELIST[0], GOOD_SCS[0])
-            )
-            # Now test an endpoint that initially should drop connection, then returns a good SC.
-            # We should not be retrying on the dropped connection, so a ConnectionError is expected
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=RequestsConnectionError,
-                                scs=(DROP_SC, GOOD_SCS[0])
-            )
-            # Now test an endpoint that initially should time out, but always returns good status codes
-            # We should not be retrying on the timeout, so a ReadTimeout is expected
-            exit_rc += test_req(sfunc, sdesc,
-                                expected_sc=RequestsReadTimeout,
-                                scs=GOOD_SCS[:2],
-                                delays=(TIMEOUT_DELAY, 0)
-            )
+            # To make sure the server is not still dealing with the timeout from the previous subtest,
+            # use a fresh one
+            with BackgroundServer(proto) as url:
+                # Now test an endpoint that should always time out (so we expect ConnectionError)
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=RequestsConnectionError,
+                                    scs=GOOD_SCS[0],
+                                    delays=TIMEOUT_DELAY
+                )
+
+        for sfunc, sdesc in nonretry_test_list:
+            with BackgroundServer(proto) as url:
+                # Verify that a good status code is returned to us
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=GOOD_SCS[0],
+                                    scs=GOOD_SCS[0]
+                )
+                # Now test that a bad non-retry-able SC is also returned to us
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=BAD_NORETRY_SCS[0],
+                                    scs=BAD_NORETRY_SCS[0]
+                )
+                # Now test an endpoint that initially returns bad retry-able SC, then returns a good one.
+                # Without retries, we should get the bad SC back.
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=RR_STATUS_FORCELIST[0],
+                                    scs=(RR_STATUS_FORCELIST[0], GOOD_SCS[0])
+                )
+                # Now test an endpoint that initially should drop connection, then returns a good SC.
+                # We should not be retrying on the dropped connection, so a ConnectionError is expected
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=RequestsConnectionError,
+                                    scs=(DROP_SC, GOOD_SCS[0])
+                )
+                # Now test an endpoint that initially should time out, but always returns good status codes
+                # We should not be retrying on the timeout, so a ReadTimeout is expected
+                exit_rc += test_req(sfunc, sdesc, url,
+                                    expected_sc=RequestsReadTimeout,
+                                    scs=GOOD_SCS[:2],
+                                    delays=(TIMEOUT_DELAY, 0)
+                )
 
     return exit_rc
 
@@ -212,14 +217,17 @@ def run_all_tests() -> int:
     post_only_adapter_args = RR_ADAPTER_ARGS.copy()
     post_only_adapter_args['allowed_methods'] = ('POST',)
 
-    for proto in [ 'http', ('https', 'http') ]:
+    for proto in [ ('http', ),
+                   ('https', 'http') ]:
         with RequestSessions(proto, RR_ADAPTER_ARGS) as rrs_sessions:
             logging.log(NOTICE, "Running tests (protocol=%s args=%s)", proto, RR_ADAPTER_ARGS)
-            exit_rc += run_tests(retry_test_list=rrs_sessions.test_list("get"))
+            exit_rc += run_tests(protocol=proto,
+                                 retry_test_list=rrs_sessions.test_list("get"))
 
         with RequestSessions(proto, post_only_adapter_args) as rrs_sessions:
             logging.log(NOTICE, "Running tests (protocol=%s args=%s)", proto, post_only_adapter_args)
             exit_rc += run_tests(
+                        protocol=proto,
                         retry_test_list=rrs_sessions.test_list("post"),
                         nonretry_test_list=rrs_sessions.test_list("get"))
 

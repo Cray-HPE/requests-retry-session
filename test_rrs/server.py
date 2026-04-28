@@ -31,6 +31,7 @@ from contextlib import AbstractContextManager
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import logging
 import multiprocessing
+import ssl
 import time
 from types import TracebackType
 # Because we wish to support Python versions back to 3.6, we
@@ -43,12 +44,14 @@ from typing import (
 from urllib.parse import parse_qs, urlparse
 
 from .defs import (DROP_SC,
-                   PORT,
-                   PROTOCOL,
+                   ProtocolType,
                    ReqCountDict,
                    ReqCountKey,
                    ReqMethodName,
-                   ReqParams)
+                   ReqParams,
+                   SERVER_HOSTNAME,
+                   SingleProtocol,
+                   SINGLE_PROTOCOLS)
 
 
 class MyHandler(BaseHTTPRequestHandler):
@@ -161,42 +164,79 @@ class MyHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         self._do_method("POST")
 
-def run_server(stop_event: multiprocessing.Event) -> None:
+def get_free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("", 0))  # 0 tells the OS to pick an available port
+        return s.getsockname()[1]
+
+def run_server(stop_event: multiprocessing.Event, port: int, https: bool) -> None:
     """Run a simple HTTP server until stop_event is set."""
-    httpd = HTTPServer(("localhost", PORT), MyHandler)
+    proto = 'https' if https else 'http'
+    httpd = HTTPServer((SERVER_HOSTNAME, port), MyHandler)
     httpd.timeout = 1  # allows periodic checks of stop_event
-    logging.debug("Server running on %s://localhost:%d", PROTOCOL, PORT)
+    if https:
+        # Create an ad-hoc self-signed certificate automatically
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_default_certs()
+        context = ssl._create_unverified_context()  # allows insecure cert
+        httpd.socket = context.wrap_socket(httpd.socket, server_side=True)
+    logging.debug("Server running on %s://%s:%d", proto, SERVER_HOSTNAME, port)
     while not stop_event.is_set():
         httpd.handle_request()
-    logging.debug("Stop signal received; %s://localhost:%d server shutting down",
-                 PROTOCOL, PORT)
+    logging.debug("Stop signal received; %s://%s:%d server shutting down",
+                  proto, SERVER_HOSTNAME, port)
 
 class BackgroundServer(AbstractContextManager):
-    def __init__(self) -> None:
+    def __init__(self, proto: SingleProtocol) -> None:
+        assert proto in SINGLE_PROTOCOLS
+        self._proto: SingleProtocol = proto
         self._stop_event: Union[multiprocessing.Event, None] = None
         self._server_process: Union[multiprocessing.Process, None] = None
+        self._port: Union[int, None] = None
+
+    @property
+    def url(self) -> str:
+        assert self._port is not None
+        return f"{self._proto}://{SERVER_HOSTNAME}:{self._port}/"
+
+    @property
+    def _https(self) -> bool:
+        return self._proto == "https"
 
     def __enter__(self):
         self._stop_event = multiprocessing.Event()
-        self._server_process = multiprocessing.Process(target=run_server, args=(self._stop_event, ))
-        logging.debug("Start background %s server on localhost:%d", PROTOCOL, PORT)
+        # Start server
+        self._port = get_free_port()
+        logging.debug("Start background server: %s", self.url)
+        self._server_process = multiprocessing.Process(
+                                target=run_server,
+                                kwargs={
+                                    "stop_event": self._stop_event,
+                                    "port": self._port,
+                                    "https": self._https}
+        )
         self._server_process.start()
+
         # Give it a moment to start up
         time.sleep(0.01)
-        logging.debug("Started background %s server on localhost:%d", PROTOCOL, PORT)
-        return self
+        logging.debug("Started background server: %s", self.url)
+        return self.url
 
     def __exit__(  # pylint: disable=useless-return
             self, exc_type: Union[Type[BaseException], None],
             exc_val: Union[BaseException, None],
             exc_tb: Union[TracebackType, None]) -> Union[bool, None]:
-        logging.debug("Stopping background %s server on localhost:%d", PROTOCOL, PORT)
-        (stop_event, server_process,
-         self._stop_event, self._server_process) = (self._stop_event,
-                                                    self._server_process,
-                                                    None,
-                                                    None)
+        (url,
+         stop_event,
+         server_process,
+         self._stop_event,
+         self._port,
+         self._server_process) = (self.url,
+                                  self._stop_event,
+                                  self._server_process,
+                                  None, None, None)
+        logging.debug("Stopping background server %s", url)
         stop_event.set()
         server_process.join()
-        logging.debug("Stopped background %s server on localhost:%d", PROTOCOL, PORT)
+        logging.debug("Stopped background server %s", url)
         return None
