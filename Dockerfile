@@ -50,7 +50,8 @@ RUN --mount=type=secret,id=netrc,target=/root/.netrc \
                 -keyout "${KEYFILE}" \
                 -out "${CERTFILE}" \
                 -days 365 \
-                -nodes
+                -nodes \
+                -subj "/C=ZZ/ST=XX/L=Harf/O=Local Dev/OU=Testing/CN=localhost"
 
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_VERSION
 ARG PYBIN
