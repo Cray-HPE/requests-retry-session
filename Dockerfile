@@ -81,6 +81,7 @@ RUN chmod +rx /app/test_rrs.sh /app/cache_pip.sh /app/validate_skip_rc.sh && \
     mkdir -p "${PIP_CACHE_DIR}" "${PIP_DL_DIR}" && \
     "${PYBIN}" -m venv /app/venv && \
     /app/venv/bin/pip3 install --no-cache-dir -U pip && \
+    /app/venv/bin/pip3 install --no-cache-dir --disable-pip-version-check "cryptography>=3.1" && \
     /app/venv/bin/pip3 list --format freeze && \
     /app/cache_pip.sh && \
     /app/venv/bin/pip3 list --format freeze && \

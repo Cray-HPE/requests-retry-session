@@ -27,17 +27,16 @@ Context manager to suppress insecure request warnings
 """
 
 from contextlib import AbstractContextManager, ExitStack
+import datetime
 import ssl
 import tempfile
 from types import TracebackType
 from typing import BinaryIO, Type, Union
 
-
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-import datetime
 
 def generate_self_signed_cert(cert_file, key_file):
     # Generate private key
