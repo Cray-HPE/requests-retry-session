@@ -92,7 +92,7 @@ def test_req(
     logging.debug("%s %s", msg_pre, msg_post)
     try:
         with suppress_ssl_warnings():
-            with session_method(url, params=req_params) as resp:
+            with session_method(url, params=req_params, verify=False) as resp:
                 sc = resp.status_code
     except Exception as err:
         msg = f"{msg_pre} raised {type(err).__name__}: {err} {msg_post}"
