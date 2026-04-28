@@ -43,7 +43,7 @@ fi
 . /app/venv/bin/activate
 # Use --no-index to avoid contacting PyPi, since we pre-cached the images when
 # we build our Dockerfile
-pip3 install --disable-pip-version-check --no-index --find-links="${PIP_DL_DIR}" /app/requests_retry_session*.whl -c "${CONSTRAINTS_FILE}"
+pip3 install --disable-pip-version-check --no-index --find-links="${PIP_DL_DIR}" /app/requests_retry_session*.whl "cryptography>=3.1" -c "${CONSTRAINTS_FILE}"
 pip3 list --format freeze | tee /app/freeze.txt
 if [[ -d /app/freeze ]]; then
     fsize=$(stat -c%s /app/freeze.txt)
