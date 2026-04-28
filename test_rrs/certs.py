@@ -115,7 +115,7 @@ class CertFiles(AbstractContextManager):
          self._key_file) = (self._cert_file,
                             self._key_file,
                             None, None)
-        for fpath in [cert_cp, key_fp]:
+        for fpath in [cert_fp, key_fp]:
             try:
                 os.remove(fpath)
             except FileNotFoundError:
