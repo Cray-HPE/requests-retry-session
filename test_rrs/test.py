@@ -65,6 +65,7 @@ from .utils import random_id
 def test_req(
     session_method: Callable,
     session_desc: str,
+    url: str,
     expected_sc: Union[int, Type[Exception]],
     scs: Union[int, Iterable[int]],
     delays: Union[float, Iterable[float], None] = None
@@ -91,7 +92,7 @@ def test_req(
     logging.debug("%s %s", msg_pre, msg_post)
     try:
         with suppress_ssl_warnings():
-            with session_method(URL, params=req_params) as resp:
+            with session_method(url, params=req_params) as resp:
                 sc = resp.status_code
     except Exception as err:
         msg = f"{msg_pre} raised {type(err).__name__}: {err} {msg_post}"
