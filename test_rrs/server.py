@@ -31,6 +31,7 @@ from contextlib import AbstractContextManager
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import logging
 import multiprocessing
+import socket
 import ssl
 import time
 from types import TracebackType
