@@ -62,9 +62,9 @@ pymod_build:
 		rm -rf ./dist || true
 		$(PYTHON_BIN) --version
 		$(PYTHON_BIN) -m pip install --upgrade --user pip build setuptools wheel
-		$(PYTHON_BIN) -m build --sdist requests_retry_session
-		$(PYTHON_BIN) -m build --wheel requests_retry_session
-		mv ./requests_retry_session/dist .
+		$(PYTHON_BIN) -m build --sdist rrs
+		$(PYTHON_BIN) -m build --wheel rrs
+		mv ./rrs/dist .
 		cp ./dist/requests_retry_session*.whl .
 
 pymod_validate_setup:
