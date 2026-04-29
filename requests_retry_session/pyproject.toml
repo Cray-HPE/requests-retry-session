@@ -77,8 +77,7 @@ test = [
 
 # Defines which folders belong to our package.
 [tool.setuptools.packages.find]
-include = ["src"]
-exclude = []
+where = ["src"]
 
 [tool.setuptools.package-data]
 "requests_retry_session" = ["py.typed"]
