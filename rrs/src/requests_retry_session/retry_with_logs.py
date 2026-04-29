@@ -35,7 +35,11 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from typing_extensions import Self
-    from urllib3 import BaseHTTPResponse
+    try:
+        from urllib3 import BaseHTTPResponse
+    except ImportError:
+        # Older versions of urllib3 need this adjustment
+        from urllib3 import HTTPResponse as BaseHTTPResponse
     from urllib3.connectionpool import ConnectionPool
 
 LOGGER = logging.getLogger(__name__)
