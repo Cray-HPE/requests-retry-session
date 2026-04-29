@@ -45,10 +45,6 @@ fi
 # we build our Dockerfile
 pip3 install --disable-pip-version-check --no-index --find-links="${PIP_DL_DIR}" /app/requests_retry_session*.whl "cryptography>=3.1" -c "${CONSTRAINTS_FILE}"
 pip3 list --format freeze | tee /app/freeze.txt
-for DIR in $(python -c "import site; print('\n'.join(site.getsitepackages()))"); do
-    echo "${DIR}"
-    ls "${DIR}"
-done
 if [[ -d /app/freeze ]]; then
     fsize=$(stat -c%s /app/freeze.txt)
     if find /app/freeze \

@@ -44,6 +44,6 @@ jobs:
       env:
         GIT_REPO_NAME: "${GITHUB_REPOSITORY#*/}"
       run: |
-        pip install rrs[ci]
+        pip install ./rrs[ci]
         nox -s lint
         nox -s type_check
