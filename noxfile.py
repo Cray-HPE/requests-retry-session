@@ -52,7 +52,10 @@ def lint(session):
 def type_check(session):
     """Run Mypy with config."""
     assert len(session.posargs) == 1
-    session.install(f"./rrs[type_check{session.posargs[0]}]")
+    label = f"type_check{session.posargs[0]}"
+    session.install(f"./rrs[{label}]")
+    if label == "type_check2":
+        session.install("./vendor/cray_types_urllib3-1.26.25.14.1-py3-none-any.whl")
     session.install("./rrs")
     session.run("pip","list","--format","freeze")
     session.log("Running mypy...")
