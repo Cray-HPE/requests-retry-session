@@ -45,5 +45,6 @@ jobs:
         GIT_REPO_NAME: "${GITHUB_REPOSITORY#*/}"
       run: |
         pip install ./rrs[ci]
+        pip list --format freeze
         nox -s lint
         nox -s type_check

@@ -38,6 +38,7 @@ def lint(session):
     """
     session.install("./rrs[lint]")
     session.install("./rrs")
+    session.run("pip","list","--format","freeze")
     session.log("Running pylint...")
     #session.run("pylint", "--rcfile=.pylintrc", "src/*", "tests/*")
     session.run("pylint", "--rcfile=.pylintrc", "requests_retry_session")
@@ -52,5 +53,6 @@ def type_check(session):
     """Run Mypy with config."""
     session.install("./rrs[type_check]")
     session.install("./rrs")
+    session.run("pip","list","--format","freeze")
     session.log("Running mypy...")
     session.run("mypy", "--strict", "-p", "requests_retry_session")
