@@ -47,4 +47,5 @@ jobs:
         pip install ./rrs[ci]
         pip list --format freeze
         nox -s lint
-        nox -s type_check
+        nox -s type_check -- 1
+        nox -s type_check -- 2

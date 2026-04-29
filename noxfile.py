@@ -51,7 +51,8 @@ def lint(session):
 @nox.session(python=PYTHON)
 def type_check(session):
     """Run Mypy with config."""
-    session.install("./rrs[type_check]")
+    assert len(session.posargs) == 1
+    session.install(f"./rrs[type_check{session.posargs[0]}]")
     session.install("./rrs")
     session.run("pip","list","--format","freeze")
     session.log("Running mypy...")

@@ -60,10 +60,16 @@ lint = [
     'pycodestyle',
     'pylint',
 ]
-type_check = [
+type_check1 = [
     'mypy',
     'types-requests',
     'urllib3>=2',
+]
+type_check2 = [
+    'mypy',
+    'types-requests',
+    'types-urllib3',
+    'urllib3<2',
 ]
 
 # Defines which folders belong to our package.
