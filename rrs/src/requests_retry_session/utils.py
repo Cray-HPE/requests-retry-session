@@ -26,6 +26,7 @@
 Shared general utilities
 """
 
+
 class NotPassed:  # pylint: disable=too-few-public-methods
     """
     A dummy class to let us distinguish between an argument not being passed versus

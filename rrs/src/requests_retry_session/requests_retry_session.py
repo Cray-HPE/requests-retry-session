@@ -109,7 +109,7 @@ def requests_retry_adapter(  # pylint: disable=too-many-positional-arguments
         "read": retries,
         "connect": retries,
         "backoff_factor": backoff_factor,
-        "status_forcelist": status_forcelist }
+        "status_forcelist": status_forcelist}
     if not isinstance(allowed_methods, NotPassed):
         retry_kwargs["allowed_methods"] = allowed_methods
     retry = RetryWithLogs(**retry_kwargs)

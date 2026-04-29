@@ -52,6 +52,7 @@ if TYPE_CHECKING:
 
     from .requests_retry_session import ProtocolType
 
+
 class RetrySessionManager(AbstractContextManager):
     """
     Not intended to be useful on its own, this is a base class for classes that want to create a
