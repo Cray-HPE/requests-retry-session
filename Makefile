@@ -91,7 +91,7 @@ pymod_validate_mypy:
 			--cache-dir=/dev/null \
 			--no-sqlite-cache \
 			--show-traceback \
-			requests_retry_session
+			-p requests_retry_session
 
 pymod_test_docker_build:
 		docker build \

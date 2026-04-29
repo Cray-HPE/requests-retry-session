@@ -36,21 +36,21 @@ def lint(session):
     Returns a failure if the linters find linting errors or sufficiently
     serious code quality issues.
     """
-    session.install("requests_retry_session[lint]")
-    session.install("requests_retry_session")
+    session.install("rrs[lint]")
+    session.install("rrs")
     session.log("Running pylint...")
     #session.run("pylint", "--rcfile=.pylintrc", "src/*", "tests/*")
     session.run("pylint", "--rcfile=.pylintrc", "requests_retry_session")
 
     session.log("Running pycodestyle...")
     #session.run("pycodestyle", "--config=.pycodestyle", "src", "tests")
-    session.run("pycodestyle", "--config=.pycodestyle", "requests_retry_session/src")
+    session.run("pycodestyle", "--config=.pycodestyle", "rrs/src")
 
 
 @nox.session(python=PYTHON)
 def type_check(session):
     """Run Mypy with config."""
-    session.install("requests_retry_session[type_check]")
-    session.install("requests_retry_session")
+    session.install("rrs[type_check]")
+    session.install("rrs")
     session.log("Running mypy...")
-    session.run("mypy", "--strict")
+    session.run("mypy", "--strict", "-p", "requests_retry_session")
