@@ -59,11 +59,12 @@ lint:
 		./cms_meta_tools/scripts/runLint.sh
 
 pymod_build:
+		cd requests_retry_session
 		$(PYTHON_BIN) --version
 		$(PYTHON_BIN) -m pip install --upgrade --user pip build setuptools wheel
 		$(PYTHON_BIN) -m build --sdist
 		$(PYTHON_BIN) -m build --wheel
-		cp ./dist/requests_retry_session*.whl .
+		cp ./dist/requests_retry_session*.whl ..
 
 pymod_validate_setup:
 		$(PYTHON_BIN) --version
