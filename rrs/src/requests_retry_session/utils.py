@@ -22,12 +22,15 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+"""
+Shared general utilities
+"""
+
 class NotPassed:  # pylint: disable=too-few-public-methods
     """
     A dummy class to let us distinguish between an argument not being passed versus
     an argument explicitly being passed with a None value
     """
-    pass
 
 
 NOT_PASSED = NotPassed()

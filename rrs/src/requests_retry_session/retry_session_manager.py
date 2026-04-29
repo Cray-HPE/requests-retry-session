@@ -22,6 +22,10 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+"""
+RetrySessionManager class
+"""
+
 from __future__ import annotations
 from contextlib import closing, contextmanager, AbstractContextManager
 from typing import TYPE_CHECKING

@@ -22,6 +22,19 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+"""
+Return a requests session with retries, timeouts, and logging.
+
+The purpose of this module is to provide a unified way of creating or
+updating a requests retry connection whenever interacting with a
+microservice; these connections are exposed as a requests session
+with an HTTP retry adapter attached to it.
+Created on Nov 2, 2020
+
+@author: jsl
+@maintainer: Mitch Harding
+"""
+
 from typing import TYPE_CHECKING
 
 from .requests_retry_session import requests_retry_adapter, requests_retry_session, \

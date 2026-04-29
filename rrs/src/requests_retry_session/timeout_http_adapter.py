@@ -22,6 +22,10 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+"""
+TimeoutHTTPAdapter class
+"""
+
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
