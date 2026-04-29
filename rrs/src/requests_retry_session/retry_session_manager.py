@@ -82,7 +82,7 @@ class RetrySessionManager[T](AbstractContextManager[T]):
             # The type: ignore directive on the following line of code is
             # needed to work around https://github.com/python/typeshed/pull/15684
             # Once that is resolved, the type: ignore below should be removed
-            self._requests_adapter.close() # type: ignore[no-untyped-call]
+            self._requests_adapter.close()  # type: ignore[no-untyped-call]
             self._requests_adapter = None
         # The following return statement is not needed, but it makes mypy sad without it
         return None
