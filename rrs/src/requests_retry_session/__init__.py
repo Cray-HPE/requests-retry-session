@@ -37,9 +37,20 @@ Created on Nov 2, 2020
 
 from typing import TYPE_CHECKING
 
-from .requests_retry_session import requests_retry_adapter, requests_retry_session, \
-                                    requests_session, RequestsRetryAdapterArgs
-from .retry_session_manager import retry_session_manager, RetrySessionManager
+from .requests_retry_session import (
+    requests_retry_adapter,
+    requests_retry_session,
+    requests_session,
+    RequestsRetryAdapterArgs,
+)
+from .retry_session_manager import (
+    retry_session_manager,
+    RetrySessionManager,
+)
 
 if TYPE_CHECKING:
-    from .requests_retry_session import AllowedMethodsType, ProtocolType, StatusForcelistType
+    from .requests_retry_session import (
+        AllowedMethodsType,
+        ProtocolType,
+        StatusForcelistType,
+    )

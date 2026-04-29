@@ -93,7 +93,7 @@ def requests_session(adapter: requests.adapters.HTTPAdapter,
     return session
 
 
-def requests_retry_adapter(  # pylint: too-many-positional-arguments
+def requests_retry_adapter(  # pylint: disable=too-many-positional-arguments
         retries: int = DEFAULT_RETRIES,
         backoff_factor: float = DEFAULT_BACKOFF_FACTOR,
         status_forcelist: StatusForcelistType = DEFAULT_STATUS_FORCELIST,

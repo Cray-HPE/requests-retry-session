@@ -27,13 +27,21 @@ RetrySessionManager class
 """
 
 from __future__ import annotations
-from contextlib import closing, contextmanager, AbstractContextManager
+from contextlib import (
+    closing,
+    contextmanager,
+    AbstractContextManager,
+)
 from typing import TYPE_CHECKING
 
 import requests
 
-from .requests_retry_session import requests_retry_adapter, requests_session, \
-                                    RequestsRetryAdapterArgs, DEFAULT_PROTOCOL
+from .requests_retry_session import (
+    requests_retry_adapter,
+    requests_session,
+    RequestsRetryAdapterArgs,
+    DEFAULT_PROTOCOL,
+)
 from .timeout_http_adapter import TimeoutHTTPAdapter
 
 if TYPE_CHECKING:
