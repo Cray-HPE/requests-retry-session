@@ -68,7 +68,7 @@ type_check1 = [
 type_check2 = [
     'mypy',
     'types-requests',
-    'types-urllib3',
+    './vendor/cray_types_urllib3-1.26.25.14.1-py3-none-any.whl',
     'urllib3<2',
 ]
 
