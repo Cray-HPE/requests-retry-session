@@ -36,7 +36,8 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
     try:
-        from urllib3 import BaseHTTPResponse
+        # We tell mypy to ignore this if this fails.
+        from urllib3 import BaseHTTPResponse  # type: ignore[import]
     except ImportError:
         # Older versions of urllib3 need this adjustment
         from urllib3 import HTTPResponse as BaseHTTPResponse
