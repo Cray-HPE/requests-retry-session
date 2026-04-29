@@ -53,7 +53,7 @@ if TYPE_CHECKING:
     from .requests_retry_session import ProtocolType
 
 
-class RetrySessionManager[T](AbstractContextManager[T]):
+class RetrySessionManager(AbstractContextManager[Self]):
     """
     Not intended to be useful on its own, this is a base class for classes that want to create a
     retry session only when needed, and to clean it up in their __exit__ function.
