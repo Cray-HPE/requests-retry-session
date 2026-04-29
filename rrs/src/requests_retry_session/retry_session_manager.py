@@ -53,7 +53,7 @@ if TYPE_CHECKING:
     from .requests_retry_session import ProtocolType
 
 
-class RetrySessionManager(AbstractContextManager):
+class RetrySessionManager[T](AbstractContextManager[T]):
     """
     Not intended to be useful on its own, this is a base class for classes that want to create a
     retry session only when needed, and to clean it up in their __exit__ function.
@@ -79,7 +79,10 @@ class RetrySessionManager(AbstractContextManager):
             self._requests_session.close()
             self._requests_session = None
         if self._requests_adapter is not None:
-            self._requests_adapter.close()
+            # The type: ignore directive on the following line of code is
+            # needed to work around https://github.com/python/typeshed/pull/15684
+            # Once that is resolved, the type: ignore below should be removed
+            self._requests_adapter.close() # type: ignore[no-untyped-call]
             self._requests_adapter = None
         # The following return statement is not needed, but it makes mypy sad without it
         return None
