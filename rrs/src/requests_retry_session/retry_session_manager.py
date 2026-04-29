@@ -53,7 +53,13 @@ if TYPE_CHECKING:
     from .requests_retry_session import ProtocolType
 
 
-class RetrySessionManager(AbstractContextManager[Self]):
+# Unfortunately Python does not currently have any supported way to accurate type
+# annotate RetrySessionManager. For a full discussion of the issue, see
+# https://github.com/python/typing/issues/2276
+#
+# Until that is resolved, unless we want to change the implementation of this
+# class, the following type: ignore directive is necessary
+class RetrySessionManager(AbstractContextManager):  # type: ignore[type-arg]
     """
     Not intended to be useful on its own, this is a base class for classes that want to create a
     retry session only when needed, and to clean it up in their __exit__ function.
