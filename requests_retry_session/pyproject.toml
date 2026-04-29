@@ -53,6 +53,9 @@ url = 'https://github.com/Cray-HPE/requests-retry-session'
 license = { file = '../LICENSE' }
 
 [project.optional-dependencies]
+ci = [
+    'nox'
+]
 lint = [
     'pylint',
 ]
@@ -66,7 +69,7 @@ test = [
 
 # Defines which folders belong to our package.
 [tool.setuptools.packages.find]
-include = ["src/requests_retry_session"]
+include = ["src"]
 
 [tool.setuptools.package-data]
 "requests-retry-session" = ["py.typed"]
