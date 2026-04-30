@@ -33,7 +33,12 @@ python3 /app/gen_test_constraints.py | while read LINE ; do
     for A in $LINE; do
         echo "$A"
     done > "${cfile}"
-    pip3 download --disable-pip-version-check /app/requests_retry_session*.whl "cryptography>=3.1" -c "${cfile}" -d "${PIP_DL_DIR}"
+    pip3 download \
+        --disable-pip-version-check \
+        /app/requests_retry_session*.whl \
+        /app/test_rrs*.whl \
+        -c "${cfile}" \
+        -d "${PIP_DL_DIR}"
 done
 
 rm -rf "${cfile}"
