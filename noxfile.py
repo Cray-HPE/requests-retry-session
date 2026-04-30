@@ -36,16 +36,14 @@ def lint(session):
     Returns a failure if the linters find linting errors or sufficiently
     serious code quality issues.
     """
-    session.install("./rrs[lint]")
-    session.install("./rrs")
+    session.install("./rrs[lint]","./test-rrs[lint]")
+    session.install("./rrs","./test-rrs")
     session.run("pip","list","--format","freeze")
     session.log("Running pylint...")
-    #session.run("pylint", "--rcfile=.pylintrc", "src/*", "tests/*")
-    session.run("pylint", "--rcfile=.pylintrc", "requests_retry_session")
+    session.run("pylint", "--rcfile=.pylintrc", "requests_retry_session", "test_rrs")
 
     session.log("Running pycodestyle...")
-    #session.run("pycodestyle", "--config=.pycodestyle", "src", "tests")
-    session.run("pycodestyle", "--config=.pycodestyle", "rrs/src")
+    session.run("pycodestyle", "--config=.pycodestyle", "rrs/src", "test-rrs/src")
 
 
 @nox.session(python=PYTHON)
@@ -53,10 +51,10 @@ def type_check(session):
     """Run Mypy with config."""
     assert len(session.posargs) == 1
     label = f"type_check{session.posargs[0]}"
-    session.install(f"./rrs[{label}]")
+    session.install(f"./rrs[{label}]", "./test-rrs[type_check]")
     if label == "type_check2":
         session.install("./vendor/cray_types_urllib3-1.26.25.14.1-py3-none-any.whl")
-    session.install("./rrs")
+    session.install("./rrs", "./test-rrs")
     session.run("pip","list","--format","freeze")
     session.log("Running mypy...")
-    session.run("mypy", "--strict", "-p", "requests_retry_session")
+    session.run("mypy", "--strict", "-p", "requests_retry_session", "-p", "test_rrs")
