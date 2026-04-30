@@ -29,6 +29,10 @@ Test utility functions
 import random
 import string
 
-def random_id() -> str:
+def random_id(id_length: int = 16) -> str:
+    """
+    Generate and return a random alphanumeric string of the
+    specified length
+    """
     chars = string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for _ in range(16))
+    return ''.join(random.choice(chars) for _ in range(id_length))

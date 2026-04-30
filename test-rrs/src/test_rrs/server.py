@@ -46,7 +46,6 @@ from urllib.parse import parse_qs, urlparse
 
 from .certs import CertFiles
 from .defs import (DROP_SC,
-                   ProtocolType,
                    ReqCountDict,
                    ReqCountKey,
                    ReqMethodName,
@@ -57,11 +56,17 @@ from .defs import (DROP_SC,
 
 
 class MyHandler(BaseHTTPRequestHandler):
+    """
+    Simple HTTP request handler for our testing
+    """
     # Using int as the factory function means that all values will
     # default to 0
     _req_count: ClassVar[ReqCountDict] = defaultdict(int)
 
     def _extract_params_from_query(self) -> Union[None, ReqParams]:
+        """
+        Return the request parameters, or None if there is an error
+        """
         query = urlparse(self.path).query
         params={}
         for k, v in parse_qs(query).items():
@@ -100,9 +105,15 @@ class MyHandler(BaseHTTPRequestHandler):
             return ReqParams(**params)
         except (ValueError, TypeError) as e:
             self._send(400, f"{type(e).__name__}: {e}")
-            return None
+            # While this return statement is not necessary from an execution standpoint,
+            # I think it helps communicate explicitly that the intention for this code
+            # path is to stop and return None
+            return None  # pylint: ignore=useless-return
 
     def _send(self, sc: int, msg: str = None) -> None:
+        """
+        Send a response with the specified status code and (optional) message
+        """
         try:
             self.send_response(sc)
         except BrokenPipeError:
@@ -129,6 +140,9 @@ class MyHandler(BaseHTTPRequestHandler):
                           msg)
 
     def _actually_do_method(self, method: ReqMethodName, params: ReqParams) -> None:
+        """
+        Parse the parameters and respond as appropriate
+        """
         req_key: ReqCountKey = (method, params)
         current_count: int = min(self._req_count[req_key], len(params.scs)-1)
         self._req_count[req_key] += 1
@@ -147,8 +161,6 @@ class MyHandler(BaseHTTPRequestHandler):
         if sc != DROP_SC:
             self._send(sc)
 
-        return
-
     def _do_method(self, method: ReqMethodName) -> None:
         """
         The method of handling _req_count is not thread-safe, but this is okay,
@@ -156,20 +168,30 @@ class MyHandler(BaseHTTPRequestHandler):
         serially.
         """
         params = self._extract_params_from_query()
-        if params is None:
-            return
-        return self._actually_do_method(method, params)
+        if params is not None:
+            self._actually_do_method(method, params)
 
     def do_GET(self) -> None:
+        """
+        GET request handler
+        """
         self._do_method("GET")
 
     def do_POST(self) -> None:
+        """
+        POST request handler
+        """
         self._do_method("POST")
 
+
 def get_free_port() -> int:
+    """
+    Return the number of a free port on the system
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(("", 0))  # 0 tells the OS to pick an available port
         return s.getsockname()[1]
+
 
 def run_server(
     stop_event: multiprocessing.Event,
@@ -194,7 +216,11 @@ def run_server(
     logging.debug("Stop signal received; %s://%s:%d server shutting down",
                   proto, SERVER_HOSTNAME, port)
 
+
 class BackgroundServer(AbstractContextManager):
+    """
+    Context manager for the background HTTP server process
+    """
     def __init__(self, proto: SingleProtocol) -> None:
         assert proto in SINGLE_PROTOCOLS
         self._proto: SingleProtocol = proto
@@ -205,11 +231,17 @@ class BackgroundServer(AbstractContextManager):
 
     @property
     def url(self) -> str:
+        """
+        Return the URL of the background server
+        """
         assert self._port is not None
         return f"{self._proto}://{SERVER_HOSTNAME}:{self._port}/"
 
     @property
     def _https(self) -> bool:
+        """
+        Return True if the background server is HTTPS, False otherwise
+        """
         return self._proto == "https"
 
     def __enter__(self):

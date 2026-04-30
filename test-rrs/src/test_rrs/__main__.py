@@ -29,19 +29,16 @@ Minimal RRS module test, mainly to ensure that it is not completely broken.
 import logging
 import sys
 
-from .defs import NOTICE_LOG_LEVEL
+from .defs import NOTICE_LOG_LEVEL, NOTICE_LOG_NAME
 from .test import run_all_tests
 
-LOG_FORMAT = "%(asctime)-15s - %(process)d - %(thread)d - %(levelname)-7s - %(name)s - %(filename)s:%(lineno)d - %(funcName)s - %(message)s"
+LOG_FORMAT = "%(asctime)-15s - %(process)d - %(thread)d - %(levelname)-7s - "
+LOG_FORMAT += "%(name)s - %(filename)s:%(lineno)d - %(funcName)s - %(message)s"
 LOG_FILE = "test_rrs.log"
 
-def notice(self, msg, *args, **kwargs):
-    if self.isEnabledFor(NOTICE_LOG_LEVEL):
-        self._log(NOTICE_LOG_LEVEL, msg, args, **kwargs)
 
 if __name__ == '__main__':
-    logging.addLevelName(NOTICE_LOG_LEVEL, "NOTICE")
-    logging.Logger.notice = notice
+    logging.addLevelName(NOTICE_LOG_LEVEL, NOTICE_LOG_NAME)
 
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)   # Capture everything at the root

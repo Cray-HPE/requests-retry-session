@@ -52,6 +52,9 @@ class MyRRSessionManager(rrs.RetrySessionManager):
         super().__init__(protocol=proto, **adapter_args)
 
 class RequestSessions(AbstractContextManager):
+    """
+    Context manager, managing three RRS sessions
+    """
     def __init__(
         self,
         protocol: ProtocolType,
@@ -95,6 +98,10 @@ class RequestSessions(AbstractContextManager):
         return self._stack.__exit__(exc_type, exc_val, exc_tb)
 
     def test_list(self, method_name: str) -> List[ReqMethodToTest]:
+        """
+        Generate and return a list of ReqMethodToTest, based on the
+        managed RRS sessions
+        """
         attr_name = method_name.lower()
         method_name = method_name.upper()
         non_cm_method = getattr(self._non_cm_session, attr_name)

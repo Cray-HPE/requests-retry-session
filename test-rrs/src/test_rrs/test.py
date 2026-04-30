@@ -36,12 +36,6 @@ from typing import (
     Union
 )
 
-# collections.abc.Callable/Iterable made parameterizable in Python 3.9
-if sys.version_info >= (3, 9):
-    from collections.abc import Callable, Iterable
-else:
-    from typing import Callable, Iterable
-
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import ReadTimeout as RequestsReadTimeout
 from requests.exceptions import RetryError as RequestsRetryError
@@ -62,10 +56,19 @@ from .server import BackgroundServer
 from .suppress_ssl_warnings import suppress_ssl_warnings
 from .utils import random_id
 
+
+# collections.abc.Callable/Iterable made parameterizable in Python 3.9
+if sys.version_info >= (3, 9):
+    from collections.abc import Callable, Iterable
+else:
+    from typing import Callable, Iterable
+
+
 def test_req(
     session_method: Callable,
     session_desc: str,
     url: str,
+    *,
     expected_sc: Union[int, Type[Exception]],
     scs: Union[int, Iterable[int]],
     delays: Union[float, Iterable[float], None] = None
@@ -113,6 +116,7 @@ def test_req(
         return 0
     logging.error(msg)
     return 1
+
 
 def run_tests(
     protocols: Iterable[SingleProtocol],
@@ -213,7 +217,11 @@ def run_tests(
 
     return exit_rc
 
+
 def run_all_tests() -> int:
+    """
+    Run all of the tests. Return 0 if all tests pass, non-0 otherwise.
+    """
     exit_rc = 0
     post_only_adapter_args = RR_ADAPTER_ARGS.copy()
     post_only_adapter_args['allowed_methods'] = ('POST',)

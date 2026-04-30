@@ -31,8 +31,12 @@ import warnings
 
 from urllib3.exceptions import InsecureRequestWarning
 
+
 @contextlib.contextmanager
 def suppress_ssl_warnings():
+    """
+    Suppress insecure request warnings
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", InsecureRequestWarning)
         yield

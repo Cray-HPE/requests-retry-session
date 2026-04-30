@@ -37,6 +37,8 @@ from typing import (get_args,
                     Tuple,
                     Union)
 
+import requests_retry_session as rrs
+
 # collections.abc.Callable/Iterable made parameterizable in Python 3.9
 # Literal was added to typing in 3.9
 # TypeAlias was added to typing in 3.10
@@ -51,7 +53,6 @@ else:
     from typing import Callable, Iterable
     from typing_extensions import Literal, TypeAlias
 
-import requests_retry_session as rrs
 
 # In our testing, we are only going to ever use protocols http and https
 SingleProtocol: TypeAlias = Literal['http', 'https']
@@ -59,10 +60,37 @@ SINGLE_PROTOCOLS: FrozenSet[SingleProtocol] = frozenset(get_args(SingleProtocol)
 ProtocolType: TypeAlias = Union[SingleProtocol, Iterable[SingleProtocol]]
 SERVER_HOSTNAME = 'localhost'
 
+
 class ReqParams(NamedTuple):
+    """
+    Request parameters
+
+    id: A unique identifier for this reqeust
+    scs: The sequence of status codes that the server should respond with
+    delays: A sequence of time delays (in seconds) that the server should wait before
+            returning the corresponding status code
+
+    e.g.    id = "abcdefgh12345678"
+            scs = [510, 200]
+            delays = [1.5, 0]
+
+    The first time the server receives a GET request with the above parameters,
+    it will wait 1.5 seconds, then return 510.
+    If it gets a second GET request with the above parameters, it will immediately
+    return 200.
+    Any subsequent GET requests with the above parameters will also immediately return
+    200.
+
+    Note: If any parameter value is changed, then it is considered a new set of parameters,
+    and thus will not continue the previous sequence. Also, the request method used is also
+    part of the key -- If a GET request with a given set of parameters is followed by a POST
+    request with the same set of parameters, then the server will not consider them part of the
+    same sequence.
+    """
     id: str
     scs: Tuple[int, ...]
     delays: Tuple[float, ...]
+
 
 # Type annotation helpers
 
@@ -93,3 +121,4 @@ RR_ADAPTER_ARGS = rrs.RequestsRetryAdapterArgs(
 )
 
 NOTICE_LOG_LEVEL: int = (logging.WARNING + logging.ERROR) // 2 + logging.WARNING
+NOTICE_LOG_NAME: str = "NOTICE"

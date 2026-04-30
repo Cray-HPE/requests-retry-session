@@ -29,7 +29,6 @@ Context manager to suppress insecure request warnings
 from contextlib import AbstractContextManager
 import datetime
 import os
-import ssl
 import tempfile
 from types import TracebackType
 from typing import Type, Union
@@ -39,7 +38,11 @@ from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-def generate_self_signed_cert(cert_file_path: str, key_file_path: str):
+
+def generate_self_signed_cert(cert_file_path: str, key_file_path: str) -> None:
+    """
+    Generate self-signed certs and write them to the specified files.
+    """
     # Generate private key
     key = rsa.generate_private_key(
         public_exponent=65537,
@@ -83,18 +86,28 @@ def generate_self_signed_cert(cert_file_path: str, key_file_path: str):
     with open(cert_file_path, "wb") as cert_file:
         cert_file.write(cert.public_bytes(serialization.Encoding.PEM))
 
+
 class CertFiles(AbstractContextManager):
+    """
+    Context manager for the temporary certificate files
+    """
     def __init__(self):
         self._cert_file: Union[str, None] = None
         self._key_file: Union[str, None] = None
 
     @property
     def cert_file(self) -> str:
+        """
+        Return the path to the cert file
+        """
         assert self._cert_file is not None
         return self._cert_file
 
     @property
     def key_file(self) -> str:
+        """
+        Return the path to the key file
+        """
         assert self._key_file is not None
         return self._key_file
 
