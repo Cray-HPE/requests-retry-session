@@ -100,7 +100,7 @@ class MyRRSessionManager(rrs.RetrySessionManager):
         super().__init__(protocol=proto, **adapter_args)
 
 
-class RequestSessions(AbstractContextManager[RequestSessionsTestLists]):
+class RequestSessions(AbstractContextManager):
     """
     Context manager, managing three RRS sessions
     """

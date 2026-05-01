@@ -232,7 +232,7 @@ def run_server(
                   proto, SERVER_HOSTNAME, port)
 
 
-class BackgroundServerBase(AbstractContextManager[str], ABC):
+class BackgroundServerBase(AbstractContextManager, ABC):
     """
     Base class for context manager for a background HTTP/HTTPS server process
     """

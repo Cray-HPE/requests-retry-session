@@ -89,7 +89,7 @@ def generate_self_signed_cert(file_paths: CertFilePaths) -> None:
         cert_file.write(cert.public_bytes(serialization.Encoding.PEM))
 
 
-class CertFiles(AbstractContextManager[CertFilePaths]):
+class CertFiles(AbstractContextManager):
     """
     Context manager for the temporary certificate files
     """
