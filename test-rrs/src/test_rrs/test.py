@@ -66,11 +66,19 @@ from .utils import random_id
 if hasattr(RequestsResponse, "__enter__") and hasattr(RequestsResponse, "__exit__"):
     # Responses are context managers
     def req_sc(session_method, url, params):
+        """
+        Make the specified request inside a context manager.
+        Return the status code of the response.
+        """
         with session_method(url, params=params, verify=False) as resp:
             return resp.status_code
 else:
     # Responses are not context managers
     def req_sc(session_method, url, params):
+        """
+        Make the specified request directly.
+        Return the status code of the response.
+        """
         return session_method(url, params=params, verify=False).status_code
 
 

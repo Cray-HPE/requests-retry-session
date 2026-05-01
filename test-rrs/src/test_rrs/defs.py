@@ -32,14 +32,13 @@ import logging
 from typing import (DefaultDict,
                     FrozenSet,
                     NamedTuple,
-                    Tuple,
-                    Union)
+                    Tuple)
 
 import requests
 
 import requests_retry_session as rrs
 
-from .typing_imports import Callable, Iterable, Literal, TypeAlias
+from .typing_imports import Callable, Literal, TypeAlias
 
 
 RequestsMethod: TypeAlias = Callable[..., requests.Response]
