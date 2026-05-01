@@ -22,14 +22,26 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+"""
+RetrySessionManager class
+"""
+
 from __future__ import annotations
-from contextlib import closing, contextmanager, AbstractContextManager
+from contextlib import (
+    closing,
+    contextmanager,
+    AbstractContextManager,
+)
 from typing import TYPE_CHECKING
 
 import requests
 
-from .requests_retry_session import requests_retry_adapter, requests_session, \
-                                    RequestsRetryAdapterArgs, DEFAULT_PROTOCOL
+from .requests_retry_session import (
+    requests_retry_adapter,
+    requests_session,
+    RequestsRetryAdapterArgs,
+    DEFAULT_PROTOCOL,
+)
 from .timeout_http_adapter import TimeoutHTTPAdapter
 
 if TYPE_CHECKING:
@@ -40,7 +52,14 @@ if TYPE_CHECKING:
 
     from .requests_retry_session import ProtocolType
 
-class RetrySessionManager(AbstractContextManager):
+
+# Unfortunately Python does not currently have any supported way to accurate type
+# annotate RetrySessionManager. For a full discussion of the issue, see
+# https://github.com/python/typing/issues/2276
+#
+# Until that is resolved, unless we want to change the implementation of this
+# class, the following type: ignore directive is necessary
+class RetrySessionManager(AbstractContextManager):  # type: ignore[type-arg]
     """
     Not intended to be useful on its own, this is a base class for classes that want to create a
     retry session only when needed, and to clean it up in their __exit__ function.
@@ -66,7 +85,10 @@ class RetrySessionManager(AbstractContextManager):
             self._requests_session.close()
             self._requests_session = None
         if self._requests_adapter is not None:
-            self._requests_adapter.close()
+            # The type: ignore directive on the following line of code is
+            # needed to work around https://github.com/python/typeshed/pull/15684
+            # Once that is resolved, the type: ignore below should be removed
+            self._requests_adapter.close()  # type: ignore[no-untyped-call]
             self._requests_adapter = None
         # The following return statement is not needed, but it makes mypy sad without it
         return None

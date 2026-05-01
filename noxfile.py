@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -21,65 +21,47 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
+"""Nox definitions for linting, type checks, and tests"""
 
-from pathlib import Path
-import sys
+from __future__ import absolute_import
+import nox  # pylint: disable=import-error
 
-import nox
-
-# Get project root directory
-if getattr(sys, "frozen", False) and hasattr(
-    sys,
-    "_MEIPASS"
-):  # pragma: no cover
-    project_root = sys._MEIPASS
-else:
-    prog = __file__
-    project_root = Path(__file__).resolve().parent
-
-COVERAGE_FAIL = 85
-ERROR_ON_GENERATE = True
-locations = 'requests_retry_session'
-nox.options.sessions = 'test', 'docs', 'lint', 'cover'
+PYTHON = ["3"]
 
 
-@nox.session(python='3')
-def test(session):
-    """Default unit test session."""
-    session.install('.[test]')
-    session.install('.')
-
-    # Run pytest against the tests.
-    session.run(
-        'pytest',
-        '--quiet',
-        f'--cov={locations}',
-        '--cov-append',
-        '--cov-report=',
-        f'--cov-fail-under={COVERAGE_FAIL}',
-        '.',
-        success_codes=[0, 5],
-    )
-
-
-@nox.session(python='3')
+@nox.session(python=PYTHON)
 def lint(session):
-    """Run flake8 linter and plugins."""
-    session.install(".[lint]")
-    session.install(".[test]")
-    session.install(".")
-    session.run("ruff", "check", f"{locations}/")
+    """Run linters.
+    Run Pylint and Pycodestyle against src and tests.
+    Returns a failure if the linters find linting errors or sufficiently
+    serious code quality issues.
+    """
+    session.install("./rrs[lint]","./test-rrs[lint]")
+    session.install("./rrs","./test-rrs")
+    session.run("pip","list","--format","freeze")
+    session.log("Running pylint...")
+    session.run("pylint", "--rcfile=.pylintrc", "requests_retry_session", "test_rrs")
 
-@nox.session(python='3')
-def cover(session):
-    """Run the final coverage report."""
-    session.install('.[test]')
-    session.install('.')
-    session.run(
-        'coverage',
-        'report',
-        '--show-missing',
-        f'--fail-under={COVERAGE_FAIL}',
-        success_codes=[0, 5]
-    )
-    session.run('coverage', 'erase')
+    session.log("Running pycodestyle...")
+    session.run("pycodestyle", "--config=.pycodestyle", "rrs/src", "test-rrs/src")
+
+
+@nox.session(python=PYTHON)
+def type_check(session):
+    """Run Mypy with config."""
+    assert len(session.posargs) == 1
+    label = f"type_check{session.posargs[0]}"
+    install_args = []
+    if label == "type_check2":
+        # This is needed to get an internal version
+        # of types-urllib3
+        install_args += ["--trusted-host",
+                         "artifactory.algol60.net",
+                         "--extra-index-url",
+                         "http://artifactory.algol60.net/artifactory/csm-python-modules/simple"]
+    install_args += [f"./rrs[{label}]", f"./test-rrs[{label}]"]
+    session.install(*install_args)
+    session.install("./rrs", "./test-rrs")
+    session.run("pip","list","--format","freeze")
+    session.log("Running mypy...")
+    session.run("mypy", "--strict", "-p", "requests_retry_session", "-p", "test_rrs")

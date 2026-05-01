@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # MIT License
 #
@@ -23,22 +22,22 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-set -euo pipefail
+"""
+Context manager to suppress insecure request warnings
+"""
 
-. /app/venv/bin/activate
+import contextlib
+from typing import Iterator
+import warnings
 
-cfile=$(mktemp)
+from urllib3.exceptions import InsecureRequestWarning
 
-python3 /app/gen_test_constraints.py | while read LINE ; do
-    for A in $LINE; do
-        echo "$A"
-    done > "${cfile}"
-    pip3 download \
-        --disable-pip-version-check \
-        /app/requests_retry_session*.whl \
-        /app/test_rrs*.whl \
-        -c "${cfile}" \
-        -d "${PIP_DL_DIR}"
-done
 
-rm -rf "${cfile}"
+@contextlib.contextmanager
+def suppress_ssl_warnings() -> Iterator[None]:
+    """
+    Suppress insecure request warnings
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", InsecureRequestWarning)
+        yield
