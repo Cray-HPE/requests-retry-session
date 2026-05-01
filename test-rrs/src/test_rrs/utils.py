@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # MIT License
 #
@@ -23,22 +22,18 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-set -euo pipefail
+"""
+Test utility functions
+"""
 
-. /app/venv/bin/activate
+import random
+import string
 
-cfile=$(mktemp)
 
-python3 /app/gen_test_constraints.py | while read LINE ; do
-    for A in $LINE; do
-        echo "$A"
-    done > "${cfile}"
-    pip3 download \
-        --disable-pip-version-check \
-        /app/requests_retry_session*.whl \
-        /app/test_rrs*.whl \
-        -c "${cfile}" \
-        -d "${PIP_DL_DIR}"
-done
-
-rm -rf "${cfile}"
+def random_id(id_length: int = 16) -> str:
+    """
+    Generate and return a random alphanumeric string of the
+    specified length
+    """
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(id_length))
