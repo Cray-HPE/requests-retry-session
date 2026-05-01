@@ -32,8 +32,6 @@ from contextlib import (
     AbstractContextManager,
 )
 
-import requests
-
 from .requests_retry_session import (
     requests_retry_adapter,
     requests_session,
@@ -49,7 +47,7 @@ class RetrySessionManager(AbstractContextManager):
     """
 
     def __init__(self,
-                 protocol = None,
+                 protocol=None,
                  **adapter_kwargs):
         """
         If specified, protocol should omit the trailing "://" because it will be automatically appended later
@@ -106,7 +104,7 @@ class RetrySessionManager(AbstractContextManager):
 
 @contextmanager
 def retry_session_manager(
-    protocol = None,
+    protocol=None,
     **adapter_kwargs
 ):
     """

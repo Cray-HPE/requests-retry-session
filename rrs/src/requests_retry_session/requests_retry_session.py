@@ -26,17 +26,19 @@ Requests session functions and classes
 """
 
 import sys
-from typing import Optional, Tuple
+from typing import Tuple
+
+import requests
+
+from .retry_with_logs import RetryWithLogs
+from .timeout_http_adapter import TimeoutHTTPAdapter
+
 
 if sys.version_info >= (3, 9):
     from typing import TypedDict
 else:
     from typing_extensions import TypedDict
 
-import requests
-
-from .timeout_http_adapter import TimeoutHTTPAdapter
-from .retry_with_logs import RetryWithLogs
 
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
@@ -60,8 +62,8 @@ class RequestsRetryAdapterArgs(TypedDict, total=False):
 
 
 def requests_session(adapter,
-                     session = None,
-                     protocol = DEFAULT_PROTOCOL):
+                     session=None,
+                     protocol=DEFAULT_PROTOCOL):
     """
     protocol should omit the trailing "://" because it will be automatically appended
 
@@ -78,11 +80,11 @@ def requests_session(adapter,
 
 
 def requests_retry_adapter(  # pylint: disable=too-many-positional-arguments
-        retries = DEFAULT_RETRIES,
-        backoff_factor = DEFAULT_BACKOFF_FACTOR,
-        status_forcelist = DEFAULT_STATUS_FORCELIST,
-        connect_timeout = DEFAULT_CONNECT_TIMEOUT,
-        read_timeout = DEFAULT_READ_TIMEOUT
+        retries=DEFAULT_RETRIES,
+        backoff_factor=DEFAULT_BACKOFF_FACTOR,
+        status_forcelist=DEFAULT_STATUS_FORCELIST,
+        connect_timeout=DEFAULT_CONNECT_TIMEOUT,
+        read_timeout=DEFAULT_READ_TIMEOUT
 ):
     """
     retries: int
@@ -106,8 +108,8 @@ def requests_retry_adapter(  # pylint: disable=too-many-positional-arguments
 
 
 def requests_retry_session(
-        session = None,
-        protocol = DEFAULT_PROTOCOL,
+        session=None,
+        protocol=DEFAULT_PROTOCOL,
         **adapter_kwargs
 ):
     """
