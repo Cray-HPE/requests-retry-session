@@ -26,7 +26,12 @@ Requests session functions and classes
 """
 
 import sys
-from typing import Optional
+
+import requests
+
+from .retry_with_logs import RetryWithLogs
+from .timeout_http_adapter import TimeoutHTTPAdapter
+from .utils import NotPassed, NOT_PASSED
 
 if sys.version_info >= (3, 9):
     from collections.abc import Collection
@@ -34,12 +39,6 @@ if sys.version_info >= (3, 9):
 else:
     from typing import Collection
     from typing_extensions import TypedDict
-
-import requests
-
-from .retry_with_logs import RetryWithLogs
-from .timeout_http_adapter import TimeoutHTTPAdapter
-from .utils import NotPassed, NOT_PASSED
 
 
 DEFAULT_BACKOFF_FACTOR = 0.5
@@ -65,8 +64,8 @@ class RequestsRetryAdapterArgs(TypedDict, total=False):
 
 
 def requests_session(adapter,
-                     session = None,
-                     protocol = DEFAULT_PROTOCOL):
+                     session=None,
+                     protocol=DEFAULT_PROTOCOL):
     """
     Protocols should omit the trailing "://" because it will be automatically appended
 
@@ -86,12 +85,12 @@ def requests_session(adapter,
 
 
 def requests_retry_adapter(  # pylint: disable=too-many-positional-arguments
-        retries = DEFAULT_RETRIES,
-        backoff_factor = DEFAULT_BACKOFF_FACTOR,
-        status_forcelist = DEFAULT_STATUS_FORCELIST,
-        connect_timeout = DEFAULT_CONNECT_TIMEOUT,
-        read_timeout = DEFAULT_READ_TIMEOUT,
-        allowed_methods = NOT_PASSED
+        retries=DEFAULT_RETRIES,
+        backoff_factor=DEFAULT_BACKOFF_FACTOR,
+        status_forcelist=DEFAULT_STATUS_FORCELIST,
+        connect_timeout=DEFAULT_CONNECT_TIMEOUT,
+        read_timeout=DEFAULT_READ_TIMEOUT,
+        allowed_methods=NOT_PASSED
 ):
     """
     retries: int
@@ -118,8 +117,8 @@ def requests_retry_adapter(  # pylint: disable=too-many-positional-arguments
 
 
 def requests_retry_session(
-        session = None,
-        protocol = DEFAULT_PROTOCOL,
+        session=None,
+        protocol=DEFAULT_PROTOCOL,
         **adapter_kwargs
 ):
     """

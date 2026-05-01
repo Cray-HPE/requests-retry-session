@@ -38,13 +38,13 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     causes our applications to sit and wait forever on a half open socket.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
             self,
-            pool_connections = NOT_PASSED,
-            pool_maxsize = NOT_PASSED,
-            max_retries = NOT_PASSED,
-            pool_block = NOT_PASSED,
-            timeout = None):
+            pool_connections=NOT_PASSED,
+            pool_maxsize=NOT_PASSED,
+            max_retries=NOT_PASSED,
+            pool_block=NOT_PASSED,
+            timeout=None):
         """
         pool_connections: Union[int, NotPassed]
         pool_maxsize: Union[int, NotPassed]
@@ -68,11 +68,11 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     def send(  # pylint: disable=too-many-arguments,too-many-positional-arguments
             self,
             request,
-            stream = NOT_PASSED,
-            timeout = None,
-            verify = NOT_PASSED,
-            cert = NOT_PASSED,
-            proxies = NOT_PASSED):
+            stream=NOT_PASSED,
+            timeout=None,
+            verify=NOT_PASSED,
+            cert=NOT_PASSED,
+            proxies=NOT_PASSED):
         """
         request: PreparedRequest,
         stream: Union[bool, NotPassed]
