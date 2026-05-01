@@ -21,6 +21,9 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
+"""
+RetryWithLogs class
+"""
 
 from __future__ import annotations
 import logging
@@ -33,7 +36,14 @@ if TYPE_CHECKING:
     from typing import Optional
 
     from typing_extensions import Self
-    from urllib3 import BaseHTTPResponse
+    try:
+        # We tell mypy to ignore this if this fails.
+        # We also have to specify unused-ignore, since this only fails sometimes,
+        # depending on the version of urllib3 that is installed
+        from urllib3 import BaseHTTPResponse  # type: ignore[import,attr-defined,unused-ignore]
+    except ImportError:
+        # Older versions of urllib3 need this adjustment
+        from urllib3 import HTTPResponse as BaseHTTPResponse
     from urllib3.connectionpool import ConnectionPool
 
 LOGGER = logging.getLogger(__name__)
