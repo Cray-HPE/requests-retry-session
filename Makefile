@@ -48,6 +48,9 @@ endif
 
 all : runbuildprep lint pymod
 rpm: rpm_prepare rpm_package_source rpm_build_source rpm_build
+pymod: pymod_build pymod_validate
+pymod_build: pymod_build_prep pymod_build_rrs pymod_build_test_rrs
+pymod_validate: pymod_validate_setup pymod_validate_pylint_error pymod_validate_pylint_full
 pymod_test: pymod_test_docker_build pymod_test_docker_run
 
 runbuildprep:
@@ -56,12 +59,35 @@ runbuildprep:
 lint:
 		./cms_meta_tools/scripts/runLint.sh
 
-pymod:
+pymod_build_prep:
+		rm -rf ./dist || true
 		$(PYTHON_BIN) --version
 		$(PYTHON_BIN) -m pip install --upgrade --user pip build setuptools wheel
-		$(PYTHON_BIN) -m build --sdist
-		$(PYTHON_BIN) -m build --wheel
+
+pymod_build_rrs:
+		$(PYTHON_BIN) -m build --sdist rrs
+		$(PYTHON_BIN) -m build --wheel rrs
+		mv ./rrs/dist .
 		cp ./dist/requests_retry_session*.whl .
+
+pymod_build_test_rrs:
+		$(PYTHON_BIN) -m build --sdist test-rrs
+		$(PYTHON_BIN) -m build --wheel test-rrs
+		cp ./test-rrs/dist/test_rrs*.whl .
+
+pymod_validate_setup:
+		$(PYTHON_BIN) --version
+		mkdir -p $(PYLINT_VENV_BASE_DIR)
+		$(PYTHON_BIN) -m venv $(PYLINT_VENV)
+		$(PYLINT_VENV_PYBIN) -m pip install --upgrade $(PIP_INSTALL_ARGS) pip
+		$(PYLINT_VENV_PYBIN) -m pip install --disable-pip-version-check $(PIP_INSTALL_ARGS) requests_retry_session*.whl requests_retry_session[lint]
+		$(PYLINT_VENV_PYBIN) -m pip list --format freeze
+
+pymod_validate_pylint_error:
+		$(PYLINT_VENV_PYBIN) -m pylint --errors-only requests_retry_session
+
+pymod_validate_pylint_full:
+		$(PYLINT_VENV_PYBIN) -m pylint --fail-under 9 requests_retry_session
 
 pymod_test_docker_build:
 		docker build \

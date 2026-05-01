@@ -21,9 +21,13 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
+"""
+RetryWithLogs class
+"""
 
 import logging
 from urllib3 import Retry
+
 
 LOGGER = logging.getLogger(__name__)
 

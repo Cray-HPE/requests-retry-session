@@ -1,10 +1,10 @@
 #
 # MIT License
 #
-# (C) Copyright 2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
-# copy of this software and associated documentation files (the "Software"),
+# copy of this software and associated documentation files (the 'Software'),
 # to deal in the Software without restriction, including without limitation
 # the rights to use, copy, modify, merge, publish, distribute, sublicense,
 # and/or sell copies of the Software, and to permit persons to whom the
@@ -13,7 +13,7 @@
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
@@ -21,7 +21,33 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
+name: Python (lint)
 
-from .requests_retry_session import requests_retry_adapter, requests_retry_session, \
-                                    requests_session, RequestsRetryAdapterArgs
-from .retry_session_manager import retry_session_manager, RetrySessionManager
+on: [push]
+
+env:
+  ARTIFACTORY_USER: "${{ secrets.ARTIFACTORY_ALGOL60_USERNAME }}"
+  ARTIFACTORY_TOKEN: "${{ secrets.ARTIFACTORY_ALGOL60_TOKEN }}"
+
+jobs:
+  nox-lint:
+    name: Lint
+    strategy:
+      matrix:
+        version: ['3.13']
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0 # Also fetch git-tags
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.version }}
+    - name: nox
+      env:
+        GIT_REPO_NAME: "${GITHUB_REPOSITORY#*/}"
+      run: |
+        pip install ./rrs[ci]
+        pip list --format freeze
+        nox -s lint

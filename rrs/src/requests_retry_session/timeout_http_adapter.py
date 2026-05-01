@@ -22,6 +22,10 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+"""
+TimeoutHTTPAdapter class
+"""
+
 from requests.adapters import HTTPAdapter
 
 from .utils import NotPassed, NOT_PASSED
