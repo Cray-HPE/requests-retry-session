@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -21,26 +21,17 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-"""Nox definitions for linting, type checks, and tests"""
 
-from __future__ import absolute_import
-import nox  # pylint: disable=import-error
-
-PYTHON = ["3"]
+"""
+Shared general utilities
+"""
 
 
-@nox.session(python=PYTHON)
-def lint(session):
-    """Run linters.
-    Run Pylint and Pycodestyle against src and tests.
-    Returns a failure if the linters find linting errors or sufficiently
-    serious code quality issues.
+class NotPassed:  # pylint: disable=too-few-public-methods
     """
-    session.install("./rrs[lint]","./test-rrs[lint]")
-    session.install("./rrs","./test-rrs")
-    session.run("pip","list","--format","freeze")
-    session.log("Running pylint...")
-    session.run("pylint", "--rcfile=.pylintrc", "requests_retry_session", "test_rrs")
+    A dummy class to let us distinguish between an argument not being passed versus
+    an argument explicitly being passed with a None value
+    """
 
-    session.log("Running pycodestyle...")
-    session.run("pycodestyle", "--config=.pycodestyle", "rrs/src", "test-rrs/src")
+
+NOT_PASSED = NotPassed()

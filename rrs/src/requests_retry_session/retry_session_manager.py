@@ -22,11 +22,24 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from contextlib import closing, contextmanager, AbstractContextManager
+"""
+RetrySessionManager class
+"""
+
+from contextlib import (
+    closing,
+    contextmanager,
+    AbstractContextManager,
+)
+
 import requests
 
-from .requests_retry_session import requests_retry_adapter, requests_session, \
-                                    DEFAULT_PROTOCOL
+from .requests_retry_session import (
+    requests_retry_adapter,
+    requests_session,
+    DEFAULT_PROTOCOL,
+)
+
 
 class RetrySessionManager(AbstractContextManager):
     """
@@ -68,7 +81,10 @@ class RetrySessionManager(AbstractContextManager):
             self._requests_session.close()
             self._requests_session = None
         if self._requests_adapter is not None:
-            self._requests_adapter.close()
+            # The type: ignore directive on the following line of code is
+            # needed to work around https://github.com/python/typeshed/pull/15684
+            # Once that is resolved, the type: ignore below should be removed
+            self._requests_adapter.close()  # type: ignore[no-untyped-call]
             self._requests_adapter = None
         # The following return statement is not needed, but it makes mypy sad without it
         return None

@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,6 +22,32 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from .requests_retry_session import requests_retry_adapter, requests_retry_session, \
-                                    requests_session, RequestsRetryAdapterArgs
-from .retry_session_manager import retry_session_manager, RetrySessionManager
+"""
+BackgroundServers class
+"""
+
+from contextlib import AbstractContextManager, ExitStack
+from types import TracebackType
+from typing import Type, Union
+
+from .defs import ServerUrls
+from .server import HttpBackgroundServer, HttpsBackgroundServer
+
+
+class BackgroundServers(AbstractContextManager[ServerUrls]):
+    """
+    Context manager for the background httpx servers
+    """
+    def __init__(self) -> None:
+        self._stack: ExitStack = ExitStack()
+
+    def __enter__(self) -> ServerUrls:
+        self._stack.__enter__()
+        return ServerUrls(http=self._stack.enter_context(HttpBackgroundServer()),
+                          https=self._stack.enter_context(HttpsBackgroundServer()))
+
+    def __exit__(  # pylint: disable=useless-return
+            self, exc_type: Union[Type[BaseException], None],
+            exc_val: Union[BaseException, None],
+            exc_tb: Union[TracebackType, None]) -> Union[bool, None]:
+        return self._stack.__exit__(exc_type, exc_val, exc_tb)

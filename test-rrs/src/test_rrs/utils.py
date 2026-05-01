@@ -21,26 +21,19 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-"""Nox definitions for linting, type checks, and tests"""
 
-from __future__ import absolute_import
-import nox  # pylint: disable=import-error
+"""
+Test utility functions
+"""
 
-PYTHON = ["3"]
+import random
+import string
 
 
-@nox.session(python=PYTHON)
-def lint(session):
-    """Run linters.
-    Run Pylint and Pycodestyle against src and tests.
-    Returns a failure if the linters find linting errors or sufficiently
-    serious code quality issues.
+def random_id(id_length: int = 16) -> str:
     """
-    session.install("./rrs[lint]","./test-rrs[lint]")
-    session.install("./rrs","./test-rrs")
-    session.run("pip","list","--format","freeze")
-    session.log("Running pylint...")
-    session.run("pylint", "--rcfile=.pylintrc", "requests_retry_session", "test_rrs")
-
-    session.log("Running pycodestyle...")
-    session.run("pycodestyle", "--config=.pycodestyle", "rrs/src", "test-rrs/src")
+    Generate and return a random alphanumeric string of the
+    specified length
+    """
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(id_length))

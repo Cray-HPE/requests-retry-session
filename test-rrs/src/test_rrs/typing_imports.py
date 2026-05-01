@@ -21,26 +21,27 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-"""Nox definitions for linting, type checks, and tests"""
 
-from __future__ import absolute_import
-import nox  # pylint: disable=import-error
+"""
+Centralized place for Python-version-dependent imports
+(to simplify the rest of the files)
+"""
 
-PYTHON = ["3"]
+import sys
 
+# collections.abc.Callable/Container/Iterable made parameterizable in Python 3.9
+# Literal and TypedDict added to typing in 3.9
+# TypeAlias was added to typing in 3.10
+if sys.version_info >= (3, 10):
+    from collections.abc import Callable, Container, Iterable
+    from typing import Literal, TypeAlias, TypedDict
+elif sys.version_info >= (3, 9):
+    from collections.abc import Callable, Container, Iterable
+    from typing import Literal, TypedDict
+    from typing_extensions import TypeAlias
+else:
+    from typing import Callable, Container, Iterable
+    from typing_extensions import Literal, TypeAlias, TypedDict
 
-@nox.session(python=PYTHON)
-def lint(session):
-    """Run linters.
-    Run Pylint and Pycodestyle against src and tests.
-    Returns a failure if the linters find linting errors or sufficiently
-    serious code quality issues.
-    """
-    session.install("./rrs[lint]","./test-rrs[lint]")
-    session.install("./rrs","./test-rrs")
-    session.run("pip","list","--format","freeze")
-    session.log("Running pylint...")
-    session.run("pylint", "--rcfile=.pylintrc", "requests_retry_session", "test_rrs")
-
-    session.log("Running pycodestyle...")
-    session.run("pycodestyle", "--config=.pycodestyle", "rrs/src", "test-rrs/src")
+# Explicitly re-export everything
+__all__ = ["Callable", "Container", "Iterable", "Literal", "TypeAlias", "TypedDict"]

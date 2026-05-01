@@ -22,15 +22,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 """
-Return a requests session with retries, timeouts, and logging.
-
-The purpose of this module is to provide a unified way of creating or
-updating a requests retry connection whenever interacting with a
-microservice; these connections are exposed as a requests session
-with an HTTP retry adapter attached to it.
-Created on Nov 2, 2020
-
-@author: jsl
+Requests session functions and classes
 """
 
 import sys
@@ -85,12 +77,13 @@ def requests_session(adapter,
     return session
 
 
-def requests_retry_adapter(
+def requests_retry_adapter(  # pylint: disable=too-many-positional-arguments
         retries = DEFAULT_RETRIES,
         backoff_factor = DEFAULT_BACKOFF_FACTOR,
         status_forcelist = DEFAULT_STATUS_FORCELIST,
         connect_timeout = DEFAULT_CONNECT_TIMEOUT,
-        read_timeout = DEFAULT_READ_TIMEOUT):
+        read_timeout = DEFAULT_READ_TIMEOUT
+):
     """
     retries: int
     backoff_factor: float
@@ -98,6 +91,8 @@ def requests_retry_adapter(
     connect_timeout: float
     read_timeout: float
     -> .timeout_http_adapter.TimeoutHTTPAdapter:
+
+    Return a TimeoutHTTPAdapter based on the specified arguments
     """
     retry = RetryWithLogs(
         total=retries,
