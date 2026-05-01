@@ -23,12 +23,40 @@
 #
 
 """
-Test utility functions
+Minimal RRS module test, mainly to ensure that it is not completely broken.
 """
 
-import random
-import string
+import logging
+import sys
 
-def random_id() -> str:
-    chars = string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for _ in range(16))
+from .defs import NOTICE_LOG_LEVEL, NOTICE_LOG_NAME
+from .test import run_all_tests
+
+LOG_FORMAT = "%(asctime)-15s - %(process)d - %(thread)d - %(levelname)-7s - "
+LOG_FORMAT += "%(name)s - %(filename)s:%(lineno)d - %(funcName)s - %(message)s"
+LOG_FILE = "test_rrs.log"
+
+
+if __name__ == '__main__':
+    logging.addLevelName(NOTICE_LOG_LEVEL, NOTICE_LOG_NAME)
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)   # Capture everything at the root
+
+    log_formatter = logging.Formatter(LOG_FORMAT)
+
+    # --- File handler: log everything ---
+    file_handler = logging.FileHandler(LOG_FILE)
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(log_formatter)
+
+    # --- Screen handler: only errors ---
+    screen_handler = logging.StreamHandler(sys.stderr)
+    screen_handler.setLevel(logging.ERROR)
+    screen_handler.setFormatter(log_formatter)
+
+    # Attach both handlers
+    logger.addHandler(file_handler)
+    logger.addHandler(screen_handler)
+
+    sys.exit(run_all_tests())
