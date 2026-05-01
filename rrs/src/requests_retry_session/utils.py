@@ -1,8 +1,7 @@
-#!/bin/bash
 #
 # MIT License
 #
-# (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -23,22 +22,16 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-set -euo pipefail
+"""
+Shared general utilities
+"""
 
-. /app/venv/bin/activate
 
-cfile=$(mktemp)
+class NotPassed:  # pylint: disable=too-few-public-methods
+    """
+    A dummy class to let us distinguish between an argument not being passed versus
+    an argument explicitly being passed with a None value
+    """
 
-python3 /app/gen_test_constraints.py | while read LINE ; do
-    for A in $LINE; do
-        echo "$A"
-    done > "${cfile}"
-    pip3 download \
-        --disable-pip-version-check \
-        /app/requests_retry_session*.whl \
-        /app/test_rrs*.whl \
-        -c "${cfile}" \
-        -d "${PIP_DL_DIR}"
-done
 
-rm -rf "${cfile}"
+NOT_PASSED = NotPassed()
