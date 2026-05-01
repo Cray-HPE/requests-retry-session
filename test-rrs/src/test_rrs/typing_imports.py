@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # MIT License
 #
@@ -23,22 +22,26 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-set -euo pipefail
+"""
+Centralized place for Python-version-dependent imports
+(to simplify the rest of the files)
+"""
 
-. /app/venv/bin/activate
+import sys
 
-cfile=$(mktemp)
+# collections.abc.Callable/Container/Iterable made parameterizable in Python 3.9
+# Literal and TypedDict added to typing in 3.9
+# TypeAlias was added to typing in 3.10
+if sys.version_info >= (3, 10):
+    from collections.abc import Callable, Container, Iterable
+    from typing import Literal, TypeAlias, TypedDict
+elif sys.version_info >= (3, 9):
+    from collections.abc import Callable, Container, Iterable
+    from typing import Literal, TypedDict
+    from typing_extensions import TypeAlias
+else:
+    from typing import Callable, Container, Iterable
+    from typing_extensions import Literal, TypeAlias, TypedDict
 
-python3 /app/gen_test_constraints.py | while read LINE ; do
-    for A in $LINE; do
-        echo "$A"
-    done > "${cfile}"
-    pip3 download \
-        --disable-pip-version-check \
-        /app/requests_retry_session*.whl \
-        /app/test_rrs*.whl \
-        -c "${cfile}" \
-        -d "${PIP_DL_DIR}"
-done
-
-rm -rf "${cfile}"
+# Explicitly re-export everything
+__all__ = ["Callable", "Container", "Iterable", "Literal", "TypeAlias", "TypedDict"]
