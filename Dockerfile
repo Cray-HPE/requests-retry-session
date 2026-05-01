@@ -41,10 +41,10 @@ ENV PIP_CACHE_DIR="${PIP_CACHE_DIR}"
 ENV PIP_DL_DIR="${PIP_DL_DIR}"
 ENV SKIP_RC=${SKIP_RC}
 WORKDIR /app
-COPY test_rrs/ /app/test_rrs
 COPY cache_pip.sh \
      gen_test_constraints.py \
      requests_retry_session*.whl \
+     test_rrs*.whl \
      test_rrs.sh \
      test_constraint_combinations.dat \
      validate_skip_rc.sh /app/
