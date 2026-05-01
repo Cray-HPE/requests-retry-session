@@ -34,7 +34,7 @@ from .defs import ServerUrls
 from .server import HttpBackgroundServer, HttpsBackgroundServer
 
 
-class BackgroundServers(AbstractContextManager[ServerUrls]):
+class BackgroundServers(AbstractContextManager):
     """
     Context manager for the background httpx servers
     """
