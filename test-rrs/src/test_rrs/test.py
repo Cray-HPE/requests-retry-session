@@ -53,6 +53,7 @@ from .defs import (
     RR_STATUS_FORCELIST,
     SingleProtocol,
     TestRecord,
+    TestResults,
     TIMEOUT_DELAY
 )
 from .defs import NOTICE_LOG_LEVEL as NOTICE
