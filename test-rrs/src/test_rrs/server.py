@@ -127,12 +127,14 @@ class MyHandler(BaseHTTPRequestHandler):
         """
         Send a response with the specified status code and (optional) message
         """
+        logging.debug("Sending %d status (msg=%s)", sc, msg)
         try:
             self.send_response(sc)
         except (BrokenPipeError, ConnectionResetError) as err:
             logging.debug("%s in send_response(%d) (likely client disconnect): %s",
                           type(err).__name__, sc, err)
             return
+        logging.debug("Ending headers", sc, msg)
         try:
             self.end_headers()
         except (BrokenPipeError, ConnectionResetError) as err:
@@ -147,6 +149,7 @@ class MyHandler(BaseHTTPRequestHandler):
             msg = prefix
         else:
             msg = f"{prefix}: {msg}"
+        logging.debug("Writing message %s", msg)
         try:
             self.wfile.write(msg.encode())
         except (BrokenPipeError, ConnectionResetError) as err:
@@ -181,8 +184,10 @@ class MyHandler(BaseHTTPRequestHandler):
         because the current implementation of the web server handles requests
         serially.
         """
+        logging.debug("Received %s request", method)
         params = self._extract_params_from_query()
         if params is not None:
+            logging.debug("%s request has params %s", method, params)
             self._actually_do_method(method, params)
 
     def do_GET(self) -> None:
