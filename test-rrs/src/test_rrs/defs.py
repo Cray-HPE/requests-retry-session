@@ -120,7 +120,10 @@ RR_NUM_RETRIES = 2
 # DROP_SC is the SC that tells the server to just disconnect without response
 DROP_SC = 0
 GOOD_SCS = tuple(range(210, 300))
-BAD_NORETRY_SCS = tuple(range(510, 521))
+# Make sure to start with 502, since that is one of the default values for retry-able
+# status codes in RRS. If there is a bug where the defaults are being used even though
+# our test specifies a different list, this may help detect it.
+BAD_NORETRY_SCS = tuple(range(502, 521))
 
 RR_ADAPTER_ARGS = rrs.RequestsRetryAdapterArgs(
     retries=RR_NUM_RETRIES,
