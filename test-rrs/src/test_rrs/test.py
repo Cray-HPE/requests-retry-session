@@ -279,10 +279,10 @@ def run_all_tests_with_protocols(
     """
     with RequestSessions(protocols, RR_ADAPTER_ARGS) as rrs_test_lists:
         logging.log(NOTICE, "Running tests (protocol=%s args=%s)", protocols, RR_ADAPTER_ARGS)
-        exit_rc += run_tests(protocols=protocols,
-                             retry_test_list=rrs_test_lists.get(),
-                             nonretry_test_list=rrs_test_lists.post(),
-                             test_results=test_results)
+        run_tests(protocols=protocols,
+                  retry_test_list=rrs_test_lists.get(),
+                  nonretry_test_list=rrs_test_lists.post(),
+                  test_results=test_results)
 
 
 def run_all_tests() -> int:
@@ -296,7 +296,7 @@ def run_all_tests() -> int:
     run_all_tests_with_protocols('http', test_results=test_results)
     run_all_tests_with_protocols('https', test_results=test_results)
     logging.debug("Listing all %d passed subtests", len(test_results.passed))
-    for tr in subtests.passed:
+    for tr in test_results.passed:
         logging.debug("Passed: %s", tr)
     if not test_results.failed:
         logging.log(NOTICE, "All %d subtests passed", len(test_results.passed))

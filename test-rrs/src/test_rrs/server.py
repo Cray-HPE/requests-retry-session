@@ -134,7 +134,7 @@ class MyHandler(BaseHTTPRequestHandler):
             logging.debug("%s in send_response(%d) (likely client disconnect): %s",
                           type(err).__name__, sc, err)
             return
-        logging.debug("Ending headers", sc, msg)
+        logging.debug("Ending headers")
         try:
             self.end_headers()
         except (BrokenPipeError, ConnectionResetError) as err:
