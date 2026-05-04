@@ -33,7 +33,8 @@ from typing import (DefaultDict,
                     FrozenSet,
                     List,
                     NamedTuple,
-                    Tuple)
+                    Tuple,
+                    Union)
 
 import requests
 
