@@ -120,7 +120,7 @@ def test_req(
     # Now we create a new TR for this subtest, filling in the remaining fields
     tr = base_tr._replace(url=url,
                           desc=f"{msg_pre} {msg_post}",
-                          params = req_params)
+                          params=req_params)
 
     logging.debug("%s %s", msg_pre, msg_post)
     try:
