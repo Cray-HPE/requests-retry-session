@@ -277,7 +277,9 @@ def run_all_tests_with_protocols(
     """
     Run all of the tests with the specified protocols set to be re-tryable.
     """
-    with RequestSessions(protocols, RR_ADAPTER_ARGS) as rrs_test_lists:
+    # In this version of RRS, only a single protocol may be specified for a retry adapter
+    assert len(protocols) == 1
+    with RequestSessions(protocols[0], RR_ADAPTER_ARGS) as rrs_test_lists:
         logging.log(NOTICE, "Running tests (protocol=%s args=%s)", protocols, RR_ADAPTER_ARGS)
         run_tests(protocols=protocols,
                   retry_test_list=rrs_test_lists.get(),
