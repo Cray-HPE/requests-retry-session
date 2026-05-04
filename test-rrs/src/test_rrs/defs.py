@@ -31,6 +31,7 @@ import logging
 # import Union rather than using |
 from typing import (DefaultDict,
                     FrozenSet,
+                    List,
                     NamedTuple,
                     Tuple)
 
@@ -38,7 +39,7 @@ import requests
 
 import requests_retry_session as rrs
 
-from .typing_imports import Callable, Literal, TypeAlias
+from .typing_imports import Callable, Container, Literal, TypeAlias
 
 
 RequestsMethod: TypeAlias = Callable[..., requests.Response]
@@ -100,6 +101,24 @@ class ServerUrls(NamedTuple):
     """
     http: str
     https: str
+
+
+class TestRecord(NamedTuple):
+    """
+    Paramters that define a single subtest
+    """
+    protocols: Container[SingleProtocol]
+    desc: Union[str, None] = None
+    url: Union[str, None] = None
+    params: Union[ReqParams, None] = None
+
+
+class TestResults(NamedTuple):
+    """
+    Summary of subtest execution
+    """
+    passed: List[TestRecord]
+    failed: List[TestRecord]
 
 
 # Type annotation helpers
