@@ -282,7 +282,7 @@ class BackgroundServerBase(AbstractContextManager, ABC):
         self._server_process.start()
 
         # Give it a moment to start up
-        time.sleep(0.01)
+        time.sleep(0.02)
         logging.debug("Started background server: %s", self.url)
         return self.url
 
