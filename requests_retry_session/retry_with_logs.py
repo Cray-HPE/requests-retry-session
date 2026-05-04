@@ -48,6 +48,31 @@ class RetryWithLogs(Retry):
         # Save a copy of upstack callback to the side; this is the context we provide
         # for recursively instantiated instances of the Retry model
         self._callback = kwargs.pop('callback', None)
+        # If using urllib3 1.25 (the lowest supported version for this version of RRS),
+        # there is a "quirk" where omitting the method_whitelist argument results in
+        # nothing being retried (rather than using the default whitelist, like you
+        # would expect). In urllib3 1.26 there are several changes, and this workaround
+        # is no longer needed. Fortunately, it is easy to detect this situation
+        # because the attribute containing the default method whitelist no longer exists
+        # in 1.26 -- so if it exists and if the argument was not already explicitly
+        # specified, then we should fill in the default value explicitly.
+        # However, we have to be careful, because allowed_method and method_whitelist
+        # are mutually exclusive. So also do not specify it if "allowed_methods" has
+        # been explicitly specified.
+
+        # Use fake loop that we can break out of if we do not require the workaround
+        for _ in (1,):
+            if not hasattr(self, 'DEFAULT_METHOD_WHITELIST'):
+                # Does not have the attribute -> urllib3 1.26+ -> no workaround needed
+                break
+            if "method_whitelist" in kwargs or "allowed_methods" in kwargs:
+                # Has the attribute, but one of these is explicitly specified, so
+                # no workaround needed
+                break
+            # Apply the workaround
+            # Even though we verified that this attribute exists,
+            # pylint is still dubious, hence the pylint disable comment
+            kwargs["method_whitelist"] = self.DEFAULT_METHOD_WHITELIST  # pylint: disable=no-member
         super().__init__(*args, **kwargs)
 
     def new(self, **kwargs):

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Add workaround for `urllib3` `1.25` bug that can cause retries from not happening
+  when they should be.
+
 ## [0.5.6] - 2026-04-23
 
 ### Added
