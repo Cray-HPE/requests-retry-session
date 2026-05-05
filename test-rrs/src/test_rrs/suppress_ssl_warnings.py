@@ -21,26 +21,23 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-"""Nox definitions for linting, type checks, and tests"""
 
-from __future__ import absolute_import
-import nox  # pylint: disable=import-error
+"""
+Context manager to suppress insecure request warnings
+"""
 
-PYTHON = ["3"]
+import contextlib
+from typing import Iterator
+import warnings
+
+from urllib3.exceptions import InsecureRequestWarning
 
 
-@nox.session(python=PYTHON)
-def lint(session):
-    """Run linters.
-    Run Pylint and Pycodestyle against src and tests.
-    Returns a failure if the linters find linting errors or sufficiently
-    serious code quality issues.
+@contextlib.contextmanager
+def suppress_ssl_warnings() -> Iterator[None]:
     """
-    session.install("./rrs[lint]","./test-rrs[lint]")
-    session.install("./rrs","./test-rrs")
-    session.run("pip","list","--format","freeze")
-    session.log("Running pylint...")
-    session.run("pylint", "--rcfile=.pylintrc", "requests_retry_session", "test_rrs")
-
-    session.log("Running pycodestyle...")
-    session.run("pycodestyle", "--config=.pycodestyle", "rrs/src", "test-rrs/src")
+    Suppress insecure request warnings
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", InsecureRequestWarning)
+        yield
