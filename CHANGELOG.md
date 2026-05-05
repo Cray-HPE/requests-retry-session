@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added HTTPS tests
+- Added github workflows to run linters and type checkers for every push
+
+### Changed
+- Refactored how Python code is organized inside the repository
+- Test code is now a proper package
+- Linted main package and test packages
+
+### Dependencies
+- Specify minimum `types-requests` version to ensure it has the
+  fix for https://github.com/python/typeshed/issues/15685
+- Specify minimum `types-urllib3` version to prevent type check error
+- For both of the above, some of the packages are now from Cray/HPE fork repos:
+  - https://github.com/Cray-HPE/python3-types-requests
+  - https://github.com/Cray-HPE/python3-types-urllib3
+
 ## [5.0.5] - 2026-04-23
 
 ### Added
