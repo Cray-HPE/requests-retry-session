@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # MIT License
 #
@@ -23,22 +22,32 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-set -euo pipefail
+"""
+BackgroundServers class
+"""
 
-. /app/venv/bin/activate
+from contextlib import AbstractContextManager, ExitStack
+from types import TracebackType
+from typing import Type, Union
 
-cfile=$(mktemp)
+from .defs import ServerUrls
+from .server import HttpBackgroundServer, HttpsBackgroundServer
 
-python3 /app/gen_test_constraints.py | while read LINE ; do
-    for A in $LINE; do
-        echo "$A"
-    done > "${cfile}"
-    pip3 download \
-        --disable-pip-version-check \
-        /app/requests_retry_session*.whl \
-        /app/test_rrs*.whl \
-        -c "${cfile}" \
-        -d "${PIP_DL_DIR}"
-done
 
-rm -rf "${cfile}"
+class BackgroundServers(AbstractContextManager[ServerUrls]):
+    """
+    Context manager for the background httpx servers
+    """
+    def __init__(self) -> None:
+        self._stack: ExitStack = ExitStack()
+
+    def __enter__(self) -> ServerUrls:
+        self._stack.__enter__()
+        return ServerUrls(http=self._stack.enter_context(HttpBackgroundServer()),
+                          https=self._stack.enter_context(HttpsBackgroundServer()))
+
+    def __exit__(  # pylint: disable=useless-return
+            self, exc_type: Union[Type[BaseException], None],
+            exc_val: Union[BaseException, None],
+            exc_tb: Union[TracebackType, None]) -> Union[bool, None]:
+        return self._stack.__exit__(exc_type, exc_val, exc_tb)
