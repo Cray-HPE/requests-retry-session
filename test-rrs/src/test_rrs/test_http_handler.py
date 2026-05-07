@@ -27,38 +27,46 @@ Minimal RRS module test, mainly to ensure that it is not completely broken.
 """
 
 from collections import defaultdict
-from contextlib import AbstractContextManager
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler
 import logging
-import multiprocessing
 import time
-from types import TracebackType
 # Because we wish to support Python versions back to 3.6, we
-# import Type and Union, rather than using type or |
+# import Union, rather than using |
 from typing import (
     ClassVar,
-    Type,
     Union
 )
 from urllib.parse import parse_qs, urlparse
 
-from .defs import (DROP_SC,
-                   PORT,
-                   PROTOCOL,
-                   ReqCountDict,
-                   ReqCountKey,
-                   ReqMethodName,
-                   ReqParams)
+from .defs import (
+    DROP_SC,
+    ReqCountDict,
+    ReqCountKey,
+    ReqMethodName,
+    ReqParamDelays,
+    ReqParamId,
+    ReqParamScs,
+    ReqParams
+)
 
 
-class MyHandler(BaseHTTPRequestHandler):
+class TestHttpHandler(BaseHTTPRequestHandler):
+    """
+    Simple HTTP request handler for our testing
+    """
     # Using int as the factory function means that all values will
     # default to 0
     _req_count: ClassVar[ReqCountDict] = defaultdict(int)
 
     def _extract_params_from_query(self) -> Union[None, ReqParams]:
+        """
+        Return the request parameters, or None if there is an error
+        """
         query = urlparse(self.path).query
-        params={}
+        id_param: Union[ReqParamId, None] = None
+        delays_param: Union[ReqParamDelays, None] = None
+        scs_param: Union[ReqParamScs, None] = None
+
         for k, v in parse_qs(query).items():
             if k not in ReqParams.__annotations__:
                 self._send(400, f"Unknown request parameter: '{k}'")
@@ -70,44 +78,55 @@ class MyHandler(BaseHTTPRequestHandler):
                 if len(v) > 1:
                     self._send(400, f"Parameter '{k}' was specified '{len(v)}' times")
                     return None
-                params[k] = str(v[0])
+                id_param = str(v[0])
                 continue
-            if k == "delays":
-                expected_type = float
-            else:
-                assert k == "scs"
-                expected_type = int
             try:
-                params[k] = tuple(( expected_type(v_item) for v_item in v ))
+                if k == "delays":
+                    delays_param = tuple((float(v_item) for v_item in v))
+                else:
+                    assert k == "scs"
+                    scs_param = tuple((int(v_item) for v_item in v))
             except (ValueError, TypeError) as err:
-                self._send(400, f"Parameter '{k}' has an invalid value: {type(err).__name__}: {err}")
+                self._send(400, f"Parameter '{k}' has an invalid value '{v}': {type(err).__name__}: {err}")
                 return None
-        for k in ReqParams.__annotations__:
-            if k not in params:
-                self._send(400, f"Missing required parameter '{k}'")
-                return None
-        num_delays = len(params["delays"])
-        num_scs = len(params["scs"])
+        if id_param is None:
+            self._send(400, "Missing required parameter 'id'")
+            return None
+        if delays_param is None:
+            self._send(400, "Missing required parameter 'delays'")
+            return None
+        if scs_param is None:
+            self._send(400, "Missing required parameter 'scs'")
+            return None
+        num_delays = len(delays_param)
+        num_scs = len(scs_param)
         if num_delays != num_scs:
             self._send(400, f"Number of delays {num_delays} != number of scs {num_scs}")
             return None
         try:
-            return ReqParams(**params)
+            return ReqParams(id=id_param, delays=delays_param, scs=scs_param)
         except (ValueError, TypeError) as e:
             self._send(400, f"{type(e).__name__}: {e}")
-            return None
+            # While this return statement is not necessary from an execution standpoint,
+            # I think it helps communicate explicitly that the intention for this code
+            # path is to stop and return None
+            return None  # pylint: disable=useless-return
 
-    def _send(self, sc: int, msg: str = None) -> None:
+    def _send(self, sc: int, msg: Union[str, None] = None) -> None:
+        """
+        Send a response with the specified status code and (optional) message
+        """
         try:
             self.send_response(sc)
-        except BrokenPipeError:
-            logging.debug("BrokenPipeError in send_response(%d) (likely client disconnect)",
-                          sc)
+        except (BrokenPipeError, ConnectionResetError) as err:
+            logging.debug("%s in send_response(%d) (likely client disconnect): %s",
+                          type(err).__name__, sc, err)
             return
         try:
             self.end_headers()
-        except BrokenPipeError:
-            logging.debug("BrokenPipeError in end_headers() (likely client disconnect)")
+        except (BrokenPipeError, ConnectionResetError) as err:
+            logging.debug("%s in end_headers() (likely client disconnect): %s",
+                          type(err).__name__, err)
             return
         if sc == 200:
             prefix = "OK"
@@ -119,11 +138,14 @@ class MyHandler(BaseHTTPRequestHandler):
             msg = f"{prefix}: {msg}"
         try:
             self.wfile.write(msg.encode())
-        except BrokenPipeError:
-            logging.debug("BrokenPipeError in wfile.write(%s) (likely client disconnect)",
-                          msg)
+        except (BrokenPipeError, ConnectionResetError) as err:
+            logging.debug("%s in wfile.write(%s) (likely client disconnect): %s",
+                          type(err).__name__, msg, err)
 
     def _actually_do_method(self, method: ReqMethodName, params: ReqParams) -> None:
+        """
+        Parse the parameters and respond as appropriate
+        """
         req_key: ReqCountKey = (method, params)
         current_count: int = min(self._req_count[req_key], len(params.scs)-1)
         self._req_count[req_key] += 1
@@ -142,8 +164,6 @@ class MyHandler(BaseHTTPRequestHandler):
         if sc != DROP_SC:
             self._send(sc)
 
-        return
-
     def _do_method(self, method: ReqMethodName) -> None:
         """
         The method of handling _req_count is not thread-safe, but this is okay,
@@ -151,52 +171,17 @@ class MyHandler(BaseHTTPRequestHandler):
         serially.
         """
         params = self._extract_params_from_query()
-        if params is None:
-            return
-        return self._actually_do_method(method, params)
+        if params is not None:
+            self._actually_do_method(method, params)
 
     def do_GET(self) -> None:
+        """
+        GET request handler
+        """
         self._do_method("GET")
 
     def do_POST(self) -> None:
+        """
+        POST request handler
+        """
         self._do_method("POST")
-
-def run_server(stop_event: multiprocessing.Event) -> None:
-    """Run a simple HTTP server until stop_event is set."""
-    httpd = HTTPServer(("localhost", PORT), MyHandler)
-    httpd.timeout = 1  # allows periodic checks of stop_event
-    logging.debug("Server running on %s://localhost:%d", PROTOCOL, PORT)
-    while not stop_event.is_set():
-        httpd.handle_request()
-    logging.debug("Stop signal received; %s://localhost:%d server shutting down",
-                 PROTOCOL, PORT)
-
-class BackgroundServer(AbstractContextManager):
-    def __init__(self) -> None:
-        self._stop_event: Union[multiprocessing.Event, None] = None
-        self._server_process: Union[multiprocessing.Process, None] = None
-
-    def __enter__(self):
-        self._stop_event = multiprocessing.Event()
-        self._server_process = multiprocessing.Process(target=run_server, args=(self._stop_event, ))
-        logging.debug("Start background %s server on localhost:%d", PROTOCOL, PORT)
-        self._server_process.start()
-        # Give it a moment to start up
-        time.sleep(0.01)
-        logging.debug("Started background %s server on localhost:%d", PROTOCOL, PORT)
-        return self
-
-    def __exit__(  # pylint: disable=useless-return
-            self, exc_type: Union[Type[BaseException], None],
-            exc_val: Union[BaseException, None],
-            exc_tb: Union[TracebackType, None]) -> Union[bool, None]:
-        logging.debug("Stopping background %s server on localhost:%d", PROTOCOL, PORT)
-        (stop_event, server_process,
-         self._stop_event, self._server_process) = (self._stop_event,
-                                                    self._server_process,
-                                                    None,
-                                                    None)
-        stop_event.set()
-        server_process.join()
-        logging.debug("Stopped background %s server on localhost:%d", PROTOCOL, PORT)
-        return None

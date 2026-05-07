@@ -22,19 +22,26 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+"""
+TimeoutHTTPAdapter class
+"""
+
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from requests.adapters import HTTPAdapter
 
 from .utils import NotPassed, NOT_PASSED
 
+
 if TYPE_CHECKING:
-    from typing import Mapping, TypedDict, Union
+    from typing import Union
 
     from requests import PreparedRequest, Response
-    from typing_extensions import TypeAlias
     from urllib3 import Retry
+
+    from .typing_imports import Mapping, TypeAlias, TypedDict
 
     # To simplify type hints
     BytesOrStringType: TypeAlias = Union[bytes, str]
