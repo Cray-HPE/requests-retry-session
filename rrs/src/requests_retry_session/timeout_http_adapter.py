@@ -22,18 +22,24 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+"""
+TimeoutHTTPAdapter class
+"""
+
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from requests.adapters import HTTPAdapter
 
 from .utils import NotPassed, NOT_PASSED
 
-if TYPE_CHECKING:
-    from typing import Mapping, TypeAlias, TypedDict
 
+if TYPE_CHECKING:
     from requests import PreparedRequest, Response
     from urllib3 import Retry
+
+    from .typing_imports import Mapping, TypeAlias, TypedDict
 
     # To simplify type hints
     BytesOrStringType: TypeAlias = bytes | str
@@ -42,6 +48,15 @@ if TYPE_CHECKING:
     CertType: TypeAlias = BytesOrStringType | tuple[BytesOrStringType,
                                                     BytesOrStringType] | None
     ProxiesType: TypeAlias = Mapping[str, str] | None
+
+    class _InitArgs(TypedDict, total=False):
+        """
+        The valid kwargs for HTTPAdapter.__init__()
+        """
+        pool_connections: int
+        pool_maxsize: int
+        max_retries: Retry | int | None
+        pool_block: bool
 
     class _SendArgs(TypedDict, total=False):
         """
@@ -52,15 +67,6 @@ if TYPE_CHECKING:
         verify: VerifyType
         cert: CertType
         proxies: ProxiesType
-
-    class _InitArgs(TypedDict, total=False):
-        """
-        The valid kwargs for HTTPAdapter.__init__()
-        """
-        pool_connections: int
-        pool_maxsize: int
-        max_retries: Retry | int | None
-        pool_block: bool
 
 
 class TimeoutHTTPAdapter(HTTPAdapter):
