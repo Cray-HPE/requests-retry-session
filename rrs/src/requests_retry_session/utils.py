@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2024-2026 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2022-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,11 +22,18 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from typing import TYPE_CHECKING
+"""
+Shared general utilities
+"""
 
-from .requests_retry_session import requests_retry_adapter, requests_retry_session, \
-                                    requests_session, RequestsRetryAdapterArgs
-from .retry_session_manager import retry_session_manager, RetrySessionManager
+from __future__ import annotations
 
-if TYPE_CHECKING:
-    from .requests_retry_session import AllowedMethodsType, ProtocolType, StatusForcelistType
+
+class NotPassed:  # pylint: disable=too-few-public-methods
+    """
+    A dummy class to let us distinguish between an argument not being passed versus
+    an argument explicitly being passed with a None value
+    """
+
+
+NOT_PASSED = NotPassed()
