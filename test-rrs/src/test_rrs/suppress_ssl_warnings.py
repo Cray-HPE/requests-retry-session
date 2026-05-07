@@ -23,12 +23,22 @@
 #
 
 """
-Test utility functions
+Context manager to suppress insecure request warnings
 """
 
-import random
-import string
+import contextlib
+import warnings
 
-def random_id() -> str:
-    chars = string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for _ in range(16))
+from urllib3.exceptions import InsecureRequestWarning
+
+from .typing_imports import Iterator
+
+
+@contextlib.contextmanager
+def suppress_ssl_warnings() -> Iterator[None]:
+    """
+    Suppress insecure request warnings
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", InsecureRequestWarning)
+        yield
