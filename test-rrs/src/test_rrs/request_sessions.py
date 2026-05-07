@@ -43,15 +43,67 @@ import requests_retry_session as rrs
 
 from .defs import ProtocolType, ReqMethodToTest
 
+
+class RequestSessionsTestLists:
+    """
+    Given RRS sessions, is able to provide corresponding test lists
+    """
+    non_cm_desc = "rrs.requests_retry_session"
+    cm_func_desc = "rrs.retry_session_manager"
+    cm_class_desc = "rrs.RetrySessionManager"
+
+    def __init__(
+        self,
+        non_cm_session: requests.Session,
+        cm_func_session: requests.Session,
+        cm_class_session: requests.Session
+    ) -> None:
+        self._non_cm_session = non_cm_session
+        self._cm_func_session = cm_func_session
+        self._cm_class_session = cm_class_session
+
+    def get(self) -> List[ReqMethodToTest]:
+        """
+        Return the test lists for GET method
+        """
+        non_cm_method = self._non_cm_session.get
+        cm_func_method = self._cm_func_session.get
+        cm_class_method = self._cm_class_session.get
+        return [
+            (non_cm_method, self.non_cm_desc + " GET"),
+            (cm_func_method, self.cm_func_desc + " GET"),
+            (cm_class_method, self.cm_class_desc + " GET")]
+
+    def post(self) -> List[ReqMethodToTest]:
+        """
+        Return the test lists for POST method
+        """
+        non_cm_method = self._non_cm_session.post
+        cm_func_method = self._cm_func_session.post
+        cm_class_method = self._cm_class_session.post
+        return [
+            (non_cm_method, self.non_cm_desc + " POST"),
+            (cm_func_method, self.cm_func_desc + " POST"),
+            (cm_class_method, self.cm_class_desc + " POST")]
+
+
 class MyRRSessionManager(rrs.RetrySessionManager):
     """
     As a subclass of RetrySessionManager, this class can be used as a context manager,
     and will have a requests session available as self.requests_session
     """
-    def __init__(self, proto: ProtocolType, adapter_args: rrs.RequestsRetryAdapterArgs) -> None:
+    def __init__(
+        self,
+        proto: ProtocolType,
+        adapter_args: rrs.RequestsRetryAdapterArgs
+    ) -> None:
         super().__init__(protocol=proto, **adapter_args)
 
-class RequestSessions(AbstractContextManager):
+
+class RequestSessions(AbstractContextManager[RequestSessionsTestLists]):
+    """
+    Context manager, managing three RRS sessions
+    """
     def __init__(
         self,
         protocol: ProtocolType,
@@ -62,13 +114,14 @@ class RequestSessions(AbstractContextManager):
         self._non_cm_session: Union[requests.Session, None] = None
         self._cm_func_session: Union[requests.Session, None] = None
         self._cm_class_session: Union[requests.Session, None] = None
-        self._stack: Union[ExitStack, None] = None
-
-    def __enter__(self):
         # Create an ExitStack to manage multiple context managers
-        self._stack = ExitStack()
+        self._stack: ExitStack = ExitStack()
 
-        # Enter two internal context managers
+    def __enter__(self) -> RequestSessionsTestLists:
+        # Enter stack CM
+        self._stack.__enter__()
+
+        # Enter two internal context managers and add them to stack
         logging.debug("Creating rrs.retry_session_manager (protocol=%s args=%s)",
                       self._proto, self._ad_args)
         self._cm_func_session = self._stack.enter_context(
@@ -82,28 +135,20 @@ class RequestSessions(AbstractContextManager):
         self._cm_class_session = cm_class.requests_session
         logging.debug("Creating rrs.requests_retry_session (protocol=%s args=%s)",
                       self._proto, self._ad_args)
+
+        # Create the regular RRS session
         self._non_cm_session = rrs.requests_retry_session(protocol=self._proto,
                                                           **self._ad_args)
-        return self
+
+        return RequestSessionsTestLists(non_cm_session=self._non_cm_session,
+                                        cm_func_session=self._cm_func_session,
+                                        cm_class_session=self._cm_class_session)
 
     def __exit__(  # pylint: disable=useless-return
-            self, exc_type: Union[Type[BaseException], None],
+            self,
+            exc_type: Union[Type[BaseException], None],
             exc_val: Union[BaseException, None],
             exc_tb: Union[TracebackType, None]) -> Union[bool, None]:
         # Delegate cleanup to the ExitStack
         self._cm_func_session, self._cm_class_session, self._non_cm_session = None, None, None
         return self._stack.__exit__(exc_type, exc_val, exc_tb)
-
-    def test_list(self, method_name: str) -> List[ReqMethodToTest]:
-        attr_name = method_name.lower()
-        method_name = method_name.upper()
-        non_cm_method = getattr(self._non_cm_session, attr_name)
-        non_cm_desc = f"rrs.requests_retry_session {method_name}"
-        cm_func_method = getattr(self._cm_func_session, attr_name)
-        cm_func_desc = f"rrs.retry_session_manager {method_name}"
-        cm_class_method = getattr(self._cm_class_session, attr_name)
-        cm_class_desc = f"rrs.RetrySessionManager {method_name}"
-        return [
-            (non_cm_method, non_cm_desc),
-            (cm_func_method, cm_func_desc),
-            (cm_class_method, cm_class_desc) ]
