@@ -22,25 +22,46 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
+"""
+RetrySessionManager class
+"""
+
 from __future__ import annotations
-from contextlib import closing, contextmanager, AbstractContextManager
+
+from contextlib import (
+    closing,
+    contextmanager,
+    AbstractContextManager,
+)
 from typing import TYPE_CHECKING
 
-import requests
-
-from .requests_retry_session import requests_retry_adapter, requests_session, \
-                                    RequestsRetryAdapterArgs, DEFAULT_PROTOCOL
-from .timeout_http_adapter import TimeoutHTTPAdapter
+from .requests_retry_session import (
+    requests_retry_adapter,
+    requests_session,
+    DEFAULT_PROTOCOL,
+)
 
 if TYPE_CHECKING:
     from types import TracebackType
-    from typing import Iterator, Type
+    from typing import Type
 
-    from typing_extensions import Self, Unpack
+    import requests
 
-    from .requests_retry_session import ProtocolType
+    from .requests_retry_session import (
+        ProtocolType,
+        RequestsRetryAdapterArgs,
+    )
+    from .timeout_http_adapter import TimeoutHTTPAdapter
+    from .typing_imports import Iterator, Self, Unpack
 
-class RetrySessionManager(AbstractContextManager):
+
+# Unfortunately Python does not currently have any supported way to accurate type
+# annotate RetrySessionManager. For a full discussion of the issue, see
+# https://github.com/python/typing/issues/2276
+#
+# Until that is resolved, unless we want to change the implementation of this
+# class, the following type: ignore directive is necessary
+class RetrySessionManager(AbstractContextManager):  # type: ignore[type-arg]
     """
     Not intended to be useful on its own, this is a base class for classes that want to create a
     retry session only when needed, and to clean it up in their __exit__ function.
