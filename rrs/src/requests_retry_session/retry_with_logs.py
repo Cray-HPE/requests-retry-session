@@ -21,9 +21,33 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
+"""
+RetryWithLogs class
+"""
 
 import logging
+from typing import TYPE_CHECKING
+
 from urllib3 import Retry
+
+
+if TYPE_CHECKING:
+    from types import TracebackType
+    from typing import Optional
+
+    from urllib3.connectionpool import ConnectionPool
+
+    from .typing_imports import Self
+
+    try:
+        # We tell mypy to ignore this if this fails.
+        # We also have to specify unused-ignore, since this only fails sometimes,
+        # depending on the version of urllib3 that is installed
+        from urllib3 import BaseHTTPResponse  # type: ignore[import,attr-defined,unused-ignore]
+    except ImportError:
+        # Older versions of urllib3 need this adjustment
+        from urllib3 import HTTPResponse as BaseHTTPResponse
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -43,34 +67,25 @@ class RetryWithLogs(Retry):
     system instability and network congestion.
     """
 
-    def __init__(
-            self, *args, **kwargs) -> None:
+    def __init__(  # type: ignore[no-untyped-def]
+            self, *args, **kwargs) -> "None":
         # Save a copy of upstack callback to the side; this is the context we provide
         # for recursively instantiated instances of the Retry model
         self._callback = kwargs.pop('callback', None)
         super().__init__(*args, **kwargs)
 
-    def new(self, **kwargs):
+    def new(self, **kwargs) -> "Self":  # type: ignore[no-untyped-def]
         # Newly created instances should have a history of callbacks made.
         kwargs['callback'] = self._callback
         return super().new(**kwargs)
 
     def increment(self,
-                  method = None,
-                  url = None,
-                  response = None,
-                  error = None,
-                  _pool = None,
-                  _stacktrace = None):
-        """
-        method: Optional[str]
-        url: Optional[str]
-        response: Optional[BaseHTTPResponse]
-        error: Optional[Exception]
-        _pool: Optional[ConnectionPool]
-        _stacktrace: Optional[TracebackType]
-        -> Self
-        """
+                  method: "Optional[str]" = None,
+                  url: "Optional[str]" = None,
+                  response: "Optional[BaseHTTPResponse]" = None,
+                  error: "Optional[Exception]" = None,
+                  _pool: "Optional[ConnectionPool]" = None,
+                  _stacktrace: "Optional[TracebackType]" = None) -> "Self":
         if _pool is None:
             raise TypeError(f"_pool argument should not be None. {locals()}")
         if url is None:

@@ -22,37 +22,33 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 """
-Return a requests session with retries, timeouts, and logging.
-
-The purpose of this module is to provide a unified way of creating or
-updating a requests retry connection whenever interacting with a
-microservice; these connections are exposed as a requests session
-with an HTTP retry adapter attached to it.
-Created on Nov 2, 2020
-
-@author: jsl
+Requests session functions and classes
 """
 
-import sys
-from typing import Optional, Tuple
-
-if sys.version_info >= (3, 9):
-    from typing import TypedDict
-else:
-    from typing_extensions import TypedDict
+from typing import Tuple, TYPE_CHECKING
 
 import requests
 
-from .timeout_http_adapter import TimeoutHTTPAdapter
 from .retry_with_logs import RetryWithLogs
+from .timeout_http_adapter import TimeoutHTTPAdapter
+from .typing_imports import TypedDict
+
+
+if TYPE_CHECKING:
+    from typing import Optional
+    from .typing_imports import Unpack, TypeAlias
+
+
+ProtocolType: "TypeAlias" = str
+StatusForcelistType: "TypeAlias" = Tuple[int, ...]
 
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
 # protocol should omit the trailing "://" because it will be automatically appended
-DEFAULT_PROTOCOL = 'http'
+DEFAULT_PROTOCOL: "ProtocolType" = 'http'
 DEFAULT_READ_TIMEOUT = 10
 DEFAULT_RETRIES = 10
-DEFAULT_STATUS_FORCELIST = (500, 502, 503, 504)
+DEFAULT_STATUS_FORCELIST: "StatusForcelistType" = (500, 502, 503, 504)
 
 
 class RequestsRetryAdapterArgs(TypedDict, total=False):
@@ -62,21 +58,16 @@ class RequestsRetryAdapterArgs(TypedDict, total=False):
     """
     retries: int
     backoff_factor: float
-    status_forcelist: Tuple[int, ...]
+    status_forcelist: StatusForcelistType
     connect_timeout: float
     read_timeout: float
 
 
-def requests_session(adapter,
-                     session = None,
-                     protocol = DEFAULT_PROTOCOL):
+def requests_session(adapter: "requests.adapters.HTTPAdapter",
+                     session: "Optional[requests.Session]" = None,
+                     protocol: "ProtocolType" = DEFAULT_PROTOCOL) -> "requests.Session":
     """
     protocol should omit the trailing "://" because it will be automatically appended
-
-    adapter: requests.adapters.HTTPAdapter,
-    session: Optional[requests.Session]
-    protocol: str
-    -> requests.Session:
     """
     session = session or requests.Session()
     # Must mount to http://
@@ -85,19 +76,15 @@ def requests_session(adapter,
     return session
 
 
-def requests_retry_adapter(
-        retries = DEFAULT_RETRIES,
-        backoff_factor = DEFAULT_BACKOFF_FACTOR,
-        status_forcelist = DEFAULT_STATUS_FORCELIST,
-        connect_timeout = DEFAULT_CONNECT_TIMEOUT,
-        read_timeout = DEFAULT_READ_TIMEOUT):
+def requests_retry_adapter(  # pylint: disable=too-many-positional-arguments
+        retries: "int" = DEFAULT_RETRIES,
+        backoff_factor: "float" = DEFAULT_BACKOFF_FACTOR,
+        status_forcelist: "StatusForcelistType" = DEFAULT_STATUS_FORCELIST,
+        connect_timeout: "float" = DEFAULT_CONNECT_TIMEOUT,
+        read_timeout: "float" = DEFAULT_READ_TIMEOUT
+) -> "TimeoutHTTPAdapter":
     """
-    retries: int
-    backoff_factor: float
-    status_forcelist: Tuple[int, ...]
-    connect_timeout: float
-    read_timeout: float
-    -> .timeout_http_adapter.TimeoutHTTPAdapter:
+    Return a TimeoutHTTPAdapter based on the specified arguments
     """
     retry = RetryWithLogs(
         total=retries,
@@ -111,17 +98,12 @@ def requests_retry_adapter(
 
 
 def requests_retry_session(
-        session = None,
-        protocol = DEFAULT_PROTOCOL,
-        **adapter_kwargs
-):
+    session: "Optional[requests.Session]" = None,
+    protocol: "ProtocolType" = DEFAULT_PROTOCOL,
+    **adapter_kwargs: "Unpack[RequestsRetryAdapterArgs]"
+) -> "requests.Session":
     """
     protocol should omit the trailing "://" because it will be automatically appended later
-
-    session: Optional[requests.Session]
-    protocol: str
-    **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]
-    -> requests.Session
     """
     adapter = requests_retry_adapter(**adapter_kwargs)
     return requests_session(adapter=adapter,

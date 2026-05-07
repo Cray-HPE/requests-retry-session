@@ -1,0 +1,62 @@
+#
+# MIT License
+#
+# (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
+
+"""
+BackgroundServers class
+"""
+
+from contextlib import AbstractContextManager, ExitStack
+import sys
+from types import TracebackType
+from typing import Type, Union
+
+from .defs import ServerUrls
+from .server import HttpBackgroundServer, HttpsBackgroundServer
+
+
+# Workaround for the fact that AbstractContextManager is not
+# subscriptable in Python 3.6
+if sys.version_info >= (3, 9):
+    _ACM = AbstractContextManager[ServerUrls]
+else:
+    _ACM = AbstractContextManager
+
+
+class BackgroundServers(_ACM):
+    """
+    Context manager for the background httpx servers
+    """
+    def __init__(self) -> None:
+        self._stack: ExitStack = ExitStack()
+
+    def __enter__(self) -> ServerUrls:
+        self._stack.__enter__()
+        return ServerUrls(http=self._stack.enter_context(HttpBackgroundServer()),
+                          https=self._stack.enter_context(HttpsBackgroundServer()))
+
+    def __exit__(  # pylint: disable=useless-return
+            self, exc_type: Union[Type[BaseException], None],
+            exc_val: Union[BaseException, None],
+            exc_tb: Union[TracebackType, None]) -> Union[bool, None]:
+        return self._stack.__exit__(exc_type, exc_val, exc_tb)

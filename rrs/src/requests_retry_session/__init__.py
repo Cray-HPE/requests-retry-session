@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2024-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,6 +22,40 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from .requests_retry_session import requests_retry_adapter, requests_retry_session, \
-                                    requests_session, RequestsRetryAdapterArgs
-from .retry_session_manager import retry_session_manager, RetrySessionManager
+"""
+Return a requests session with retries, timeouts, and logging.
+
+The purpose of this module is to provide a unified way of creating or
+updating a requests retry connection whenever interacting with a
+microservice; these connections are exposed as a requests session
+with an HTTP retry adapter attached to it.
+Created on Nov 2, 2020
+
+@author: jsl
+@maintainer: Mitch Harding
+"""
+
+from .requests_retry_session import (
+    requests_retry_adapter,
+    requests_retry_session,
+    requests_session,
+    ProtocolType,
+    RequestsRetryAdapterArgs,
+    StatusForcelistType,
+)
+from .retry_session_manager import (
+    retry_session_manager,
+    RetrySessionManager,
+)
+
+# Explicit exports
+__all__ = [
+    "requests_retry_adapter",
+    "requests_retry_session",
+    "requests_session",
+    "retry_session_manager",
+    "ProtocolType",
+    "RequestsRetryAdapterArgs",
+    "RetrySessionManager",
+    "StatusForcelistType",
+]
