@@ -22,13 +22,45 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from contextlib import closing, contextmanager, AbstractContextManager
-import requests
+"""
+RetrySessionManager class
+"""
 
-from .requests_retry_session import requests_retry_adapter, requests_session, \
-                                    DEFAULT_PROTOCOL
+from contextlib import (
+    closing,
+    contextmanager,
+    AbstractContextManager,
+)
+from typing import TYPE_CHECKING
 
-class RetrySessionManager(AbstractContextManager):
+from .requests_retry_session import (
+    requests_retry_adapter,
+    requests_session,
+    DEFAULT_PROTOCOL,
+)
+
+
+if TYPE_CHECKING:
+    from types import TracebackType
+    from typing import Optional, Type
+
+    import requests
+
+    from .requests_retry_session import (
+        ProtocolType,
+        RequestsRetryAdapterArgs,
+    )
+    from .timeout_http_adapter import TimeoutHTTPAdapter
+    from .typing_imports import Iterator, Self, Unpack
+
+
+# Unfortunately Python does not currently have any supported way to accurate type
+# annotate RetrySessionManager. For a full discussion of the issue, see
+# https://github.com/python/typing/issues/2276
+#
+# Until that is resolved, unless we want to change the implementation of this
+# class, the following type: ignore directive is necessary
+class RetrySessionManager(AbstractContextManager):  # type: ignore[type-arg]
     """
     Not intended to be useful on its own, this is a base class for classes that want to create a
     retry session only when needed, and to clean it up in their __exit__ function.
@@ -36,33 +68,22 @@ class RetrySessionManager(AbstractContextManager):
     """
 
     def __init__(self,
-                 protocol = None,
-                 **adapter_kwargs):
+                 protocol: "Optional[ProtocolType]" = None,
+                 **adapter_kwargs: "Unpack[RequestsRetryAdapterArgs]") -> "None":
         """
         If specified, protocols should omit the trailing "://" because it will be automatically appended later
-
-        protocol: Optional[str]
-        **adapter_kwargs: Unpack[.requests_retry_session.RequestsRetryAdapterArgs]
-        -> None
         """
-        # self._requests_adapter: Optional[.timeout_http_adapter.TimeoutHTTPAdapter]
-        self._requests_adapter = None
-        # self._requests_session: Optional[requests.Session]
-        self._requests_session = None
-        # self._requests_protocol: str
-        self._requests_protocol = protocol if protocol is not None else DEFAULT_PROTOCOL
-        # self._requests_retry_adapter_kwargs: .requests_retry_session.RequestsRetryAdapterArgs
-        self._requests_retry_adapter_kwargs = adapter_kwargs
+        self._requests_adapter: "Optional[TimeoutHTTPAdapter]" = None
+        self._requests_session: "Optional[requests.Session]" = None
+        self._requests_protocol: "ProtocolType" = protocol if protocol is not None else DEFAULT_PROTOCOL
+        self._requests_retry_adapter_kwargs: "RequestsRetryAdapterArgs" = adapter_kwargs
 
     def __exit__(  # pylint: disable=useless-return
-            self, exc_type,
-            exc_val,
-            exc_tb):
+            self, exc_type: "Optional[Type[BaseException]]",
+            exc_val: "Optional[BaseException]",
+            exc_tb: "Optional[TracebackType]") -> "Optional[bool]":
         """
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType]) -> Optional[bool]:
-        -> Optional[bool]
+        Close the session and adapters, if applicable, then return
         """
         if self._requests_session is not None:
             self._requests_session.close()
@@ -73,11 +94,15 @@ class RetrySessionManager(AbstractContextManager):
         # The following return statement is not needed, but it makes mypy sad without it
         return None
 
+    # The following is needed to work around https://github.com/python/typing/issues/1992
+    if TYPE_CHECKING:
+        def __enter__(self) -> "Self":
+            return self
+
     @property
-    def requests_session(self):
+    def requests_session(self) -> "requests.Session":
         """
         Returns the requests retry session, after initializing it if needed
-        -> requests.Session
         """
         if self._requests_session is None:
             self._requests_adapter = requests_retry_adapter(
@@ -90,17 +115,13 @@ class RetrySessionManager(AbstractContextManager):
 
 @contextmanager
 def retry_session_manager(
-    protocol = None,
-    **adapter_kwargs
-):
+    protocol: "Optional[ProtocolType]" = None,
+    **adapter_kwargs: "Unpack[RequestsRetryAdapterArgs]"
+) -> "Iterator[requests.Session]":
     """
     Provides a context manager that will clean up both the session and the adapter on exit
 
     If specified, protocols should omit the trailing "://" because it will be automatically appended later
-
-    protocol: Optional[str]
-    **adapter_kwargs: Unpack[.requests_retry_session.RequestsRetryAdapterArgs]
-    -> Iterator[requests.Session]
     """
     requests_protocol = protocol if protocol is not None else DEFAULT_PROTOCOL
     with closing(requests_retry_adapter(**adapter_kwargs)) as adapter:

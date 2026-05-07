@@ -22,41 +22,49 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 """
-Return a requests session with retries, timeouts, and logging.
-
-The purpose of this module is to provide a unified way of creating or
-updating a requests retry connection whenever interacting with a
-microservice; these connections are exposed as a requests session
-with an HTTP retry adapter attached to it.
-Created on Nov 2, 2020
-
-@author: jsl
+Requests session functions and classes
 """
 
-import sys
-from typing import Optional
-
-if sys.version_info >= (3, 9):
-    from collections.abc import Collection
-    from typing import TypedDict
-else:
-    from typing import Collection
-    from typing_extensions import TypedDict
+from typing import Union, TYPE_CHECKING
 
 import requests
 
 from .retry_with_logs import RetryWithLogs
 from .timeout_http_adapter import TimeoutHTTPAdapter
+from .typing_imports import Collection, Iterable, TypedDict
 from .utils import NotPassed, NOT_PASSED
+
+
+if TYPE_CHECKING:
+    from typing import Optional
+    from .typing_imports import Unpack, TypeAlias
+
+
+AllowedMethodsType: "TypeAlias" = Collection[str]
+ProtocolType: "TypeAlias" = Union[str, Iterable[str]]
+StatusForcelistType: "TypeAlias" = Collection[int]
+
+
+if TYPE_CHECKING:
+    class _RetryArgs(TypedDict, total=False):
+        """
+        The valid kwargs for urllib3.Retry.__init__()
+        """
+        total: int
+        read: int
+        connect: int
+        backoff_factor: float
+        status_forcelist: StatusForcelistType
+        allowed_methods: AllowedMethodsType
 
 
 DEFAULT_BACKOFF_FACTOR = 0.5
 DEFAULT_CONNECT_TIMEOUT = 3
 # Protocols should omit the trailing "://" because it will be automatically appended
-DEFAULT_PROTOCOL = 'http'
+DEFAULT_PROTOCOL: "ProtocolType" = 'http'
 DEFAULT_READ_TIMEOUT = 10
 DEFAULT_RETRIES = 10
-DEFAULT_STATUS_FORCELIST = (500, 502, 503, 504)
+DEFAULT_STATUS_FORCELIST: "StatusForcelistType" = (500, 502, 503, 504)
 
 
 class RequestsRetryAdapterArgs(TypedDict, total=False):
@@ -66,22 +74,17 @@ class RequestsRetryAdapterArgs(TypedDict, total=False):
     """
     retries: int
     backoff_factor: float
-    status_forcelist: Collection[int]
-    allowed_methods: Collection[str]
+    status_forcelist: StatusForcelistType
+    allowed_methods: AllowedMethodsType
     connect_timeout: float
     read_timeout: float
 
 
-def requests_session(adapter,
-                     session = None,
-                     protocol = DEFAULT_PROTOCOL):
+def requests_session(adapter: "requests.adapters.HTTPAdapter",
+                     session: "Optional[requests.Session]" = None,
+                     protocol: "ProtocolType" = DEFAULT_PROTOCOL) -> "requests.Session":
     """
     Protocols should omit the trailing "://" because it will be automatically appended
-
-    adapter: requests.adapters.HTTPAdapter,
-    session: Optional[requests.Session]
-    protocol: Union[str, Iterable[str]]
-    -> requests.Session:
     """
     if isinstance(protocol, str):
         return requests_session(adapter=adapter, session=session, protocol=[protocol])
@@ -93,28 +96,24 @@ def requests_session(adapter,
     return session
 
 
-def requests_retry_adapter(
-        retries = DEFAULT_RETRIES,
-        backoff_factor = DEFAULT_BACKOFF_FACTOR,
-        status_forcelist = DEFAULT_STATUS_FORCELIST,
-        connect_timeout = DEFAULT_CONNECT_TIMEOUT,
-        read_timeout = DEFAULT_READ_TIMEOUT,
-        allowed_methods = NOT_PASSED):
+def requests_retry_adapter(  # pylint: disable=too-many-positional-arguments
+        retries: "int" = DEFAULT_RETRIES,
+        backoff_factor: "float" = DEFAULT_BACKOFF_FACTOR,
+        status_forcelist: "StatusForcelistType" = DEFAULT_STATUS_FORCELIST,
+        connect_timeout: "float" = DEFAULT_CONNECT_TIMEOUT,
+        read_timeout: "float" = DEFAULT_READ_TIMEOUT,
+        allowed_methods: "Union[AllowedMethodsType, NotPassed]" = NOT_PASSED
+) -> "TimeoutHTTPAdapter":
     """
-    retries: int
-    backoff_factor: float
-    status_forcelist: Collection[int]
-    connect_timeout: float
-    read_timeout: float
-    allowed_methods: Union[Collection[str], NotPassed]
-    -> .timeout_http_adapter.TimeoutHTTPAdapter:
+    Return a TimeoutHTTPAdapter based on the specified arguments
     """
-    retry_kwargs = {
+    retry_kwargs: "_RetryArgs" = {
         "total": retries,
         "read": retries,
         "connect": retries,
         "backoff_factor": backoff_factor,
-        "status_forcelist": status_forcelist }
+        "status_forcelist": status_forcelist
+    }
     if not isinstance(allowed_methods, NotPassed):
         retry_kwargs["allowed_methods"] = allowed_methods
     retry = RetryWithLogs(**retry_kwargs)
@@ -123,17 +122,12 @@ def requests_retry_adapter(
 
 
 def requests_retry_session(
-        session = None,
-        protocol = DEFAULT_PROTOCOL,
-        **adapter_kwargs
-):
+    session: "Optional[requests.Session]" = None,
+    protocol: "ProtocolType" = DEFAULT_PROTOCOL,
+    **adapter_kwargs: "Unpack[RequestsRetryAdapterArgs]"
+) -> "requests.Session":
     """
     Protocols should omit the trailing "://" because it will be automatically appended later
-
-    session: Optional[requests.Session]
-    protocol: Union[str, Iterable[str]]
-    **adapter_kwargs: Unpack[RequestsRetryAdapterArgs]
-    -> requests.Session
     """
     adapter = requests_retry_adapter(**adapter_kwargs)
     return requests_session(adapter=adapter,
