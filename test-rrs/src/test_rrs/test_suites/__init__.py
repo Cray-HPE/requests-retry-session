@@ -23,22 +23,16 @@
 #
 
 """
-Context manager to suppress insecure request warnings
+Minimal RRS module test, mainly to ensure that it is not completely broken.
 """
 
-import contextlib
-import warnings
+# We also have to import the files that define our test suites, even though
+# we are not re-exporting any of them. This is to ensure that the classes
+# get defined (and therefore added to the metaclass registry)
+from .test_suite1 import *
 
-from urllib3.exceptions import InsecureRequestWarning
-
-from .typing_imports import Iterator
+from .test_suite_base import test_suites
 
 
-@contextlib.contextmanager
-def suppress_ssl_warnings() -> Iterator[None]:
-    """
-    Suppress insecure request warnings
-    """
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", InsecureRequestWarning)
-        yield
+# Explicitly re-export
+__all__ = ["test_suites"]
