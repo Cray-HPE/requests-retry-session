@@ -42,6 +42,7 @@ classifiers = [
 description = 'Internal test tool for requests-retry-session package'
 dependencies = [
     "cryptography>=3.1",
+    "dataclasses ; python_version < '3.7'",
     "requests>=2.5",
     "requests-retry-session==0.0.57",
     "urllib3>=1.9"
