@@ -23,40 +23,18 @@
 #
 
 """
-BackgroundServers class
+Test definitions
 """
 
-from contextlib import AbstractContextManager, ExitStack
-import sys
-from types import TracebackType
-from typing import Type, Union
-
-from .defs import ServerUrls
-from .server import HttpBackgroundServer, HttpsBackgroundServer
+from typing import NamedTuple
 
 
-# Workaround for the fact that AbstractContextManager is not
-# subscriptable in Python 3.6
-if sys.version_info >= (3, 9):
-    _ACM = AbstractContextManager[ServerUrls]
-else:
-    _ACM = AbstractContextManager
+SERVER_HOSTNAME = 'localhost'
 
 
-class BackgroundServers(_ACM):
+class CertFilePaths(NamedTuple):
     """
-    Context manager for the background httpx servers
+    Paths to the cert file and key file
     """
-    def __init__(self) -> None:
-        self._stack: ExitStack = ExitStack()
-
-    def __enter__(self) -> ServerUrls:
-        self._stack.__enter__()
-        return ServerUrls(http=self._stack.enter_context(HttpBackgroundServer()),
-                          https=self._stack.enter_context(HttpsBackgroundServer()))
-
-    def __exit__(  # pylint: disable=useless-return
-            self, exc_type: Union[Type[BaseException], None],
-            exc_val: Union[BaseException, None],
-            exc_tb: Union[TracebackType, None]) -> Union[bool, None]:
-        return self._stack.__exit__(exc_type, exc_val, exc_tb)
+    cert_file: str
+    key_file: str
