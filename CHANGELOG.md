@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+
+- Bump `pytest` from ~=7.2 to >=7.2,<10.0 ([#38](https://github.com/Cray-HPE/requests-retry-session/pull/38))
+
 ## [5.1.2] - 2026-04-23
 
 ### Added
