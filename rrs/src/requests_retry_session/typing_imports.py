@@ -51,6 +51,8 @@ from typing import (
     Protocol,
     TypedDict,
     final,
+    get_args,
+    runtime_checkable,
 )
 # In order to keep the code common for Python 3.6, we define
 # a separate IterableProtocol variable, which in Python 3.9+
@@ -112,4 +114,6 @@ __all__ = [
     "TypedDict",
     "Unpack",
     "final",
+    "get_args",
+    "runtime_checkable",
 ]
