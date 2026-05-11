@@ -29,13 +29,26 @@ Minimal RRS module test, mainly to ensure that it is not completely broken.
 import logging
 import sys
 
-from .defs import NOTICE_LOG_LEVEL, NOTICE_LOG_NAME
-from .test import run_all_tests
+from test_rrs.defs import NOTICE_LOG_LEVEL, NOTICE_LOG_NAME
+from test_rrs.results import log_test_results
+from test_rrs.test import run_all_tests
 
 
 LOG_FORMAT = "%(asctime)-15s - %(process)d - %(thread)d - %(levelname)-7s - "
 LOG_FORMAT += "%(name)s - %(filename)s:%(lineno)d - %(funcName)s - %(message)s"
 LOG_FILE = "test_rrs.log"
+
+
+def main() -> int:
+    """
+    Runs the tests and prints the results.
+    Returns 0 if no failures, 1 otherwise.
+    """
+    results = run_all_tests()
+    log_test_results(results)
+    # Make sure SOMETHING ran
+    assert results.passed or results.failed
+    return 1 if results.failed else 0
 
 
 if __name__ == '__main__':
@@ -60,4 +73,4 @@ if __name__ == '__main__':
     logger.addHandler(file_handler)
     logger.addHandler(screen_handler)
 
-    sys.exit(run_all_tests())
+    sys.exit(main())
