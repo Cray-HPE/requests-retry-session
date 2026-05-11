@@ -34,20 +34,27 @@ import time
 # import Union, rather than using |
 from typing import (
     ClassVar,
-    Union
+    DefaultDict,
+    Tuple,
+    Union,
 )
 from urllib.parse import parse_qs, urlparse
 
-from .defs import (
-    DROP_SC,
-    ReqCountDict,
-    ReqCountKey,
-    ReqMethodName,
+from test_rrs.defs import (
+    RequestVerb,
     ReqParamDelays,
     ReqParamId,
     ReqParamScs,
-    ReqParams
+    ReqParams,
 )
+from test_rrs.typing_imports import TypeAlias
+
+
+ReqCountKey: TypeAlias = Tuple[RequestVerb, ReqParams]
+ReqCountDict: TypeAlias = DefaultDict[ReqCountKey, int]
+
+# DROP_SC is the SC that tells the server to just disconnect without response
+DROP_SC = 0
 
 
 class TestHttpHandler(BaseHTTPRequestHandler):
@@ -142,7 +149,7 @@ class TestHttpHandler(BaseHTTPRequestHandler):
             logging.debug("%s in wfile.write(%s) (likely client disconnect): %s",
                           type(err).__name__, msg, err)
 
-    def _actually_do_method(self, method: ReqMethodName, params: ReqParams) -> None:
+    def _actually_do_method(self, method: RequestVerb, params: ReqParams) -> None:
         """
         Parse the parameters and respond as appropriate
         """
@@ -164,7 +171,7 @@ class TestHttpHandler(BaseHTTPRequestHandler):
         if sc != DROP_SC:
             self._send(sc)
 
-    def _do_method(self, method: ReqMethodName) -> None:
+    def _do_method(self, method: RequestVerb) -> None:
         """
         The method of handling _req_count is not thread-safe, but this is okay,
         because the current implementation of the web server handles requests
