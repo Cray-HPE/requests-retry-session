@@ -23,31 +23,21 @@
 #
 
 """
-BackgroundServers class
+Minimal RRS module test, mainly to ensure that it is not completely broken.
 """
 
-from contextlib import AbstractContextManager, ExitStack
-from types import TracebackType
-from typing import Type, Union
-
-from .defs import ServerUrls
-from .server import HttpBackgroundServer, HttpsBackgroundServer
+from test_rrs.rrs_lib import RR_STATUS_FORCELIST, RR_TIMEOUT
 
 
-class BackgroundServers(AbstractContextManager[ServerUrls]):
-    """
-    Context manager for the background httpx servers
-    """
-    def __init__(self) -> None:
-        self._stack: ExitStack = ExitStack()
+# How long to have the test server delay responses in order to provoke the
+# request to time out
+TIMEOUT_DELAY = 1.5 * RR_TIMEOUT
 
-    def __enter__(self) -> ServerUrls:
-        self._stack.__enter__()
-        return ServerUrls(http=self._stack.enter_context(HttpBackgroundServer()),
-                          https=self._stack.enter_context(HttpsBackgroundServer()))
+# "Good" status codes that should not trigger retries
+GOOD_SCS = tuple(x for x in range(210, 300) if x not in RR_STATUS_FORCELIST)
 
-    def __exit__(  # pylint: disable=useless-return
-            self, exc_type: Union[Type[BaseException], None],
-            exc_val: Union[BaseException, None],
-            exc_tb: Union[TracebackType, None]) -> Union[bool, None]:
-        return self._stack.__exit__(exc_type, exc_val, exc_tb)
+# "Bad" status codes that should not trigger retries
+# Make sure to start with 502, since that is one of the default values for retry-able
+# status codes in RRS. If there is a bug where the defaults are being used even though
+# our test specifies a different list, this may help detect it.
+BAD_NORETRY_SCS = tuple(x for x in range(502, 600) if x not in RR_STATUS_FORCELIST)
