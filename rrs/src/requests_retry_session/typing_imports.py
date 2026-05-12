@@ -69,6 +69,8 @@ if sys.version_info < (3, 9):
         """
         Returns the list of items used to create a literal.
         Notes:
+        - This preserves the behavior of the actual get_args function
+          when it comes to duplicate arguments and nested Literals.
         - This relies on how Literal is implemented internally. I have
           confirmed that it works for all versions of typing_extensions
           available for Python 3.6 that include Literal (3.7.2+).
@@ -82,6 +84,9 @@ if sys.version_info < (3, 9):
         assert isinstance(literal.__values__, tuple)
         value_list: "List[LiteralValue]" = []
         for val in literal.__values__:
+            if val in value_list:
+                # We do not add duplicates
+                continue
             if val is None:
                 value_list.append(val)
                 continue
@@ -89,7 +94,9 @@ if sys.version_info < (3, 9):
                 value_list.append(val)
                 continue
             # It is possible to have another Literal inside a Literal
-            value_list.extend(get_args(val))
+            for subval in get_args(val):
+                if subval not in value_list:
+                    value_list.append(subval)
         return tuple(value_list)
 
 else:
