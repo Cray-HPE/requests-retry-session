@@ -58,24 +58,39 @@ if sys.version_info < (3, 9):
 
     # Not even typing_extensions has get_args in this version, so
     # we have to define a hack version ourselves
+    from enum import Enum
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
-        from typing import Any, Tuple
+        from typing import Any, List, Tuple, Union
+        from typing_extensions import TypeAlias
+        LiteralValue: "TypeAlias" = Union[bool, int, str, bytes, Enum, None]
 
-    def get_args(literal: "Any") -> "Tuple[Any, ...]":
+    def get_args(literal: "Any") -> "Tuple[LiteralValue, ...]":
         """
         Returns the list of items used to create a literal.
         Notes:
-        - This relies on how Literal is implemented internally. However,
-          they no longer update typing_extensions for Python 3.6,
+        - This relies on how Literal is implemented internally. I have
+          confirmed that it works for all versions of typing_extensions
+          available for Python 3.6 that include Literal (3.7.2+).
+          They no longer update typing_extensions for Python 3.6,
           so we can assume that this will not change.
         - The type signature for this function is much broader
           than it "should" be, but unfortunately there is no way to
           define it more accurately in a way that mypy will accept.
         """
-        assert hasattr(literal, "__args__")
-        assert isinstance(literal.__args__, tuple)
-        return literal.__args__
+        assert hasattr(literal, "__values__")
+        assert isinstance(literal.__values__, tuple)
+        value_list: "List[LiteralValue]" = []
+        for val in literal.__values__:
+            if val is None:
+                value_list.append(val)
+                continue
+            if isinstance(val, (bool, int, str, bytes, Enum)):
+                value_list.append(val)
+                continue
+            # It is possible to have another Literal inside a Literal
+            value_list.extend(get_args(val))
+        return tuple(value_list)
 
 else:
     # Python 3.9+
