@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.6] - 2026-05-12
+
 ### Added
 - Added HTTPS tests
 - Added github workflows to run linters and type checkers for every push
