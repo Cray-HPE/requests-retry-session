@@ -32,7 +32,7 @@ This module is also symbolically linked into the test-rrs package.
 import sys
 
 # collections.abc.Callable/Container/Iterable/etc made parameterizable in Python 3.9
-# Literal, Protocol, TypedDict, final, get_args, runtime_checkable added to typing in 3.9
+# Literal, Protocol, TypedDict, final, runtime_checkable added to typing in 3.9
 if sys.version_info < (3, 9):
     from typing import (
         Callable,
@@ -55,14 +55,71 @@ if sys.version_info < (3, 9):
         runtime_checkable,
     )
     from collections.abc import Iterable as IterableProtocol
+else:
+    # Python 3.9+
+    from collections.abc import (
+        Callable,
+        Collection,
+        Container,
+        Generator,
+        Iterable,
+        Iterator,
+        Mapping,
+        MutableMapping,
+        MutableSequence,
+        MutableSet,
+        Sequence,
+    )
+    from typing import (
+        Literal,
+        Protocol,
+        TypedDict,
+        final,
+        runtime_checkable,
+    )
+    # In order to keep the code common for Python 3.6, we define
+    # a separate IterableProtocol variable, which in Python 3.9+
+    # is the same as what we imported from collections.abc
+    IterableProtocol = Iterable
 
+
+# ParamSpec*, TypeAlias, and TypeGuard was added to typing in 3.10
+if sys.version_info < (3, 10):
+    from typing_extensions import (
+        ParamSpec,
+        ParamSpecArgs,
+        ParamSpecKwargs,
+        TypeAlias,
+        TypeGuard,
+    )
+else:
+    # Python 3.10+
+    from typing import (
+        ParamSpec,
+        ParamSpecArgs,
+        ParamSpecKwargs,
+        TypeAlias,
+        TypeGuard,
+    )
+
+
+# Self, TypeVarTuple, Unpack were added to typing in 3.11
+if sys.version_info < (3, 11):
+    from typing_extensions import Self, TypeVarTuple, Unpack
+else:
+    # Python 3.11+
+    from typing import Self, TypeVarTuple, Unpack
+
+
+# get_args added to typing in 3.9, but did not exist even in typing_extensions
+# for 3.6
+if sys.version_info < (3, 9):
     # Not even typing_extensions has get_args in this version, so
     # we have to define a hack version ourselves
     from enum import Enum
     from typing import TYPE_CHECKING
     if TYPE_CHECKING:
         from typing import Any, List, Tuple, Union
-        from typing_extensions import TypeAlias
         LiteralValue: "TypeAlias" = Union[bool, int, str, bytes, Enum, None]
 
     def get_args(literal: "Any") -> "Tuple[LiteralValue, ...]":
@@ -98,62 +155,8 @@ if sys.version_info < (3, 9):
                 if subval not in value_list:
                     value_list.append(subval)
         return tuple(value_list)
-
 else:
-    # Python 3.9+
-    from collections.abc import (
-        Callable,
-        Collection,
-        Container,
-        Generator,
-        Iterable,
-        Iterator,
-        Mapping,
-        MutableMapping,
-        MutableSequence,
-        MutableSet,
-        Sequence,
-    )
-    from typing import (
-        Literal,
-        Protocol,
-        TypedDict,
-        final,
-        get_args,
-        runtime_checkable,
-    )
-    # In order to keep the code common for Python 3.6, we define
-    # a separate IterableProtocol variable, which in Python 3.9+
-    # is the same as what we imported from collections.abc
-    IterableProtocol = Iterable
-
-
-# ParamSpec*, TypeAlias, and TypeGuard was added to typing in 3.10
-if sys.version_info < (3, 10):
-    from typing_extensions import (
-        ParamSpec,
-        ParamSpecArgs,
-        ParamSpecKwargs,
-        TypeAlias,
-        TypeGuard,
-    )
-else:
-    # Python 3.10+
-    from typing import (
-        ParamSpec,
-        ParamSpecArgs,
-        ParamSpecKwargs,
-        TypeAlias,
-        TypeGuard,
-    )
-
-
-# Self, TypeVarTuple were added to typing in 3.11
-if sys.version_info < (3, 11):
-    from typing_extensions import Self, TypeVarTuple
-else:
-    # Python 3.11+
-    from typing import Self, TypeVarTuple
+    from typing import get_args
 
 
 # Explicitly re-export
@@ -180,25 +183,8 @@ __all__ = [
     "TypeGuard",
     "TypeVarTuple",
     "TypedDict",
+    "Unpack",
     "final",
     "get_args",
     "runtime_checkable",
 ]
-
-
-# Unpack added to typing in 3.11
-# Unpack was not available even in typing_extensions for 3.6.
-# However, it is only used for type checking, which should not be
-# running on Python 3.6.
-#
-# get_args was in typing in 3.9, but not even in typing_extensions for 3.6
-if sys.version_info >= (3, 9):
-    # pylint is uneasy when it comes to appending to __all__, so we
-    # have to quiet its false alarms here
-    if sys.version_info < (3, 11):
-        # Python 3.9 and 3.10
-        from typing_extensions import Unpack  # pylint: disable=unused-import
-    else:
-        # Python 3.11+
-        from typing import Unpack  # pylint: disable=unused-import
-    __all__.append('Unpack')
