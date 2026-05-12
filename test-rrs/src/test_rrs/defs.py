@@ -29,27 +29,33 @@ Test definitions
 import logging
 # Because we wish to support Python versions back to 3.6, we
 # import Union rather than using |
-from typing import (DefaultDict,
-                    FrozenSet,
-                    List,
-                    NamedTuple,
-                    Tuple,
-                    Union)
+from typing import (
+    FrozenSet,
+    NamedTuple,
+    Tuple,
+)
 
 import requests
 
-import requests_retry_session as rrs
+from test_rrs.typing_imports import (
+    Callable,
+    Literal,
+    TypeAlias,
+    get_args,
+)
 
-from .typing_imports import Callable, Container, Iterable, Literal, TypeAlias
+NOTICE_LOG_LEVEL: int = (logging.WARNING + logging.ERROR) // 2 + logging.WARNING
+NOTICE_LOG_NAME: str = "NOTICE"
 
-
-RequestsMethod: TypeAlias = Callable[..., requests.Response]
+# In our testing, we only use GET and POST
+RequestVerb: TypeAlias = Literal['GET', 'POST']
+REQUEST_VERBS: FrozenSet[RequestVerb] = frozenset(get_args(RequestVerb))
 
 # In our testing, we are only going to ever use protocols http and https
-SingleProtocol: TypeAlias = Literal['http', 'https']
-SINGLE_PROTOCOLS: FrozenSet[SingleProtocol] = frozenset({'http', 'https'})
-ProtocolType: TypeAlias = Union[SingleProtocol, Iterable[SingleProtocol]]
-SERVER_HOSTNAME = 'localhost'
+RequestProtocol: TypeAlias = Literal['http', 'https']
+REQUEST_PROTOCOLS: FrozenSet[RequestProtocol] = frozenset(get_args(RequestProtocol))
+
+RequestMethodFunction: TypeAlias = Callable[..., requests.Response]
 
 ReqParamId: TypeAlias = str
 ReqParamDelays: TypeAlias = Tuple[float, ...]
@@ -87,70 +93,26 @@ class ReqParams(NamedTuple):
     scs: ReqParamScs
 
 
-class CertFilePaths(NamedTuple):
+class RequestMethod(NamedTuple):
     """
-    Paths to the cert file and key file
+    function: The .get or .post method for the request session
+    verb: GET or POST
+    description: A description of how the request session was created
+    retry: Whether or not this method is enabled for retries with this session
     """
-    cert_file: str
-    key_file: str
+    function: RequestMethodFunction
+    verb: RequestVerb
+    description: str
+    retry: bool
 
 
-class ServerUrls(NamedTuple):
+class ReqRetries(NamedTuple):
     """
-    URLs for the servers
+    Object to capture whether or not retries are enabled
+    for a particular method, protocol, or both
     """
-    http: str
-    https: str
+    method: bool
+    protocol: bool
 
-
-class TestRecord(NamedTuple):
-    """
-    Paramters that define a single subtest
-    """
-    protocols: Container[SingleProtocol]
-    desc: Union[str, None] = None
-    url: Union[str, None] = None
-    params: Union[ReqParams, None] = None
-
-
-class TestResults(NamedTuple):
-    """
-    Summary of subtest execution
-    """
-    passed: List[TestRecord]
-    failed: List[TestRecord]
-
-
-# Type annotation helpers
-
-# Obviously there are more methods, but we are only listing the ones we use
-ReqMethodName: TypeAlias = Literal['GET', 'POST']
-ReqCountKey: TypeAlias = Tuple[ReqMethodName, ReqParams]
-ReqCountDict: TypeAlias = DefaultDict[ReqCountKey, int]
-
-# A tuple of a requests method and a string describing it
-ReqMethodToTest: TypeAlias = Tuple[RequestsMethod, str]
-
-RR_TIMEOUT = 0.05
-TIMEOUT_DELAY = 0.09
-RR_STATUS_FORCELIST = (521, 522, 523)
-RR_NUM_RETRIES = 2
-
-# DROP_SC is the SC that tells the server to just disconnect without response
-DROP_SC = 0
-GOOD_SCS = tuple(range(210, 300))
-# Make sure to start with 502, since that is one of the default values for retry-able
-# status codes in RRS. If there is a bug where the defaults are being used even though
-# our test specifies a different list, this may help detect it.
-BAD_NORETRY_SCS = tuple(range(502, 521))
-
-RR_ADAPTER_ARGS = rrs.RequestsRetryAdapterArgs(
-    retries=RR_NUM_RETRIES,
-    backoff_factor=0.01,
-    status_forcelist=RR_STATUS_FORCELIST,
-    connect_timeout=RR_TIMEOUT,
-    read_timeout=RR_TIMEOUT
-)
-
-NOTICE_LOG_LEVEL: int = (logging.WARNING + logging.ERROR) // 2 + logging.WARNING
-NOTICE_LOG_NAME: str = "NOTICE"
+    def __bool__(self) -> bool:
+        return self.method and self.protocol
