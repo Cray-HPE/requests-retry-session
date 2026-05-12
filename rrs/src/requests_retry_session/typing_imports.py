@@ -31,7 +31,6 @@ This module is also symbolically linked into the test-rrs package.
 
 import sys
 
-
 # collections.abc.Callable/Container/Iterable/etc made parameterizable in Python 3.9
 # Literal, Protocol, TypedDict, final, get_args, runtime_checkable added to typing in 3.9
 if sys.version_info < (3, 9):
@@ -53,10 +52,31 @@ if sys.version_info < (3, 9):
         Protocol,
         TypedDict,
         final,
-        get_args,
         runtime_checkable,
     )
     from collections.abc import Iterable as IterableProtocol
+
+    # Not even typing_extensions has get_args in this version, so
+    # we have to define a hack version ourselves
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, Tuple
+
+    def get_args(literal: "Any") -> "Tuple[Any, ...]":
+        """
+        Returns the list of items used to create a literal.
+        Notes:
+        - This relies on how Literal is implemented internally. However,
+          they no longer update typing_extensions for Python 3.6,
+          so we can assume that this will not change.
+        - The type signature for this function is much broader
+          than it "should" be, but unfortunately there is no way to
+          define it more accurately in a way that mypy will accept.
+        """
+        assert hasattr(literal, "__args__")
+        assert isinstance(literal.__args__, tuple)
+        return literal.__args__
+
 else:
     # Python 3.9+
     from collections.abc import (
@@ -148,6 +168,8 @@ __all__ = [
 # Unpack was not available even in typing_extensions for 3.6.
 # However, it is only used for type checking, which should not be
 # running on Python 3.6.
+#
+# get_args was in typing in 3.9, but not even in typing_extensions for 3.6
 if sys.version_info >= (3, 9):
     # pylint is uneasy when it comes to appending to __all__, so we
     # have to quiet its false alarms here
