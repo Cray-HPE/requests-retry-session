@@ -33,7 +33,7 @@ import sys
 
 
 # collections.abc.Callable/Container/Iterable/etc made parameterizable in Python 3.9
-# Literal, Protocol, TypedDict, and final added to typing in 3.9
+# Literal, Protocol, TypedDict, final, get_args, runtime_checkable added to typing in 3.9
 if sys.version_info < (3, 9):
     from typing import (
         Callable,
@@ -53,6 +53,8 @@ if sys.version_info < (3, 9):
         Protocol,
         TypedDict,
         final,
+        get_args,
+        runtime_checkable,
     )
     from collections.abc import Iterable as IterableProtocol
 else:
@@ -75,6 +77,8 @@ else:
         Protocol,
         TypedDict,
         final,
+        get_args,
+        runtime_checkable,
     )
     # In order to keep the code common for Python 3.6, we define
     # a separate IterableProtocol variable, which in Python 3.9+
@@ -135,6 +139,8 @@ __all__ = [
     "TypeVarTuple",
     "TypedDict",
     "final",
+    "get_args",
+    "runtime_checkable",
 ]
 
 
