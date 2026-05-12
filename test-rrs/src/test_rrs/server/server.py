@@ -41,14 +41,15 @@ from types import TracebackType
 # import Type and Union, rather than using type or |
 from typing import (
     Type,
-    Union
+    Union,
+    overload,
 )
 
+from test_rrs.defs import RequestProtocol
+from test_rrs.typing_imports import Literal
+
 from .certs import CertFiles
-from .defs import (
-    CertFilePaths,
-    SERVER_HOSTNAME
-)
+from .defs import CertFilePaths, SERVER_HOSTNAME
 from .test_http_handler import TestHttpHandler
 
 
@@ -209,3 +210,24 @@ class HttpsBackgroundServer(BackgroundServerBase):
         super().__exit__(exc_type, exc_val, exc_tb)
         self._cert_files = None
         return self._stack.__exit__(exc_type, exc_val, exc_tb)
+
+
+@overload
+def background_server(protocol: Literal['http']) -> HttpBackgroundServer: ...
+
+
+@overload
+def background_server(protocol: Literal['https']) -> HttpsBackgroundServer: ...
+
+
+def background_server(
+    protocol: RequestProtocol
+) -> Union[HttpBackgroundServer, HttpsBackgroundServer]:
+    """
+    Return an HttpBackgroundServer or HttpsBackgroundServer,
+    based on the specified protocol
+    """
+    assert protocol in {'http', 'https'}
+    if protocol == 'http':
+        return HttpBackgroundServer()
+    return HttpsBackgroundServer()

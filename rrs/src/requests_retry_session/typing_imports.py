@@ -31,9 +31,8 @@ This module is also symbolically linked into the test-rrs package.
 
 import sys
 
-
 # collections.abc.Callable/Container/Iterable/etc made parameterizable in Python 3.9
-# Literal, Protocol, TypedDict, and final added to typing in 3.9
+# Literal, Protocol, TypedDict, final, runtime_checkable added to typing in 3.9
 if sys.version_info < (3, 9):
     from typing import (
         Callable,
@@ -53,6 +52,7 @@ if sys.version_info < (3, 9):
         Protocol,
         TypedDict,
         final,
+        runtime_checkable,
     )
     from collections.abc import Iterable as IterableProtocol
 else:
@@ -75,6 +75,7 @@ else:
         Protocol,
         TypedDict,
         final,
+        runtime_checkable,
     )
     # In order to keep the code common for Python 3.6, we define
     # a separate IterableProtocol variable, which in Python 3.9+
@@ -102,12 +103,60 @@ else:
     )
 
 
-# Self, TypeVarTuple were added to typing in 3.11
+# Self, TypeVarTuple, Unpack were added to typing in 3.11
 if sys.version_info < (3, 11):
-    from typing_extensions import Self, TypeVarTuple
+    from typing_extensions import Self, TypeVarTuple, Unpack
 else:
     # Python 3.11+
-    from typing import Self, TypeVarTuple
+    from typing import Self, TypeVarTuple, Unpack
+
+
+# get_args added to typing in 3.9, but did not exist even in typing_extensions
+# for 3.6
+if sys.version_info < (3, 9):
+    # Not even typing_extensions has get_args in this version, so
+    # we have to define a hack version ourselves
+    from enum import Enum
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
+        from typing import Any, List, Tuple, Union
+        LiteralValue: "TypeAlias" = Union[bool, int, str, bytes, Enum, None]
+
+    def get_args(literal: "Any") -> "Tuple[LiteralValue, ...]":
+        """
+        Returns the list of items used to create a literal.
+        Notes:
+        - This preserves the behavior of the actual get_args function
+          when it comes to duplicate arguments and nested Literals.
+        - This relies on how Literal is implemented internally. I have
+          confirmed that it works for all versions of typing_extensions
+          available for Python 3.6 that include Literal (3.7.2+).
+          They no longer update typing_extensions for Python 3.6,
+          so we can assume that this will not change.
+        - The type signature for this function is much broader
+          than it "should" be, but unfortunately there is no way to
+          define it more accurately in a way that mypy will accept.
+        """
+        assert hasattr(literal, "__values__")
+        assert isinstance(literal.__values__, tuple)
+        value_list: "List[LiteralValue]" = []
+        for val in literal.__values__:
+            if val in value_list:
+                # We do not add duplicates
+                continue
+            if val is None:
+                value_list.append(val)
+                continue
+            if isinstance(val, (bool, int, str, bytes, Enum)):
+                value_list.append(val)
+                continue
+            # It is possible to have another Literal inside a Literal
+            for subval in get_args(val):
+                if subval not in value_list:
+                    value_list.append(subval)
+        return tuple(value_list)
+else:
+    from typing import get_args
 
 
 # Explicitly re-export
@@ -134,21 +183,8 @@ __all__ = [
     "TypeGuard",
     "TypeVarTuple",
     "TypedDict",
+    "Unpack",
     "final",
+    "get_args",
+    "runtime_checkable",
 ]
-
-
-# Unpack added to typing in 3.11
-# Unpack was not available even in typing_extensions for 3.6.
-# However, it is only used for type checking, which should not be
-# running on Python 3.6.
-if sys.version_info >= (3, 9):
-    # pylint is uneasy when it comes to appending to __all__, so we
-    # have to quiet its false alarms here
-    if sys.version_info < (3, 11):
-        # Python 3.9 and 3.10
-        from typing_extensions import Unpack  # pylint: disable=unused-import
-    else:
-        # Python 3.11+
-        from typing import Unpack  # pylint: disable=unused-import
-    __all__.append('Unpack')
