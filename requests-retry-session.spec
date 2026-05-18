@@ -64,8 +64,9 @@ mkdir -p "%{buildroot}"
     "requests_retry_session-%{version}-py3-none-any.whl"
 
 %check
-# Optional: Import to verify
-%{__python3} -c "import requests_retry_session"
+# Import to verify
+PYTHONPATH=%{buildroot}%{python3_sitelib} \
+    %{__python3} -c "import requests_retry_session"
 
 %files
 %{python3_sitelib}/requests_retry_session/
