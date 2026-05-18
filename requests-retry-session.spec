@@ -69,6 +69,7 @@ echo %{python3_sitelib}
     --prefix %{_prefix} \
     "requests_retry_session-%{version}-py3-none-any.whl"
 find %{buildroot} -name requests_retry_session
+cat %{buildroot}%{python3_sitelib}/requests_retry_session-*.dist-info/METADATA
 
 %files
 %dir %{python3_sitelib}/requests_retry_session
