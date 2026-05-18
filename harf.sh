@@ -23,7 +23,7 @@
 
 set -x
 
-zypper --non-interactive ar --no-gpgcheck https://download.opensuse.org/tumbleweed/repo/oss/repodata tumbleweed/repo/oss/repodata
+zypper --non-interactive ar --no-gpgcheck https://download.opensuse.org/tumbleweed/repo/oss/repodata tumbleweed
 zypper --non-interactive in -f --no-confirm python-rpm-macros
 zypper --non-interactive in -f --no-confirm python3-rpm-macros
 zypper --non-interactive in -f --no-confirm pyproject-rpm-macros
