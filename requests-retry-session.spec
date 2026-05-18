@@ -24,7 +24,6 @@
 # https://github.com/openSUSE/python-rpm-macros#terminology
 %define pythons %(echo ${PYTHON_BIN})
 %define py_version %(echo ${PY_VERSION})
-%{?python_enable_dependency_generator}
 
 Name: %(echo ${RPM_NAME})
 License: MIT
@@ -44,6 +43,9 @@ BuildRequires: (python%{python_version_nodots}-pip or python3-pip >= %{py_versio
 BuildRequires: (python-rpm-generators or python3-rpm-generators)
 BuildRequires: (python-rpm-macros or python3-rpm-macros)
 
+# Ensures Python dependency generator is enabled
+%{?python_enable_dependency_generator}
+
 %description
 The requests-retry-session Python package for Python %{py_version}
 
@@ -54,7 +56,9 @@ The requests-retry-session Python package for Python %{py_version}
 %build
 
 %install
-mkdir -p "%{buildroot}"
+# ensure clean buildroot
+rm -rf %{buildroot}
+mkdir -p %{buildroot}
 echo %{python3_sitelib}
 
 # Install wheel into buildroot
@@ -67,8 +71,10 @@ echo %{python3_sitelib}
 find %{buildroot} -name requests_retry_session
 
 %files
-%{python3_sitelib}/requests_retry_session/
-%{python3_sitelib}/requests_retry_session-*.dist-info/
-%defattr(-,root,root)
+%dir %{python3_sitelib}/requests_retry_session
+%{python3_sitelib}/requests_retry_session/*
+
+%dir %{python3_sitelib}/requests_retry_session-*.dist-info
+%{python3_sitelib}/requests_retry_session-*.dist-info/*
 
 %license LICENSE
