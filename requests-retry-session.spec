@@ -40,9 +40,9 @@ BuildRequires: rpm-build >= 4.13
 Requires: rpm >= 4.13
 BuildRequires: (python%{python_version_nodots}-devel or python3-devel >= %{py_version})
 BuildRequires: (python%{python_version_nodots}-pip or python3-pip >= %{py_version})
-BuildRequires: python-rpm-generators
-BuildRequires: python-rpm-macros
-BuildRequires: (pyproject-rpm-macros >= 0.5 or python3-rpm-macros >= 3.9)
+BuildRequires: (python-rpm-generators or python3-rpm-generators)
+BuildRequires: (python-rpm-macros or python3-rpm-macros)
+BuildRequires: (pyproject-rpm-macros >= 0.5 or python3-rpm-macros >= 3.9 or python-rpm-macros >= 3.9)
 
 %description
 The requests-retry-session Python package for Python %{py_version}
