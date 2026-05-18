@@ -36,7 +36,7 @@ from typing import (
     Union,
 )
 
-from csm_utils import exc_type_msg
+from csm_utils.logging import exc_type_msg
 
 from test_rrs.defs import (
     ReqParams,

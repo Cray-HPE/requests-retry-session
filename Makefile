@@ -103,7 +103,7 @@ pymod_validate_mypy:
 
 pymod_test_docker_build:
 		docker build \
-			--pull ${DOCKER_ARGS} \
+			--pull $(DOCKER_ARGS) \
 			--tag 'pytest-$(PY_VERSION):$(DOCKER_VERSION)' \
 			--build-arg PY_VERSION=$(PY_VERSION) \
 			--build-arg SKIP_RC=$(SKIP_RC) \
