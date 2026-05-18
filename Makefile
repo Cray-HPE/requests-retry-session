@@ -68,6 +68,7 @@ pymod_build_rrs:
 		$(PYTHON_BIN) -m build --sdist rrs
 		$(PYTHON_BIN) -m build --wheel rrs
 		mv ./rrs/dist .
+		unzip -p ./dist/requests_retry_session*.whl '*.dist-info/METADATA'
 		cp ./dist/requests_retry_session*.whl .
 
 pymod_build_test_rrs:
