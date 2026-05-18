@@ -172,6 +172,7 @@ pipeline {
                 stages {
                     stage('Test Python module') {
                         steps {
+                            getDockerBuildArgs()
                             sh "make pymod_test_docker_build"
                             sh "make pymod_test_docker_run"
                         }
