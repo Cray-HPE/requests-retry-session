@@ -68,7 +68,7 @@ mkdir -p %{buildroot}
 
 %check
 # Optional: Import to verify
-%python3 -c "import requests_retry_session"
+%{__python3} -c "import requests_retry_session"
 
 # Use installed files recorded earlier
 %files -n %(echo ${RPM_NAME}) -f %{pyproject_files}
