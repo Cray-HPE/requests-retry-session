@@ -28,6 +28,15 @@ import nox  # pylint: disable=import-error
 
 PYTHON = ["3"]
 
+_PIP_ARGS = (
+    "--trusted-host",
+    "artifactory.algol60.net",
+    "--extra-index-url",
+    "http://artifactory.algol60.net/artifactory/csm-python-modules/simple",
+)
+
+def _pip_install(session, *pkg_list):
+    return session.install(*pkg_list, *_PIP_ARGS)
 
 @nox.session(python=PYTHON)
 def lint(session):
@@ -36,8 +45,8 @@ def lint(session):
     Returns a failure if the linters find linting errors or sufficiently
     serious code quality issues.
     """
-    session.install("./rrs[lint]","./test-rrs[lint]")
-    session.install("./rrs","./test-rrs")
+    _pip_install(session, "./rrs[lint]","./test-rrs[lint]")
+    _pip_install(session, "./rrs","./test-rrs")
     session.run("pip","list","--format","freeze")
     session.log("Running pylint...")
     session.run("pylint", "--rcfile=.pylintrc", "requests_retry_session", "test_rrs")
@@ -51,13 +60,8 @@ def type_check(session):
     """Run Mypy with config."""
     assert len(session.posargs) == 1
     label = f"type_check{session.posargs[0]}"
-    session.install("--trusted-host",
-                    "artifactory.algol60.net",
-                    "--extra-index-url",
-                    "http://artifactory.algol60.net/artifactory/csm-python-modules/simple",
-                    f"./rrs[{label}]",
-                    f"./test-rrs[{label}]")
-    session.install("./rrs", "./test-rrs")
+    _pip_install(session, f"./rrs[{label}]",f"./test-rrs[{label}]")
+    _pip_install(session, "./rrs", "./test-rrs")
     session.run("pip","list","--format","freeze")
     session.log("Running mypy...")
     session.run("mypy", "--strict", "-p", "requests_retry_session", "-p", "test_rrs")
