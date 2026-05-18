@@ -27,6 +27,8 @@ zypper --non-interactive ar --no-gpgcheck https://download.opensuse.org/tumblewe
 zypper --non-interactive in -f --no-confirm python-rpm-macros
 zypper --non-interactive in -f --no-confirm python3-rpm-macros
 zypper --non-interactive in -f --no-confirm pyproject-rpm-macros
+zypper --non-interactive in -f --no-confirm python-rpm-generators
+zypper --non-interactive in -f --no-confirm python3-rpm-generators
 
 rpm -a | grep -E 'rpm|macro'
 rpm --eval '%pyproject_save_files foo'
