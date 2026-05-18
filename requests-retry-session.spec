@@ -56,18 +56,21 @@ The requests-retry-session Python package for Python %{py_version}
 mkdir -p %{buildroot}
 
 # Install wheel into buildroot
-%python3 -m pip install \
+%{__python3} -m pip install \
     --no-deps \
+    --no-index \
     --root %{buildroot} \
     --prefix %{_prefix} \
-    requests_retry_session-%{version}-py3-none-any.whl
+    "requests_retry_session-%{version}-py3-none-any.whl"
 
+# Record installed files
 %pyproject_save_files requests_retry_session
 
 %check
-# Optional: could import to verify
+# Optional: Import to verify
 %python3 -c "import requests_retry_session"
 
+# Use installed files recorded earlier
 %files -n %(echo ${RPM_NAME}) -f %{pyproject_files}
 %defattr(-,root,root)
 
