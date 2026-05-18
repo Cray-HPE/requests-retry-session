@@ -59,14 +59,6 @@ runbuildprep:
 lint:
 		./cms_meta_tools/scripts/runLint.sh
 
-rpm_docker_build:
-		docker build \
-			--pull ${DOCKER_ARGS} \
-			--tag 'rrs-rpm-builder:$(PY_VERSION)' \
-			--build-arg PY_VERSION=$(PY_VERSION) \
-			-f Dockerfile.rpm \
-			.
-
 pymod_build_prep:
 		rm -rf ./dist || true
 		$(PYTHON_BIN) --version

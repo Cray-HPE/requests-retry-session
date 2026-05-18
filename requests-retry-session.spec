@@ -42,7 +42,6 @@ BuildRequires: (python%{python_version_nodots}-devel or python3-devel >= %{py_ve
 BuildRequires: (python%{python_version_nodots}-pip or python3-pip >= %{py_version})
 BuildRequires: (python-rpm-generators or python3-rpm-generators)
 BuildRequires: (python-rpm-macros or python3-rpm-macros)
-BuildRequires: (pyproject-rpm-macros >= 0.5 or python3-rpm-macros >= 3.9 or python-rpm-macros >= 3.9)
 
 %description
 The requests-retry-session Python package for Python %{py_version}
@@ -64,15 +63,13 @@ mkdir -p "%{buildroot}"
     --prefix %{_prefix} \
     "requests_retry_session-%{version}-py3-none-any.whl"
 
-# Record installed files
-%pyproject_save_files requests_retry_session
-
 %check
 # Optional: Import to verify
 %{__python3} -c "import requests_retry_session"
 
-# Use installed files recorded earlier
-%files -n %(echo ${RPM_NAME}) -f %{pyproject_files}
+%files
+%{python3_sitelib}/requests_retry_session/
+%{python3_sitelib}/requests_retry_session-*.dist-info/
 %defattr(-,root,root)
 
 %license LICENSE

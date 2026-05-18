@@ -77,26 +77,6 @@ pipeline {
             }
         }
 
-        stage('Build Docker image for RPM builds') {
-            matrix {
-                axes {
-                    axis {
-                        // The same Python versions should be listed for the
-                        // the "Build RPMs", "Test modules", and "Publish RPMs" stages
-                        name 'PY_VERSION'
-                        values '3.13'
-                    }
-                }
-                stages {
-                    stage('Build RPM docker') {
-                        steps {
-                            sh "make rpm_docker_build"
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Build Python module') {
             agent {
                 docker {
@@ -140,7 +120,7 @@ pipeline {
                     docker {
                         args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
                         reuseNode true
-                        image "rrs-rpm-builder:${PY_VERSION}"
+                        image "${pyImage}:${PY_VERSION}"
                     }
                 }
 
