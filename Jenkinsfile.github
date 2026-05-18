@@ -77,6 +77,26 @@ pipeline {
             }
         }
 
+        stage('Build Docker image for RPM builds') {
+            matrix {
+                axes {
+                    axis {
+                        // The same Python versions should be listed for the
+                        // the "Build RPMs", "Test modules", and "Publish RPMs" stages
+                        name 'PY_VERSION'
+                        values '3.13'
+                    }
+                }
+                stages {
+                    stage {
+                        steps {
+                            sh "make rpm_docker_build"
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Build Python module') {
             agent {
                 docker {
