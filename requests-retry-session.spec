@@ -1,4 +1,4 @@
-# Copyright 2024 Hewlett Packard Enterprise Development LP
+# Copyright 2024-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -38,14 +38,15 @@ Vendor: Cray Inc.
 BuildRequires: rpm-build >= 4.13
 Requires: rpm >= 4.13
 BuildRequires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
+BuildRequires: (python%{python_version_nodots}-devel or python3-devel >= %{py_version})
 BuildRequires: python-rpm-generators
 BuildRequires: python-rpm-macros
-Requires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
-%if "%{py_version}" == "3.6"
-Requires: python3-requests
-%else
-Requires: python%{python_version_nodots}-requests
-%endif
+#Requires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
+#%if "%{py_version}" == "3.6"
+#Requires: python3-requests
+#%else
+#Requires: python%{python_version_nodots}-requests
+#%endif
 
 %description
 The requests-retry-session Python package for Python %{py_version}
@@ -57,12 +58,10 @@ The requests-retry-session Python package for Python %{py_version}
 %build
 
 %install
-%python_exec -m pip install ./requests_retry_session*.whl --root %{buildroot} --no-deps
-find %{buildroot} -type f -print | tee -a PY3_INSTALLED_FILES
-sed -i -e 's:^%{buildroot}::' -e 's:^\([^/]\):/\1:' PY3_INSTALLED_FILES
-cat PY3_INSTALLED_FILES
+%pyproject_install
+%pyproject_save_files mypkg
 
-%files -f PY3_INSTALLED_FILES
+%files -n python3-mypkg -f %{pyproject_files}
 %defattr(-,root,root)
 
 %license LICENSE
