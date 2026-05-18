@@ -139,4 +139,4 @@ rpm_build_source:
 
 rpm_build:
 		RPM_NAME=$(RPM_NAME) PYTHON_BIN=$(PYTHON_BIN) BUILD_METADATA=$(BUILD_METADATA) rpmbuild -ba $(SPEC_FILE) --target $(RPM_ARCH) --define "_topdir $(BUILD_DIR)"
-		find $(PWD)/dist -type f -name \*$(RPM_NAME)\*.rpm -print -exec rpm -qpR {} \;
+		find $(PWD)/dist -type f -name \*$(RPM_NAME)\*.rpm -print -exec rpm -qpR {} \; -print -exec rpm -qpl {} \;
