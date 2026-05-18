@@ -127,6 +127,7 @@ rpm_package_source:
 			--exclude ./cms_meta_tools \
 			--exclude ./build \
 			--exclude ./dist \
+            --exclude ./test-rrs \
             --exclude ./'$(PYLINT_VENV_BASE_DIR)' \
 			--exclude '$(SOURCE_BASENAME)' \
 			-cvjf $(SOURCE_PATH) .

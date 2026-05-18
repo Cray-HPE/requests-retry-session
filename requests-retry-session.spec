@@ -58,10 +58,10 @@ The requests-retry-session Python package for Python %{py_version}
 %build
 
 %install
-%pyproject_install
-%pyproject_save_files mypkg
+%pyproject_install -C rrs
+%pyproject_save_files rrs
 
-%files -n python3-mypkg -f %{pyproject_files}
+%files -n python3-rrs -f %{pyproject_files}
 %defattr(-,root,root)
 
 %license LICENSE
