@@ -44,6 +44,11 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.version }}
+    - name: Create netrc file
+      run: |
+        echo "machine artifactory.algol60.net" > ~/.netrc
+        echo "login ${{ env.ARTIFACTORY_USER }}" >> ~/.netrc
+        echo "password ${{ env.ARTIFACTORY_TOKEN }}" >> ~/.netrc
     - name: nox
       env:
         GIT_REPO_NAME: "${GITHUB_REPOSITORY#*/}"
