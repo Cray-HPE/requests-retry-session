@@ -40,8 +40,8 @@ BuildRequires: rpm-build >= 4.13
 Requires: rpm >= 4.13
 BuildRequires: (python%{python_version_nodots}-devel or python3-devel >= %{py_version})
 BuildRequires: (python%{python_version_nodots}-pip or python3-pip >= %{py_version})
-BuildRequires: python-rpm-generators
-BuildRequires: python-rpm-macros
+BuildRequires: python3-rpm-generators
+BuildRequires: python3-rpm-macros
 
 %description
 The requests-retry-session Python package for Python %{py_version}
@@ -53,7 +53,7 @@ The requests-retry-session Python package for Python %{py_version}
 %build
 
 %install
-mkdir -p %{buildroot}
+mkdir -p "%{buildroot}"
 
 # Install wheel into buildroot
 %{__python3} -m pip install \
