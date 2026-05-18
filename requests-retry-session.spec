@@ -57,12 +57,13 @@ mkdir -p "%{buildroot}"
 echo %{python3_sitelib}
 
 # Install wheel into buildroot
-%{python_exec} -m pip install \
+%{__python3} -m pip install \
     --no-deps \
     --no-index \
     --root %{buildroot} \
     --prefix %{_prefix} \
     "requests_retry_session-%{version}-py3-none-any.whl"
+find %{buildroot} -name requests_retry_session
 
 %files
 %{python3_sitelib}/requests_retry_session/
