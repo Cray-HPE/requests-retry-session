@@ -44,6 +44,7 @@ BuildRequires: (python-rpm-generators or python3-rpm-generators)
 BuildRequires: (python-rpm-macros or python3-rpm-macros)
 
 # Ensures Python dependency generator is enabled
+%define __requires %{_rpmconfigdir}/pythondeps.sh --requires
 %{?python_enable_dependency_generator}
 
 %description
