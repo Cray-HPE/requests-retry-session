@@ -40,6 +40,8 @@ from typing import (
 )
 from urllib.parse import parse_qs, urlparse
 
+from csm_utils import exc_type_msg
+
 from test_rrs.defs import (
     RequestVerb,
     ReqParamDelays,
@@ -94,7 +96,7 @@ class TestHttpHandler(BaseHTTPRequestHandler):
                     assert k == "scs"
                     scs_param = tuple((int(v_item) for v_item in v))
             except (ValueError, TypeError) as err:
-                self._send(400, f"Parameter '{k}' has an invalid value '{v}': {type(err).__name__}: {err}")
+                self._send(400, f"Parameter '{k}' has an invalid value '{v}': {exc_type_msg(err)}")
                 return None
         if id_param is None:
             self._send(400, "Missing required parameter 'id'")
@@ -113,7 +115,7 @@ class TestHttpHandler(BaseHTTPRequestHandler):
         try:
             return ReqParams(id=id_param, delays=delays_param, scs=scs_param)
         except (ValueError, TypeError) as e:
-            self._send(400, f"{type(e).__name__}: {e}")
+            self._send(400, exc_type_msg(e))
             # While this return statement is not necessary from an execution standpoint,
             # I think it helps communicate explicitly that the intention for this code
             # path is to stop and return None
@@ -126,14 +128,14 @@ class TestHttpHandler(BaseHTTPRequestHandler):
         try:
             self.send_response(sc)
         except (BrokenPipeError, ConnectionResetError) as err:
-            logging.debug("%s in send_response(%d) (likely client disconnect): %s",
-                          type(err).__name__, sc, err)
+            logging.debug("send_response(%d) (likely client disconnect): %s",
+                          sc, exc_type_msg(err))
             return
         try:
             self.end_headers()
         except (BrokenPipeError, ConnectionResetError) as err:
-            logging.debug("%s in end_headers() (likely client disconnect): %s",
-                          type(err).__name__, err)
+            logging.debug("end_headers() (likely client disconnect): %s",
+                          exc_type_msg(err))
             return
         if sc == 200:
             prefix = "OK"
@@ -146,8 +148,8 @@ class TestHttpHandler(BaseHTTPRequestHandler):
         try:
             self.wfile.write(msg.encode())
         except (BrokenPipeError, ConnectionResetError) as err:
-            logging.debug("%s in wfile.write(%s) (likely client disconnect): %s",
-                          type(err).__name__, msg, err)
+            logging.debug("wfile.write(%s) (likely client disconnect): %s",
+                          msg, exc_type_msg(err))
 
     def _actually_do_method(self, method: RequestVerb, params: ReqParams) -> None:
         """

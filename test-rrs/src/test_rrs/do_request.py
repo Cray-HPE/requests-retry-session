@@ -36,6 +36,8 @@ from typing import (
     Union,
 )
 
+from csm_utils import exc_type_msg
+
 from test_rrs.defs import (
     ReqParams,
     RequestMethod,
@@ -138,7 +140,7 @@ def _do_test_req(
             with session_method(url, params=req_params._asdict(), verify=False) as resp:
                 sc = resp.status_code
     except Exception as err:
-        msg = f"{msg_pre} raised {type(err).__name__}: {err} {msg_post}"
+        msg = f"{msg_pre} raised {exc_type_msg(err)} {msg_post}"
         if isinstance(expected_sc, int):
             logging.error(msg)
             return False
