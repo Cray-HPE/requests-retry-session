@@ -113,8 +113,7 @@ pymod_test_docker_run:
 		SKIP_RC=$(SKIP_RC) PY_VERSION=$(PY_VERSION) DOCKER_VERSION=$(DOCKER_VERSION) ./run_test_rrs.sh
 
 rpm_prepare:
-		rpm --eval '%pyproject_save_files foo'
-		rpm -q --whatprovides 'rpm_macro(pyproject_save_files)'
+		./harf.sh
 		rm -rf $(BUILD_DIR)
 		mkdir -p $(BUILD_DIR)/SPECS $(BUILD_DIR)/SOURCES
 		cp $(SPEC_FILE) $(BUILD_DIR)/SPECS/
