@@ -24,6 +24,7 @@
 # https://github.com/openSUSE/python-rpm-macros#terminology
 %define pythons %(echo ${PYTHON_BIN})
 %define py_version %(echo ${PY_VERSION})
+%{?python_enable_dependency_generator}
 
 Name: %(echo ${RPM_NAME})
 License: MIT
