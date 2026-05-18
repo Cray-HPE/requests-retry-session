@@ -33,7 +33,7 @@ Version: %(cat .version)
 Release: %(cat .rpm_release)
 Source: %{name}-%{version}.tar.bz2
 # Wheel already built and provided
-Source0: requests_retry_session-%{version}-py3-none-any.whl
+Source1: requests_retry_session-%{version}-py3-none-any.whl
 BuildArch: %(echo ${RPM_ARCH})
 Vendor: Cray Inc.
 # Using or statements in spec files requires RPM >= 4.13
@@ -58,7 +58,6 @@ The requests-retry-session Python package for Python %{py_version}
 %setup
 # Just unpack the wheel
 %autosetup -c -T
-cp %{SOURCE0} .
 
 %build
 
@@ -69,7 +68,7 @@ cp %{SOURCE0} .
     --no-deps \
     --root %{buildroot} \
     --prefix %{_prefix} \
-    %{SOURCE0}
+    %{SOURCE1}
 
 %pyproject_save_files requests_retry_session
 
