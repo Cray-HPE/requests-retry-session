@@ -114,6 +114,8 @@ pymod_test_docker_run:
 
 rpm_prepare:
 		bash -c "rpm -a | grep rpm-macros"
+		rpm --eval '%pyproject_save_files foo'
+		rpm -q --whatprovides 'rpm_macro(pyproject_save_files)'
 		rm -rf $(BUILD_DIR)
 		mkdir -p $(BUILD_DIR)/SPECS $(BUILD_DIR)/SOURCES
 		cp $(SPEC_FILE) $(BUILD_DIR)/SPECS/
