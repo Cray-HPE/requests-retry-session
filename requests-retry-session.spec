@@ -50,9 +50,8 @@ BuildRequires: python-rpm-macros
 The requests-retry-session Python package for Python %{py_version}
 
 %prep
-%setup
 # Just unpack the wheel
-%autosetup -c -T
+%autosetup
 
 %build
 
