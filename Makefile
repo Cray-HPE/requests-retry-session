@@ -64,7 +64,7 @@ rpm_docker_build:
 			--pull ${DOCKER_ARGS} \
 			--tag 'rrs-rpm-builder:$(PY_VERSION)' \
 			--build-arg PY_VERSION=$(PY_VERSION) \
-			-f Dockerfile.rpm
+			-f Dockerfile.rpm \
 			.
 
 pymod_build_prep:
