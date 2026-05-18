@@ -25,6 +25,10 @@
 %define pythons %(echo ${PYTHON_BIN})
 %define py_version %(echo ${PY_VERSION})
 
+# Wheel already built and provided
+%define wheelfile requests_retry_session-%{version}-py3-none-any.whl
+
+
 Name: %(echo ${RPM_NAME})
 License: MIT
 Summary: The requests-retry-session Python package for Python %{py_version}
@@ -32,24 +36,15 @@ Group: System/Management
 Version: %(cat .version)
 Release: %(cat .rpm_release)
 Source: %{name}-%{version}.tar.bz2
-# Wheel already built and provided
-Source1: requests_retry_session-%{version}-py3-none-any.whl
 BuildArch: %(echo ${RPM_ARCH})
 Vendor: Cray Inc.
 # Using or statements in spec files requires RPM >= 4.13
 BuildRequires: rpm-build >= 4.13
 Requires: rpm >= 4.13
-#BuildRequires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
 BuildRequires: (python%{python_version_nodots}-devel or python3-devel >= %{py_version})
 BuildRequires: (python%{python_version_nodots}-pip or python3-pip >= %{py_version})
 BuildRequires: python-rpm-generators
 BuildRequires: python-rpm-macros
-#Requires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
-#%if "%{py_version}" == "3.6"
-#Requires: python3-requests
-#%else
-#Requires: python%{python_version_nodots}-requests
-#%endif
 
 %description
 The requests-retry-session Python package for Python %{py_version}
@@ -68,7 +63,7 @@ The requests-retry-session Python package for Python %{py_version}
     --no-deps \
     --root %{buildroot} \
     --prefix %{_prefix} \
-    %{SOURCE1}
+    %{wheelfile}
 
 %pyproject_save_files requests_retry_session
 
