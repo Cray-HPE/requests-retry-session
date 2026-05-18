@@ -32,13 +32,16 @@ Group: System/Management
 Version: %(cat .version)
 Release: %(cat .rpm_release)
 Source: %{name}-%{version}.tar.bz2
+# Wheel already built and provided
+Source0: requests_retry_session-%{version}-py3-none-any.whl
 BuildArch: %(echo ${RPM_ARCH})
 Vendor: Cray Inc.
 # Using or statements in spec files requires RPM >= 4.13
 BuildRequires: rpm-build >= 4.13
 Requires: rpm >= 4.13
-BuildRequires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
+#BuildRequires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
 BuildRequires: (python%{python_version_nodots}-devel or python3-devel >= %{py_version})
+BuildRequires: (python%{python_version_nodots}-pip or python3-pip >= %{py_version})
 BuildRequires: python-rpm-generators
 BuildRequires: python-rpm-macros
 #Requires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
@@ -53,15 +56,28 @@ The requests-retry-session Python package for Python %{py_version}
 
 %prep
 %setup
-%python_exec -m pip install --user --upgrade pip
+# Just unpack the wheel
+%autosetup -c -T
+cp %{SOURCE0} .
 
 %build
 
 %install
-%pyproject_install -C requests-retry-session
-%pyproject_save_files requests-retry-session
 
-%files -n python3-requests-retry-session -f %{pyproject_files}
+# Install wheel into buildroot
+%python3 -m pip install \
+    --no-deps \
+    --root %{buildroot} \
+    --prefix %{_prefix} \
+    %{SOURCE0}
+
+%pyproject_save_files requests_retry_session
+
+%check
+# Optional: could import to verify
+%python3 -c "import requests_retry_session"
+
+%files -n %(echo ${RPM_NAME}) -f %{pyproject_files}
 %defattr(-,root,root)
 
 %license LICENSE
