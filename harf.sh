@@ -24,11 +24,7 @@
 set -x
 
 zypper --non-interactive ar --no-gpgcheck -f https://download.opensuse.org/tumbleweed/repo/oss/ tumbleweed-oss || exit 1
-zypper --non-interactive in -f --no-confirm python-rpm-macros
-zypper --non-interactive in -f --no-confirm python3-rpm-macros
-zypper --non-interactive in -f --no-confirm pyproject-rpm-macros
-zypper --non-interactive in -f --no-confirm python-rpm-generators
-zypper --non-interactive in -f --no-confirm python3-rpm-generators
+zypper --non-interactive in -f --no-confirm 'python-rpm-macros>=20241120.6ae645f-150400.3.18.1' python-rpm-generators || exit 2
 
 rpm -a | grep -E 'rpm|macro'
 rpm --eval '%pyproject_save_files foo'
