@@ -25,10 +25,6 @@
 %define pythons %(echo ${PYTHON_BIN})
 %define py_version %(echo ${PY_VERSION})
 
-# Wheel already built and provided
-%define wheelfile requests_retry_session-%{version}-py3-none-any.whl
-
-
 Name: %(echo ${RPM_NAME})
 License: MIT
 Summary: The requests-retry-session Python package for Python %{py_version}
@@ -38,6 +34,7 @@ Release: %(cat .rpm_release)
 Source: %{name}-%{version}.tar.bz2
 BuildArch: %(echo ${RPM_ARCH})
 Vendor: Cray Inc.
+URL: https://github.com/Cray-HPE/requests-retry-session/
 # Using or statements in spec files requires RPM >= 4.13
 BuildRequires: rpm-build >= 4.13
 Requires: rpm >= 4.13
@@ -63,7 +60,7 @@ mkdir -p %{buildroot}
     --no-deps \
     --root %{buildroot} \
     --prefix %{_prefix} \
-    %{wheelfile}
+    requests_retry_session-%{version}-py3-none-any.whl
 
 %pyproject_save_files requests_retry_session
 
