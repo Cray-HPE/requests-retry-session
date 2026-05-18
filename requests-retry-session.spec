@@ -56,6 +56,7 @@ The requests-retry-session Python package for Python %{py_version}
 %build
 
 %install
+mkdir -p %{buildroot}
 
 # Install wheel into buildroot
 %python3 -m pip install \
