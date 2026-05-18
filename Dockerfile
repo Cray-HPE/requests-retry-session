@@ -48,7 +48,8 @@ COPY cache_pip.sh \
      test_rrs.sh \
      test_constraint_combinations.dat \
      validate_skip_rc.sh /app/
-RUN chmod +rx /app/test_rrs.sh /app/cache_pip.sh /app/validate_skip_rc.sh && \
+RUN --mount=type=secret,id=netrc,target=/root/.netrc \
+    chmod +rx /app/test_rrs.sh /app/cache_pip.sh /app/validate_skip_rc.sh && \
     mkdir -p "${PIP_CACHE_DIR}" "${PIP_DL_DIR}" && \
     "${PYBIN}" -m venv /app/venv && \
     /app/venv/bin/pip3 install --no-cache-dir -U pip && \
