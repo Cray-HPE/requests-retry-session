@@ -43,8 +43,14 @@ BuildRequires: (python%{python_version_nodots}-base or python3-base >= %{py_vers
 BuildRequires: python3-rpm-generators
 BuildRequires: python3-rpm-macros
 Requires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
+%if "%{py_version}" == "3.6"
+Requires: python3-requests >= 2.25.0
+Requires: python3-urllib3 >= 1.26.5
+%else
 Requires: python%{python_version_nodots}-requests >= 2.25.0
 Requires: python%{python_version_nodots}-urllib3 >= 1.26.5
+%endif
+
 
 %description
 The requests-retry-session Python package for Python %{py_version}

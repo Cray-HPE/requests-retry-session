@@ -28,8 +28,9 @@ NAME ?= requests-retry-session
 RPM_VERSION ?= $(shell head -1 .version)
 RPM_NAME ?= ${NAME}
 DOCKER_VERSION ?= $(shell head -1 .docker_version)
-RRS_WHEEL ?= requests_retry_session-$(DOCKER_VERSION)-py3-none-any.whl
-TEST_RRS_WHEEL ?= test_rrs-$(DOCKER_VERSION)-py3-none-any.whl
+PYPKG_VERSION ?= $(shell head -1 .chart_version)
+RRS_WHEEL ?= requests_retry_session-$(PYPKG_VERSION)-py3-none-any.whl
+TEST_RRS_WHEEL ?= test_rrs-$(PYPKG_VERSION)-py3-none-any.whl
 
 SPEC_FILE ?= ${NAME}.spec
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
