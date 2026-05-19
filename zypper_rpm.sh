@@ -27,5 +27,5 @@ set -exo pipefail
 
 zypper --non-interactive ar -f https://download.opensuse.org/tumbleweed/repo/oss/ tumbleweed-oss
 zypper --non-interactive --gpg-auto-import-keys refresh
-zypper --non-interactive install -f -y --force-resolution python3-rpm-macros python-rpm-generators
+zypper --non-interactive install -f -y --force-resolution python3-rpm-macros python-rpm-generators rpm rpm-config-SUSE
 find /usr/lib/rpm/fileattrs/ -type f -name python3.attr -print | grep -E .
