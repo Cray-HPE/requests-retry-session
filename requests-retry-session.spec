@@ -75,7 +75,7 @@ mkdir -p %{buildroot}
     "%{rrs_wheel}"
 
 # Deduplicate files in sitelib
-%python_expand %fdupes %{buildroot}%{$python_sitelib}
+%fdupes %{buildroot}%{python3_sitelib}
 
 %files
 %{python3_sitelib}/requests_retry_session
