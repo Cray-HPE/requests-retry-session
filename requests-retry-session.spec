@@ -74,9 +74,12 @@ mkdir -p %{buildroot}
     --prefix %{_prefix} \
     "%{rrs_wheel}"
 
+# Deduplicate files in sitelib
+%python_expand %fdupes %{buildroot}%{$python_sitelib}
+
 %files
-%dir %{python3_sitelib}/requests_retry_session
-%{python3_sitelib}/requests_retry_session/*
+%{python3_sitelib}/requests_retry_session
+%{python3_sitelib}/requests_retry_session-*.dist-info
 %defattr(-,root,root)
 
 %license LICENSE
