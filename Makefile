@@ -28,6 +28,9 @@ NAME ?= requests-retry-session
 RPM_VERSION ?= $(shell head -1 .version)
 RPM_NAME ?= ${NAME}
 DOCKER_VERSION ?= $(shell head -1 .docker_version)
+PYPKG_VERSION ?= $(shell head -1 .version)
+RRS_WHEEL ?= requests_retry_session-$(PYPKG_VERSION)-py3-none-any.whl
+TEST_RRS_WHEEL ?= test_rrs-$(PYPKG_VERSION)-py3-none-any.whl
 
 SPEC_FILE ?= ${NAME}.spec
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
@@ -68,19 +71,25 @@ pymod_build_rrs:
 		$(PYTHON_BIN) -m build --sdist rrs
 		$(PYTHON_BIN) -m build --wheel rrs
 		mv ./rrs/dist .
-		cp ./dist/requests_retry_session*.whl .
+		cp ./dist/$(RRS_WHEEL) .
 
 pymod_build_test_rrs:
 		$(PYTHON_BIN) -m build --sdist test-rrs
 		$(PYTHON_BIN) -m build --wheel test-rrs
-		cp ./test-rrs/dist/test_rrs*.whl .
+		cp ./test-rrs/dist/$(TEST_RRS_WHEEL) .
 
 pymod_validate_setup:
 		$(PYTHON_BIN) --version
 		mkdir -p $(PYLINT_VENV_BASE_DIR)
 		$(PYTHON_BIN) -m venv $(PYLINT_VENV)
-		$(PYLINT_VENV_PYBIN) -m pip install --upgrade $(PIP_INSTALL_ARGS) pip
-		$(PYLINT_VENV_PYBIN) -m pip install --disable-pip-version-check $(PIP_INSTALL_ARGS) requests_retry_session*.whl requests_retry_session[lint] requests_retry_session[type_check1]
+		$(PYLINT_VENV_PYBIN) -m pip install \
+			--upgrade $(PIP_INSTALL_ARGS) pip
+		$(PYLINT_VENV_PYBIN) -m pip install \
+			--disable-pip-version-check \
+			$(PIP_INSTALL_ARGS) \
+			'$(RRS_WHEEL)' \
+			requests_retry_session[lint] \
+			requests_retry_session[type_check1]
 		$(PYLINT_VENV_PYBIN) -m pip list --format freeze
 
 pymod_validate_pylint_error:
@@ -110,7 +119,10 @@ pymod_test_docker_build:
 			.
 
 pymod_test_docker_run:
-		SKIP_RC=$(SKIP_RC) PY_VERSION=$(PY_VERSION) DOCKER_VERSION=$(DOCKER_VERSION) ./run_test_rrs.sh
+		SKIP_RC=$(SKIP_RC) \
+			PY_VERSION=$(PY_VERSION) \
+			DOCKER_VERSION=$(DOCKER_VERSION) \
+			./run_test_rrs.sh
 
 rpm_prepare:
 		rm -rf $(BUILD_DIR)
@@ -127,12 +139,26 @@ rpm_package_source:
 			--exclude ./cms_meta_tools \
 			--exclude ./build \
 			--exclude ./dist \
-            --exclude ./'$(PYLINT_VENV_BASE_DIR)' \
+			--exclude ./test-rrs \
+			--exclude ./'$(PYLINT_VENV_BASE_DIR)' \
 			--exclude '$(SOURCE_BASENAME)' \
+			--exclude '$(TEST_RRS_WHEEL)' \
 			-cvjf $(SOURCE_PATH) .
 
 rpm_build_source:
-		RPM_NAME=$(RPM_NAME) PYTHON_BIN=$(PYTHON_BIN) BUILD_METADATA=$(BUILD_METADATA) rpmbuild -bs $(SPEC_FILE) --target $(RPM_ARCH) --define "_topdir $(BUILD_DIR)"
+		RRS_WHEEL=$(RRS_WHEEL) \
+			RPM_NAME=$(RPM_NAME) \
+			PYTHON_BIN=$(PYTHON_BIN) \
+			BUILD_METADATA=$(BUILD_METADATA) \
+			rpmbuild -bs $(SPEC_FILE) \
+				--target $(RPM_ARCH) \
+				--define "_topdir $(BUILD_DIR)"
 
 rpm_build:
-		RPM_NAME=$(RPM_NAME) PYTHON_BIN=$(PYTHON_BIN) BUILD_METADATA=$(BUILD_METADATA) rpmbuild -ba $(SPEC_FILE) --target $(RPM_ARCH) --define "_topdir $(BUILD_DIR)"
+		RRS_WHEEL=$(RRS_WHEEL) \
+			RPM_NAME=$(RPM_NAME) \
+			PYTHON_BIN=$(PYTHON_BIN) \
+			BUILD_METADATA=$(BUILD_METADATA) \
+			rpmbuild -ba $(SPEC_FILE) \
+				--target $(RPM_ARCH) \
+				--define "_topdir $(BUILD_DIR)"
