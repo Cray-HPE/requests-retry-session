@@ -28,7 +28,7 @@ NAME ?= requests-retry-session
 RPM_VERSION ?= $(shell head -1 .version)
 RPM_NAME ?= ${NAME}
 DOCKER_VERSION ?= $(shell head -1 .docker_version)
-PYPKG_VERSION ?= $(shell head -1 .chart_version)
+PYPKG_VERSION ?= $(shell head -1 .version)
 RRS_WHEEL ?= requests_retry_session-$(PYPKG_VERSION)-py3-none-any.whl
 TEST_RRS_WHEEL ?= test_rrs-$(PYPKG_VERSION)-py3-none-any.whl
 
