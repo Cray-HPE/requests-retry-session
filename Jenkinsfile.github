@@ -79,6 +79,9 @@ pipeline {
         }
 
         stage("Prep RPM docker") {
+            environment {
+                PY_VERSION = "3.13"
+            }
             steps {
                 // Just using this as a means to generate the netrc file that we need
                 getDockerBuildArgs()
