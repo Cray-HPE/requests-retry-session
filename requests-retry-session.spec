@@ -1,4 +1,4 @@
-# Copyright 2024 Hewlett Packard Enterprise Development LP
+# Copyright 2024-2026 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -24,6 +24,7 @@
 # https://github.com/openSUSE/python-rpm-macros#terminology
 %define pythons %(echo ${PYTHON_BIN})
 %define py_version %(echo ${PY_VERSION})
+%define rrs_wheel %(echo ${RRS_WHEEL})
 
 Name: %(echo ${RPM_NAME})
 License: MIT
@@ -34,35 +35,51 @@ Release: %(cat .rpm_release)
 Source: %{name}-%{version}.tar.bz2
 BuildArch: %(echo ${RPM_ARCH})
 Vendor: Cray Inc.
+URL: https://github.com/Cray-HPE/requests-retry-session/
 # Using or statements in spec files requires RPM >= 4.13
 BuildRequires: rpm-build >= 4.13
 Requires: rpm >= 4.13
 BuildRequires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
-BuildRequires: python-rpm-generators
-BuildRequires: python-rpm-macros
+BuildRequires: python3-rpm-generators
+BuildRequires: python3-rpm-macros
 Requires: (python%{python_version_nodots}-base or python3-base >= %{py_version})
 %if "%{py_version}" == "3.6"
-Requires: python3-requests
+Requires: python3-requests >= 2.25.0
+Requires: python3-urllib3 >= 1.26.5
 %else
-Requires: python%{python_version_nodots}-requests
+Requires: python%{python_version_nodots}-requests >= 2.25.0
+Requires: python%{python_version_nodots}-urllib3 >= 1.26.5
 %endif
+
 
 %description
 The requests-retry-session Python package for Python %{py_version}
 
 %prep
-%setup
-%python_exec -m pip install --user --upgrade pip
+# Just unpack the wheel
+%autosetup
 
 %build
 
 %install
-%python_exec -m pip install ./requests_retry_session*.whl --root %{buildroot} --no-deps
-find %{buildroot} -type f -print | tee -a PY3_INSTALLED_FILES
-sed -i -e 's:^%{buildroot}::' -e 's:^\([^/]\):/\1:' PY3_INSTALLED_FILES
-cat PY3_INSTALLED_FILES
+# ensure clean buildroot
+rm -rf %{buildroot}
+mkdir -p %{buildroot}
 
-%files -f PY3_INSTALLED_FILES
+# Install wheel into buildroot
+%{__python3} -m pip install \
+    --no-deps \
+    --no-index \
+    --root %{buildroot} \
+    --prefix %{_prefix} \
+    "%{rrs_wheel}"
+
+# Deduplicate files in sitelib
+%fdupes %{buildroot}%{python3_sitelib}
+
+%files
+%{python3_sitelib}/requests_retry_session
+%{python3_sitelib}/requests_retry_session-*.dist-info
 %defattr(-,root,root)
 
 %license LICENSE
