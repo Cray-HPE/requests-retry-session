@@ -66,14 +66,23 @@ pipeline {
                 // This function is defined in cms-meta-tools:vars/setVersionFiles.groovy
                 setVersionFiles()
 
+                script {
+                    env.DOCKER_VERSION = readFile('.docker_version').trim()
+                }
+
                 withCredentials([usernamePassword(credentialsId: 'artifactory-algol60-readonly', passwordVariable: 'ARTIFACTORY_PASSWORD', usernameVariable: 'ARTIFACTORY_USERNAME')]) {
                     sh "make runbuildprep"
                 }
 
                 sh "make lint"
+            }
+        }
 
+        stage("Prep RPM docker") {
+            steps {
                 // Just using this as a means to generate the netrc file that we need
                 getDockerBuildArgs()
+                sh "make rpm_docker_build"
             }
         }
 
@@ -120,7 +129,7 @@ pipeline {
                     docker {
                         args "-v /home/jenkins/.ssh:/home/jenkins/.ssh -v /home/jenkins/.netrc:/home/jenkins/.netrc"
                         reuseNode true
-                        image "${pyImage}:${PY_VERSION}"
+                        image "rpmbuild-${PY_VERSION}:${DOCKER_VERSION}"
                     }
                 }
 
