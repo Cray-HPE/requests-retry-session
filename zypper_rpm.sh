@@ -29,5 +29,5 @@ zypper --non-interactive ar -f https://download.opensuse.org/tumbleweed/repo/oss
 zypper --non-interactive --gpg-auto-import-keys refresh
 zypper --non-interactive search --provides --match-exact /usr/lib/rpm/fileattrs/python.attr || true
 zypper --non-interactive search --provides --match-exact /usr/lib/rpm/fileattrs/python3.attr || true
-zypper --non-interactive install -f -y --force-resolution python3-rpm-macros python-rpm-generators python3-rpm
+zypper --non-interactive install -f -y --force-resolution python3-rpm-macros python-rpm-generators python3-rpm rpm-ndb
 find /usr/lib/rpm/fileattrs/ -type f -name python3.attr -print
