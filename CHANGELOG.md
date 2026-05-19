@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Updated spec file:
+    - Reflect actual package dependencies
+    - Use Python RPM macros for install and recording of installed files
+
 ## [4.0.5] - 2026-05-12
 
 ### Added
