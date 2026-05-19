@@ -28,6 +28,6 @@ ARG BASE_IMAGE_VERSION=$PY_VERSION
 
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_VERSION
 WORKDIR /tmp
-COPY harf.sh /tmp/
+COPY zypper_rpm.sh /tmp/
 RUN --mount=type=secret,id=netrc,target=/root/.netrc \
-    chmod +rx /tmp/harf.sh && /tmp/harf.sh && rm /tmp/harf.sh
+    chmod +rx /tmp/zypper_rpm.sh && /tmp/zypper_rpm.sh && rm /tmp/zypper_rpm.sh
