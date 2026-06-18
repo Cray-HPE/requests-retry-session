@@ -55,6 +55,7 @@ pipeline {
         RPM_ARCH = "noarch"
         RPM_OS = "noos"
         BUILD_BASE_RELDIR = "dist/rpmbuild/${env.RPM_ARCH}"
+        DOCKER_ARGS = getDockerBuildArgs(addLabels: false, mountNetRC: true)
     }
 
     stages {
@@ -71,9 +72,6 @@ pipeline {
                 }
 
                 sh "make lint"
-
-                // Just using this as a means to generate the netrc file that we need
-                getDockerBuildArgs()
             }
         }
 

@@ -35,9 +35,8 @@ if TYPE_CHECKING:
     from types import TracebackType
     from typing import Optional
 
+    from csm_utils.typing_imports import Self
     from urllib3.connectionpool import ConnectionPool
-
-    from .typing_imports import Self
 
     try:
         # We tell mypy to ignore this if this fails.

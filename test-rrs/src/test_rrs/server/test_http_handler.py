@@ -40,6 +40,8 @@ from typing import (
 )
 from urllib.parse import parse_qs, urlparse
 
+from csm_utils.typing_imports import TypeAlias
+
 from test_rrs.defs import (
     RequestVerb,
     ReqParamDelays,
@@ -47,7 +49,6 @@ from test_rrs.defs import (
     ReqParamScs,
     ReqParams,
 )
-from test_rrs.typing_imports import TypeAlias
 
 
 ReqCountKey: TypeAlias = Tuple[RequestVerb, ReqParams]

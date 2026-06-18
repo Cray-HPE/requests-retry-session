@@ -27,11 +27,10 @@ Context manager to suppress insecure request warnings
 """
 
 import contextlib
+from typing import Iterator
 import warnings
 
 from urllib3.exceptions import InsecureRequestWarning
-
-from test_rrs.typing_imports import Iterator
 
 
 @contextlib.contextmanager

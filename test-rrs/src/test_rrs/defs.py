@@ -27,33 +27,40 @@ Test definitions
 """
 
 import logging
-# Because we wish to support Python versions back to 3.6, we
-# import Union rather than using |
+import sys
 from typing import (
+    Callable,
     FrozenSet,
     NamedTuple,
     Tuple,
 )
 
+from csm_utils.typing_imports import Literal, TypeAlias
 import requests
 
-from test_rrs.typing_imports import (
-    Callable,
-    Literal,
-    TypeAlias,
-    get_args,
-)
+if sys.version_info >= (3, 8):
+    # Deliberately importing this ungrouped with the earlier csm_utils import,
+    # since we only import it conditionally
+    from csm_utils.typing_imports import get_args  # pylint: disable=C0412
+
 
 NOTICE_LOG_LEVEL: int = (logging.WARNING + logging.ERROR) // 2 + logging.WARNING
 NOTICE_LOG_NAME: str = "NOTICE"
 
 # In our testing, we only use GET and POST
 RequestVerb: TypeAlias = Literal['GET', 'POST']
-REQUEST_VERBS: FrozenSet[RequestVerb] = frozenset(get_args(RequestVerb))
+REQUEST_VERBS: FrozenSet[RequestVerb]
 
 # In our testing, we are only going to ever use protocols http and https
 RequestProtocol: TypeAlias = Literal['http', 'https']
-REQUEST_PROTOCOLS: FrozenSet[RequestProtocol] = frozenset(get_args(RequestProtocol))
+REQUEST_PROTOCOLS: FrozenSet[RequestProtocol]
+
+if sys.version_info >= (3, 8):
+    REQUEST_VERBS = frozenset(get_args(RequestVerb))
+    REQUEST_PROTOCOLS = frozenset(get_args(RequestProtocol))
+else:
+    REQUEST_VERBS = frozenset(('GET', 'POST'))
+    REQUEST_PROTOCOLS = frozenset(('http', 'https'))
 
 RequestMethodFunction: TypeAlias = Callable[..., requests.Response]
 

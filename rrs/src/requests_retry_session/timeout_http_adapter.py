@@ -34,10 +34,10 @@ from .utils import NotPassed, NOT_PASSED
 
 
 if TYPE_CHECKING:
-    from typing import Tuple, Union
+    from typing import Mapping, Tuple, Union
+    from csm_utils.typing_imports import TypeAlias, TypedDict
     from requests import PreparedRequest, Response
     from urllib3 import Retry
-    from .typing_imports import Mapping, TypeAlias, TypedDict
 
     # To simplify type hints
     BytesOrStringType: "TypeAlias" = Union[bytes, str]

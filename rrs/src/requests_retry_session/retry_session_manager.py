@@ -27,9 +27,9 @@ RetrySessionManager class
 """
 
 from contextlib import (
+    AbstractContextManager,
     closing,
     contextmanager,
-    AbstractContextManager,
 )
 from typing import TYPE_CHECKING
 
@@ -42,8 +42,9 @@ from .requests_retry_session import (
 
 if TYPE_CHECKING:
     from types import TracebackType
-    from typing import Optional, Type
+    from typing import Iterator, Optional, Type
 
+    from csm_utils.typing_imports import Self, Unpack
     import requests
 
     from .requests_retry_session import (
@@ -51,7 +52,6 @@ if TYPE_CHECKING:
         RequestsRetryAdapterArgs,
     )
     from .timeout_http_adapter import TimeoutHTTPAdapter
-    from .typing_imports import Iterator, Self, Unpack
 
 
 # Unfortunately Python does not currently have any supported way to accurate type

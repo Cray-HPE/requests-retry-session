@@ -1,1 +1,0 @@
-../../../rrs/src/requests_retry_session/typing_imports.py

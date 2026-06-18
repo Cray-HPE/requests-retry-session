@@ -26,11 +26,13 @@
 Minimal RRS module test, mainly to ensure that it is not completely broken.
 """
 
+from collections.abc import Iterable as IterableProtocol
 import logging
 # Because we wish to support Python versions back to 3.6, we
 # import things from typing that are not necessary in newer
 # Python versions
 from typing import (
+    Iterable,
     Tuple,
     Type,
     Union,
@@ -49,7 +51,6 @@ from test_rrs.results import (
     TestRecord,
     TestResults,
 )
-from test_rrs.typing_imports import Iterable, IterableProtocol
 from test_rrs.utils import random_id, suppress_ssl_warnings
 
 

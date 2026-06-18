@@ -45,8 +45,9 @@ from typing import (
     overload,
 )
 
+from csm_utils.typing_imports import Literal
+
 from test_rrs.defs import RequestProtocol
-from test_rrs.typing_imports import Literal
 
 from .certs import CertFiles
 from .defs import CertFilePaths, SERVER_HOSTNAME

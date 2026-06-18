@@ -35,6 +35,8 @@ python3 /app/gen_test_constraints.py | while read LINE ; do
     done > "${cfile}"
     pip3 download \
         --disable-pip-version-check \
+        --trusted-host artifactory.algol60.net \
+        --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple \
         /app/requests_retry_session*.whl \
         /app/test_rrs*.whl \
         -c "${cfile}" \

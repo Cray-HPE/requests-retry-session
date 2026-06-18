@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Refactored to use `csm-utils` instead of redefining code it provides.
+
+### Dependencies
+- Started using `csm-utils` package
+
 ## [0.5.7] - 2026-05-12
 
 ### Added

@@ -39,12 +39,9 @@ PYTHON_BIN := python$(PY_VERSION)
 PYLINT_VENV_BASE_DIR ?= pylint-venv
 PYLINT_VENV ?= $(PYLINT_VENV_BASE_DIR)/$(PY_VERSION)
 PYLINT_VENV_PYBIN ?= $(PYLINT_VENV)/bin/python3
-PIP_INSTALL_ARGS ?= --no-cache --trusted-host artifactory.algol60.net --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple
+PIP_REPO_ARGS ?= --trusted-host artifactory.algol60.net --extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/simple
+PIP_INSTALL_ARGS ?= --no-cache --disable-pip-version-check $(PIP_REPO_ARGS)
 SKIP_RC ?= 57
-
-ifneq ($(wildcard ${HOME}/.netrc),)
-        DOCKER_ARGS ?= --secret id=netrc,src=${HOME}/.netrc
-endif
 
 all : runbuildprep lint pymod
 rpm: rpm_prepare rpm_package_source rpm_build_source rpm_build
@@ -80,7 +77,7 @@ pymod_validate_setup:
 		mkdir -p $(PYLINT_VENV_BASE_DIR)
 		$(PYTHON_BIN) -m venv $(PYLINT_VENV)
 		$(PYLINT_VENV_PYBIN) -m pip install --upgrade $(PIP_INSTALL_ARGS) pip
-		$(PYLINT_VENV_PYBIN) -m pip install --disable-pip-version-check $(PIP_INSTALL_ARGS) requests_retry_session*.whl requests_retry_session[lint]
+		$(PYLINT_VENV_PYBIN) -m pip install $(PIP_INSTALL_ARGS) requests_retry_session*.whl requests_retry_session[lint]
 		$(PYLINT_VENV_PYBIN) -m pip list --format freeze
 
 pymod_validate_pylint_error:

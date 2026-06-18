@@ -30,24 +30,22 @@ Minimal RRS module test, mainly to ensure that it is not completely broken.
 # import things from typing that are not necessary in newer
 # Python versions
 from typing import (
+    Iterable,
     Type,
     Union,
     TYPE_CHECKING,
 )
+
+from csm_utils.typing_imports import Protocol, TypedDict
 
 from test_rrs.results import (
     RequestTestOptions,
     RRTestOptions,
     TestResults,
 )
-from test_rrs.typing_imports import (
-    Iterable,
-    Protocol,
-    TypedDict,
-)
 
 if TYPE_CHECKING:
-    from test_rrs.typing_imports import Unpack
+    from csm_utils.typing_imports import Unpack
 
 
 class CallTestReqRequiredKwargs(TypedDict, total=True):

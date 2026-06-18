@@ -27,16 +27,16 @@ Requests session functions and classes
 
 from typing import Tuple, TYPE_CHECKING
 
+from csm_utils.typing_imports import TypedDict
 import requests
 
 from .retry_with_logs import RetryWithLogs
 from .timeout_http_adapter import TimeoutHTTPAdapter
-from .typing_imports import TypedDict
 
 
 if TYPE_CHECKING:
     from typing import Optional
-    from .typing_imports import Unpack, TypeAlias
+    from csm_utils.typing_imports import Unpack, TypeAlias
 
 
 ProtocolType: "TypeAlias" = str

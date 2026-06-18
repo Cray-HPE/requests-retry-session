@@ -38,8 +38,10 @@ from typing import (
     Tuple,
 )
 
+from csm_utils.typing_imports import Protocol, runtime_checkable
+
 from test_rrs.defs import ReqRetries
-from test_rrs.typing_imports import Protocol, runtime_checkable
+
 from .call_test_req import CallTestReq
 
 

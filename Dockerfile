@@ -52,9 +52,13 @@ RUN chmod +rx /app/test_rrs.sh /app/cache_pip.sh /app/validate_skip_rc.sh && \
     mkdir -p "${PIP_CACHE_DIR}" "${PIP_DL_DIR}" && \
     "${PYBIN}" -m venv /app/venv && \
     /app/venv/bin/pip3 install --no-cache-dir -U pip && \
-    /app/venv/bin/pip3 list --format freeze && \
+    /app/venv/bin/pip3 --version && \
+    /app/venv/bin/pip3 list --format freeze
+RUN --mount=type=secret,id=netrc,target=/root/.netrc.tmp \
+    ln -s /root/.netrc.tmp ~/.netrc && \
     /app/cache_pip.sh && \
-    /app/venv/bin/pip3 list --format freeze && \
+    rm -f ~/.netrc
+RUN /app/venv/bin/pip3 list --format freeze && \
     ls "${PIP_DL_DIR}" && \
     chmod -R a+rwx "${PIP_CACHE_DIR}" "${PIP_DL_DIR}"
 
