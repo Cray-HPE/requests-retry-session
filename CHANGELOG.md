@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Dependencies
-
+- Bump `actions/setup-python` from 6 to 7 ([#41](https://github.com/Cray-HPE/requests-retry-session/pull/41))
+- Bump `actions/checkout` from 5 to 7 ([#40](https://github.com/Cray-HPE/requests-retry-session/pull/40))
 - Bump `actions/setup-python` from 6 to 7 ([#41](https://github.com/Cray-HPE/requests-retry-session/pull/41))
 
 ## [5.1.3] - 2026-05-12
